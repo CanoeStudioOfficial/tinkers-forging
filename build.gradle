@@ -43,7 +43,7 @@ minecraft {
 repositories {
     maven {
         // JEI
-        url 'http://dvs1.progwml6.com/files/maven'
+        url 'https://dvs1.progwml6.com/files/maven'
     }
     maven {
         // JEI Fallback
@@ -51,11 +51,11 @@ repositories {
     }
     maven {
         // CraftTweaker
-        url "http://maven.blamejared.com/"
+        url "https://maven.blamejared.com/"
     }
     maven {
         // Tinkers Construct
-        url 'http://dvs1.progwml6.com/files/maven'
+        url 'https://dvs1.progwml6.com/files/maven'
     }
 }
 
@@ -100,41 +100,10 @@ processResources {
     }
 }
 
-curseforge {
-    if (priv == null) {
-        return
-    }
-    project {
-        apiKey = "${priv.curseforge_api_token}"
-        id = "308629"
-        changelog = file("changelog.txt")
-        releaseType = "release"
 
-        addGameVersion("${mc_version}")
-        relations {
-            requiredDependency("alcatrazcore")
-            optionalDependency("patchouli")
-        }
 
-        afterEvaluate {
-            gameVersionStrings.remove('Java 9')
-        }
-    }
-}
 
-task signJar(type: SignJar, dependsOn: reobfJar) {
-    signJar.keyStore = "${priv.keyStore}"
-    signJar.alias = "${priv.keyStoreAlias}"
-    signJar.storePass = "${priv.keyStorePass}"
-    signJar.keyPass = "${priv.keyStoreKeyPass}"
 
-    inputFile = jar.archivePath
-    outputFile = jar.archivePath
-}
-
-build.dependsOn signJar
-tasks.curseforge.mustRunAfter signJar
-tasks.curseforge.dependsOn build
 
 def static parseConfig(File config) {
     if (config.exists()) {
