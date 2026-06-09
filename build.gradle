@@ -1,21 +1,18 @@
 buildscript {
     repositories {
-        jcenter()
-        maven { // Forge Gradle
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven { // Curse Forge
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.1.0'
-    }
+		maven {
+			url = "https://maven.minecraftforge.net"
+		}
+	}
+	dependencies {
+		classpath("com.anatawa12.forge:ForgeGradle:2.3-1.0.+") {
+			changing = true
+		}
+	}
 }
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'com.matthewprenger.cursegradle'
+
 
 ext.priv = parseConfig(file('../../jar-signing/private.properties'))
 
