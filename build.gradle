@@ -37,7 +37,7 @@ minecraft {
     mappings = "${mcp_mapping}"
     makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 
-    replace 'GRADLE:VERSION', "${mod_version}"
+
 }
 
 repositories {
@@ -56,6 +56,9 @@ repositories {
     maven {
         // Tinkers Construct
         url 'https://dvs1.progwml6.com/files/maven'
+    }
+    maven {
+        url 'https://curse.cleanroommc.com'
     }
 }
 
@@ -79,6 +82,7 @@ dependencies {
 
     // compile against Patchouli but do not include it at runtime
     deobfProvided "vazkii.patchouli:Patchouli:${patchouli_version}"
+    implementation 'curse.maven:alcatrazcore-304493:2666560'
 }
 
 processResources {
