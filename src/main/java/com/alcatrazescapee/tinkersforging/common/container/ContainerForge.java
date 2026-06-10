@@ -6,6 +6,7 @@
 
 package com.alcatrazescapee.tinkersforging.common.container;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -40,5 +41,10 @@ public class ContainerForge extends ContainerTileInventory<TileForge>
     {
         detectAndSendAllChanges();
         detectAndSendFieldChanges();
+    }
+
+    @Override
+    public boolean canInteractWith(EntityPlayer entityPlayer) {
+        return false;
     }
 }

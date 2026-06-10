@@ -9,6 +9,8 @@ package com.alcatrazescapee.tinkersforging.common.container;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 
@@ -43,5 +45,25 @@ public class ContainerListenerForgeItem extends CapabilityContainerListener<IFor
     protected void sendToPlayer(EntityPlayerMP player, PacketTContainerUpdate<IForgeItem, ?> packet)
     {
         TinkersForging.getNetwork().sendTo(packet, player);
+    }
+
+    @Override
+    public void sendAllContents(Container container, NonNullList<ItemStack> nonNullList) {
+
+    }
+
+    @Override
+    public void sendSlotContents(Container container, int i, ItemStack itemStack) {
+
+    }
+
+    @Override
+    public void sendWindowProperty(Container container, int i, int i1) {
+
+    }
+
+    @Override
+    public void sendAllWindowProperties(Container container, IInventory iInventory) {
+
     }
 }

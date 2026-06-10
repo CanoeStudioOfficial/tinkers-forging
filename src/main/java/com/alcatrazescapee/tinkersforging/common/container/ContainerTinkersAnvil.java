@@ -118,6 +118,11 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
     }
 
     @Override
+    public boolean canInteractWith(EntityPlayer entityPlayer) {
+        return false;
+    }
+
+    @Override
     protected void addContainerSlots()
     {
         IItemHandler cap = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
