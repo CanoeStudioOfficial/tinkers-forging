@@ -34,7 +34,6 @@ public class GuiCharcoalForge extends GuiContainerTileCore<TileCharcoalForge>
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
-        super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;

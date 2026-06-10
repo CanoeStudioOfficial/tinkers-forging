@@ -96,7 +96,6 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
-        super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 
         // JEI Question Mark Icon
         if (isJEIEnabled)

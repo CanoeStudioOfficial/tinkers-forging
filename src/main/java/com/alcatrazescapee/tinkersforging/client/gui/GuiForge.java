@@ -33,7 +33,6 @@ public class GuiForge extends GuiContainerTileCore<TileForge>
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
-        super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
