@@ -42,7 +42,7 @@ public final class TinkersForging
 {
     public static final String MOD_ID = "tinkersforging";
     public static final String MOD_NAME = "Tinkers Forging";
-    public static final String VERSION = "GRADLE:VERSION";
+    public static final String VERSION = "1.1.5";
 
     // Versioning
     private static final String ALC_MIN = "1.0.2";
