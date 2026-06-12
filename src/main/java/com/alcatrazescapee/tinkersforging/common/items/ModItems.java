@@ -34,13 +34,19 @@ public final class ModItems
             Item.ToolMaterial toolMaterial = material.getToolMaterial();
 
             r.registerItem(new ItemHammer(material, toolMaterial), "hammer/" + material.getName());
-            r.registerItem(new ItemToolHead(ItemType.HAMMER_HEAD, material), ItemType.HAMMER_HEAD.name() + "/" + material.getName());
+            if (ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD, material))
+            {
+                r.registerItem(new ItemToolHead(ItemType.HAMMER_HEAD, material), ItemType.HAMMER_HEAD.name() + "/" + material.getName());
+            }
 
             if (!Loader.isModLoaded("tconstruct") || !ModConfig.GENERAL.useTinkersConstruct)
             {
                 for (ItemType type : ItemType.tools())
                 {
-                    r.registerItem(new ItemToolHead(type, material), type.name() + "/" + material.getName());
+                    if (ModConfig.isBuiltInToolPartEnabled(type, material))
+                    {
+                        r.registerItem(new ItemToolHead(type, material), type.name() + "/" + material.getName());
+                    }
                 }
             }
 
@@ -48,7 +54,10 @@ public final class ModItems
             {
                 for (ItemType type : ItemType.ntpTools())
                 {
-                    r.registerItem(new ItemToolHead(type, material), type.name() + "/" + material.getName());
+                    if (ModConfig.isBuiltInToolPartEnabled(type, material))
+                    {
+                        r.registerItem(new ItemToolHead(type, material), type.name() + "/" + material.getName());
+                    }
                 }
             }
         }

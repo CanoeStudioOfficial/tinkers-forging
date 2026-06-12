@@ -7,6 +7,7 @@
 package com.alcatrazescapee.tinkersforging.integration.jei;
 
 import com.alcatrazescapee.tinkersforging.client.gui.GuiTinkersAnvil;
+import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
@@ -65,7 +66,7 @@ public final class JEIIntegration implements IModPlugin
 
         for (ItemToolHead item : ItemToolHead.getAll())
         {
-            if (!item.getMaterial().isEnabled())
+            if (!item.getMaterial().isEnabled() || !ModConfig.isBuiltInToolPartEnabled(item.getType(), item.getMaterial()))
                 blacklist.addIngredientToBlacklist(new ItemStack(item));
         }
 

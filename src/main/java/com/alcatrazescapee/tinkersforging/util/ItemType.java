@@ -113,6 +113,23 @@ public enum ItemType
         return allAdvToolboxTypes;
     }
 
+    public static boolean isBuiltInToolPart(ItemType type)
+    {
+        return type == HAMMER_HEAD || contains(allNewToolTypes, type) || contains(allNTPTypes, type);
+    }
+
+    private static boolean contains(ItemType[] types, ItemType type)
+    {
+        for (ItemType entry : types)
+        {
+            if (entry == type)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private final int amount;
     private final ForgeRule[] rules;
 

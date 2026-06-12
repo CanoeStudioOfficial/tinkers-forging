@@ -50,15 +50,18 @@ public final class ModRecipes
     public static void init()
     {
         // Hammer Head Recipes
-        for (MaterialType material : MaterialRegistry.getAllMaterials())
+        if (ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD))
         {
-            if (material.isEnabled())
+            for (MaterialType material : MaterialRegistry.getAllMaterials())
             {
-                ItemStack output = ItemToolHead.get(ItemType.HAMMER_HEAD, material, 1);
-                String inputOre = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
+                if (material.isEnabled() && ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD, material))
+                {
+                    ItemStack output = ItemToolHead.get(ItemType.HAMMER_HEAD, material, 1);
+                    String inputOre = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
 
-                if (!output.isEmpty() && inputOre != null && OreDictionary.doesOreNameExist(inputOre))
-                    ANVIL.add(new AnvilRecipe(output, inputOre, ItemType.HAMMER_HEAD.getAmount(), material.getTier(), ItemType.HAMMER_HEAD.getRules()));
+                    if (!output.isEmpty() && inputOre != null && OreDictionary.doesOreNameExist(inputOre))
+                        ANVIL.add(new AnvilRecipe(output, inputOre, ItemType.HAMMER_HEAD.getAmount(), material.getTier(), ItemType.HAMMER_HEAD.getRules()));
+                }
             }
         }
 
@@ -67,9 +70,11 @@ public final class ModRecipes
         {
             for (ItemType type : ItemType.tools())
             {
+                if (!ModConfig.isBuiltInToolPartEnabled(type)) continue;
+
                 for (MaterialType material : MaterialRegistry.getAllMaterials())
                 {
-                    if (material.isEnabled())
+                    if (material.isEnabled() && ModConfig.isBuiltInToolPartEnabled(type, material))
                     {
                         // This will always register the default tools anvil recipes, even though the actual tools for modded materials might not exist.
                         final String metalIngotName = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
@@ -176,6 +181,9 @@ public final class ModRecipes
                 {
                     for (ItemType type : ItemType.tools())
                     {
+                        if (!ModConfig.isBuiltInToolPartEnabled(type)) continue;
+                        if (!ModConfig.isBuiltInToolPartEnabled(type, material)) continue;
+
                         ImmutablePair<IRecipe, ItemStack> result = getToolRecipeFor(recipes, type, true, ingots);
                         if (result != null)
                         {
@@ -195,7 +203,7 @@ public final class ModRecipes
                 // Hammer Head
                 final ItemStack hammer = ItemHammer.get(material, 1);
                 final ItemStack hammerHead = ItemToolHead.get(ItemType.HAMMER_HEAD, material, 1);
-                if (!hammer.isEmpty() && !hammerHead.isEmpty())
+                if (ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD, material) && !hammer.isEmpty() && !hammerHead.isEmpty())
                 {
                     ResourceLocation loc = new ResourceLocation(MOD_ID, "hammer_" + material.getName().toLowerCase());
                     r.register(new ShapedOreRecipe(loc, hammer, "H", "S", 'S', "stickWood", 'H', hammerHead).setRegistryName(loc));
@@ -214,6 +222,9 @@ public final class ModRecipes
                 {
                     for (ItemType type : ItemType.ntpTools())
                     {
+                        if (!ModConfig.isBuiltInToolPartEnabled(type)) continue;
+                        if (!ModConfig.isBuiltInToolPartEnabled(type, material)) continue;
+
                         // Anvil Recipe
                         ItemStack result = ItemToolHead.get(type, material, 1);
                         ANVIL.add(new AnvilRecipe(result, metalIngotName, type.getAmount(), material.getTier(), type.getRules()));

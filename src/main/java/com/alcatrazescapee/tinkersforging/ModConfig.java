@@ -8,6 +8,9 @@ package com.alcatrazescapee.tinkersforging;
 
 import net.minecraftforge.common.config.Config;
 
+import com.alcatrazescapee.tinkersforging.util.ItemType;
+import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
+
 import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
 
 @SuppressWarnings("WeakerAccess")
@@ -16,6 +19,49 @@ public final class ModConfig
 {
     public static final GeneralConfig GENERAL = new GeneralConfig();
     public static final BalanceConfig BALANCE = new BalanceConfig();
+
+    public static boolean isBuiltInToolPartEnabled(ItemType type)
+    {
+        return isBuiltInToolPartEnabled(type, null);
+    }
+
+    public static boolean isBuiltInToolPartEnabled(ItemType type, MaterialType material)
+    {
+        if (!ItemType.isBuiltInToolPart(type))
+        {
+            return true;
+        }
+        if (!GENERAL.enableBuiltInToolPartBlacklist)
+        {
+            return true;
+        }
+        for (String name : GENERAL.disabledBuiltInToolParts)
+        {
+            if (type.name().equalsIgnoreCase(name.trim()))
+            {
+                return false;
+            }
+        }
+        if (material != null)
+        {
+            for (String name : GENERAL.disabledBuiltInToolPartMaterials)
+            {
+                if (material.getName().equalsIgnoreCase(name.trim()))
+                {
+                    return false;
+                }
+            }
+            for (String name : GENERAL.disabledBuiltInToolPartMaterialPairs)
+            {
+                String[] entry = name.split(":", 2);
+                if (entry.length == 2 && type.name().equalsIgnoreCase(entry[0].trim()) && material.getName().equalsIgnoreCase(entry[1].trim()))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     public static class GeneralConfig
     {
@@ -51,6 +97,32 @@ public final class ModConfig
         @Config.RequiresMcRestart
         @Config.Comment({"This is a way to force Tinker's Forging to recognize other materials from other mods if they don't automatically get found.", "WARNING: This can cause broken recipes / items if you use it incorrectly. Only use it if you know what you are doing."})
         public String[] forceEnabledMetals = {};
+
+        @Config.Name("Enable Built-In Tool Part Blacklist")
+        @Config.RequiresMcRestart
+        @Config.Comment("If this is true, the built-in Tinker's Forging tool parts listed below will not be registered and their recipes will not be added. This does not affect Tinker's Construct parts.")
+        public boolean enableBuiltInToolPartBlacklist = false;
+
+        @Config.Name("Disabled Built-In Tool Parts")
+        @Config.RequiresMcRestart
+        @Config.Comment({"A list of Tinker's Forging's own tool part ItemType names to disable.",
+                "Valid values: HAMMER_HEAD, PICKAXE_HEAD, AXE_HEAD, HOE_HEAD, SWORD_BLADE, SHOVEL_HEAD, NTP_KNIFE, NTP_MATTOCK, NTP_SAW.",
+                "Tinker's Construct parts such as TC_PICK_HEAD are intentionally ignored by this option."})
+        public String[] disabledBuiltInToolParts = {};
+
+        @Config.Name("Disabled Built-In Tool Part Materials")
+        @Config.RequiresMcRestart
+        @Config.Comment({"A list of material names for which all built-in Tinker's Forging tool parts should be disabled.",
+                "Examples: iron, gold, copper.",
+                "This only affects Tinker's Forging's own tool parts, not Tinker's Construct parts or hammers."})
+        public String[] disabledBuiltInToolPartMaterials = {};
+
+        @Config.Name("Disabled Built-In Tool Part Material Pairs")
+        @Config.RequiresMcRestart
+        @Config.Comment({"A list of exact built-in tool part and material combinations to disable, formatted as PART:MATERIAL.",
+                "Examples: HAMMER_HEAD:iron, PICKAXE_HEAD:gold, NTP_KNIFE:copper.",
+                "This only affects Tinker's Forging's own tool parts, not Tinker's Construct parts or hammers."})
+        public String[] disabledBuiltInToolPartMaterialPairs = {};
 
         private GeneralConfig() {}
     }
