@@ -46,7 +46,7 @@ public final class ModConfig
         {
             for (String name : GENERAL.disabledBuiltInToolPartMaterials)
             {
-                if (material.getName().equalsIgnoreCase(name.trim()))
+                if (material.getName().equalsIgnoreCase(name.trim()) && (!GENERAL.keepHammerHeadsForDisabledBuiltInToolPartMaterials || type != ItemType.HAMMER_HEAD))
                 {
                     return false;
                 }
@@ -116,6 +116,12 @@ public final class ModConfig
                 "Examples: iron, gold, copper.",
                 "This only affects Tinker's Forging's own tool parts, not Tinker's Construct parts or hammers."})
         public String[] disabledBuiltInToolPartMaterials = {};
+
+        @Config.Name("Keep Hammer Heads For Disabled Built-In Tool Part Materials")
+        @Config.RequiresMcRestart
+        @Config.Comment({"If this is true, materials listed in Disabled Built-In Tool Part Materials will not disable HAMMER_HEAD.",
+                "HAMMER_HEAD can still be disabled globally via Disabled Built-In Tool Parts or exactly via Disabled Built-In Tool Part Material Pairs."})
+        public boolean keepHammerHeadsForDisabledBuiltInToolPartMaterials = false;
 
         @Config.Name("Disabled Built-In Tool Part Material Pairs")
         @Config.RequiresMcRestart
