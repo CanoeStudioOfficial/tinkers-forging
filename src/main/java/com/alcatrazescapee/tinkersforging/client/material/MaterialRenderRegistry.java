@@ -1,26 +1,17 @@
 package com.alcatrazescapee.tinkersforging.client.material;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
@@ -30,28 +21,66 @@ import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
+import slimeknights.tconstruct.library.TinkerRegistry;
+import slimeknights.tconstruct.library.client.MaterialRenderInfo;
+import slimeknights.tconstruct.library.client.material.MaterialRenderInfoLoader;
+import slimeknights.tconstruct.library.client.texture.TinkerTexture;
+import slimeknights.tconstruct.library.materials.Material;
+
 import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
 
+/**
+ * Renders tool parts / hammers / anvils by delegating to Tinkers Construct's native
+ * {@link MaterialRenderInfo} pipeline. This means the textures are generated using the exact
+ * same logic (metal, metal_textured, multicolor, inverse_multicolor, block, colored, ...)
+ * that Tinkers uses for its own tools, reading from {@code tconstruct:materials/<name>.json}
+ * (or any other mod-provided {@code materials/<name>.json}).
+ *
+ * For non-Tinkers materials (the built-in iron/gold/copper/...) there is no render info,
+ * so {@link #hasMaterialTexture(MaterialType)} returns false and the items fall back to
+ * vertex coloring via the ItemColorHandler in {@code ClientEventHandler}.
+ */
 public final class MaterialRenderRegistry
 {
-    private static final Map<String, ResourceLocation> MATERIAL_TEXTURES = new HashMap<>();
+    private static final Map<String, MaterialRenderInfo> MATERIAL_RENDER_INFO = new HashMap<>();
     private static final Map<String, TextureAtlasSprite> GENERATED_TEXTURES = new HashMap<>();
 
     private static final ResourceLocation HAMMER_METAL_TEMPLATE = new ResourceLocation(MOD_ID, "items/hammer/metal");
     private static final ResourceLocation ANVIL_TEMPLATE = new ResourceLocation(MOD_ID, "blocks/metal_block");
 
+    @SideOnly(Side.CLIENT)
     public static void onTextureStitch(TextureStitchEvent.Pre event)
     {
-        MATERIAL_TEXTURES.clear();
+        MATERIAL_RENDER_INFO.clear();
         GENERATED_TEXTURES.clear();
 
-        IResourceManager manager = Minecraft.getMinecraft().getResourceManager();
+        if (!Loader.isModLoaded("tconstruct"))
+        {
+            return;
+        }
+
+        // Make sure Tinkers has parsed all materials/<name>.json files into Material.renderInfo.
+        // This is idempotent and mirrors what CustomTextureCreator.createCustomTextures does.
+        try
+        {
+            MaterialRenderInfoLoader.INSTANCE.onResourceManagerReload(Minecraft.getMinecraft().getResourceManager());
+        }
+        catch (Throwable e)
+        {
+            TinkersForging.getLog().warn("Failed to load Tinkers material render info", e);
+        }
+
+        // Cache the render info for every Tinkers-backed MaterialType we know about.
         for (MaterialType material : MaterialRegistry.getAllMaterials())
         {
-            ResourceLocation materialTexture = readMaterialTexture(manager, material);
-            if (materialTexture != null)
+            if (!MaterialRegistry.isTinkersMaterial(material))
             {
-                MATERIAL_TEXTURES.put(material.getName(), materialTexture);
+                continue;
+            }
+            MaterialRenderInfo info = getTinkersRenderInfo(material);
+            if (info != null)
+            {
+                MATERIAL_RENDER_INFO.put(material.getName(), info);
             }
         }
 
@@ -82,7 +111,7 @@ public final class MaterialRenderRegistry
 
     public static boolean hasMaterialTexture(MaterialType material)
     {
-        return material != null && MATERIAL_TEXTURES.containsKey(material.getName());
+        return material != null && MATERIAL_RENDER_INFO.containsKey(material.getName());
     }
 
     @Nullable
@@ -128,56 +157,105 @@ public final class MaterialRenderRegistry
         }
     }
 
+    /**
+     * Generates a single per-material texture by asking the Tinkers render info to produce it
+     * for the given template (base) texture. This mirrors the logic in Tinkers'
+     * {@code CustomTextureCreator.createTexture}, including the {@code suffix} (e.g. metal_base)
+     * fallback that allows the material JSON to reference an alternate base texture.
+     */
+    @SideOnly(Side.CLIENT)
     private static void registerGeneratedTexture(TextureMap map, MaterialType material, ResourceLocation template, String key)
     {
-        ResourceLocation materialTexture = MATERIAL_TEXTURES.get(material.getName());
-        if (materialTexture == null)
+        MaterialRenderInfo info = MATERIAL_RENDER_INFO.get(material.getName());
+        if (info == null)
         {
             return;
         }
 
-        String generatedName = MOD_ID + ":generated/materials/" + key + "_" + material.getName();
-        TextureAtlasSprite sprite = new MaterialTextureSprite(generatedName, template, materialTexture);
-        map.setTextureEntry(sprite);
-        GENERATED_TEXTURES.put(getKey(material, template, key), sprite);
+        // Vertex-colored materials (Default / "colored" type) don't generate a texture.
+        if (!info.isStitched())
+        {
+            return;
+        }
+
+        ResourceLocation baseTexture = template;
+        String location = template.toString() + "_" + material.getName();
+
+        // If the render info declares a suffix (e.g. "metal_base"), look for an alternate
+        // base texture "<template>_<suffix>" and use that as the base if it exists.
+        String suffix = info.getTextureSuffix();
+        if (suffix != null && !suffix.isEmpty())
+        {
+            String altLocation = template.toString() + "_" + suffix;
+            TextureAtlasSprite altBase = map.getTextureExtry(altLocation);
+            if (altBase == null && exists(altLocation))
+            {
+                altBase = TinkerTexture.loadManually(new ResourceLocation(altLocation));
+                if (altBase != null)
+                {
+                    map.setTextureEntry(altBase);
+                }
+            }
+            if (altBase != null)
+            {
+                baseTexture = new ResourceLocation(altBase.getIconName());
+            }
+        }
+
+        TextureAtlasSprite sprite;
+        try
+        {
+            sprite = info.getTexture(baseTexture, location);
+        }
+        catch (Throwable e)
+        {
+            TinkersForging.getLog().warn("Failed to generate material texture for {} on {}", material.getName(), template, e);
+            return;
+        }
+
+        if (sprite != null)
+        {
+            map.setTextureEntry(sprite);
+            GENERATED_TEXTURES.put(getKey(material, template, key), sprite);
+        }
     }
 
+    /**
+     * Pulls the (already-loaded) {@link MaterialRenderInfo} off the matching Tinkers {@link Material}.
+     * Returns null if the material isn't a Tinkers material or has no render info set.
+     */
     @Nullable
-    private static ResourceLocation readMaterialTexture(IResourceManager manager, MaterialType material)
-    {
-        ResourceLocation texture = readMaterialTexture(manager, material, new ResourceLocation("tconstruct", "materials/" + material.getName() + ".json"));
-        return texture == null ? readMaterialTexture(manager, material, new ResourceLocation(MOD_ID, "materials/" + material.getName() + ".json")) : texture;
-    }
-
-    @Nullable
-    private static ResourceLocation readMaterialTexture(IResourceManager manager, MaterialType material, ResourceLocation infoLocation)
+    @SideOnly(Side.CLIENT)
+    private static MaterialRenderInfo getTinkersRenderInfo(MaterialType material)
     {
         try
         {
-            IResource resource = manager.getResource(infoLocation);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)))
+            Material tinkersMaterial = TinkerRegistry.getMaterial(material.getName());
+            // TinkerRegistry.getMaterial returns Material.UNKNOWN when not found
+            if (tinkersMaterial == null || tinkersMaterial == Material.UNKNOWN)
             {
-                JsonObject json = new JsonParser().parse(reader).getAsJsonObject();
-                if (!json.has("type") || !"block".equals(json.get("type").getAsString()))
-                {
-                    return null;
-                }
-                JsonElement parameters = json.get("parameters");
-                if (parameters == null || !parameters.isJsonObject() || !parameters.getAsJsonObject().has("texture"))
-                {
-                    return null;
-                }
-                return new ResourceLocation(parameters.getAsJsonObject().get("texture").getAsString());
+                return null;
             }
+            return tinkersMaterial.renderInfo;
         }
-        catch (FileNotFoundException e)
+        catch (Throwable e)
         {
             return null;
         }
-        catch (IOException | RuntimeException e)
+    }
+
+    /** Mirrors CustomTextureCreator.exists: checks if a png exists on disk for the given sprite name. */
+    private static boolean exists(String res)
+    {
+        try
         {
-            TinkersForging.getLog().warn("Failed to load material render info for {}", material.getName(), e);
-            return null;
+            ResourceLocation loc = new ResourceLocation(res);
+            loc = new ResourceLocation(loc.getNamespace(), "textures/" + loc.getPath() + ".png");
+            return Minecraft.getMinecraft().getResourceManager().getAllResources(loc) != null;
+        }
+        catch (Throwable e)
+        {
+            return false;
         }
     }
 
@@ -187,101 +265,4 @@ public final class MaterialRenderRegistry
     }
 
     private MaterialRenderRegistry() {}
-
-    private static class MaterialTextureSprite extends TextureAtlasSprite
-    {
-        private final ResourceLocation template;
-        private final ResourceLocation materialTexture;
-
-        MaterialTextureSprite(String spriteName, ResourceLocation template, ResourceLocation materialTexture)
-        {
-            super(spriteName);
-            this.template = template;
-            this.materialTexture = materialTexture;
-        }
-
-        @Override
-        public Collection<ResourceLocation> getDependencies()
-        {
-            return Arrays.asList(template, materialTexture);
-        }
-
-        @Override
-        public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean load(IResourceManager manager, ResourceLocation location, java.util.function.Function<ResourceLocation, TextureAtlasSprite> textureGetter)
-        {
-            TextureAtlasSprite templateSprite = textureGetter.apply(template);
-            TextureAtlasSprite materialSprite = textureGetter.apply(materialTexture);
-            if (templateSprite == null || templateSprite.getFrameCount() <= 0 || materialSprite == null || materialSprite.getFrameCount() <= 0)
-            {
-                return false;
-            }
-
-            copyFrom(templateSprite);
-            int[][] original = templateSprite.getFrameTextureData(0);
-            int[] pixels = Arrays.copyOf(original[0], original[0].length);
-            int[] materialPixels = materialSprite.getFrameTextureData(0)[0];
-            int materialWidth = materialSprite.getIconWidth();
-            int materialHeight = materialSprite.getIconHeight();
-
-            for (int i = 0; i < pixels.length; i++)
-            {
-                int pixel = pixels[i];
-                int alpha = alpha(pixel);
-                if (alpha == 0)
-                {
-                    continue;
-                }
-
-                int x = i % width;
-                int y = i / width;
-                int materialPixel = materialPixels[(y % materialHeight) * materialWidth + (x % materialWidth)];
-
-                int r = multiply(multiply(red(materialPixel), red(pixel)), red(pixel));
-                int g = multiply(multiply(green(materialPixel), green(pixel)), green(pixel));
-                int b = multiply(multiply(blue(materialPixel), blue(pixel)), blue(pixel));
-
-                pixels[i] = compose(r, g, b, alpha);
-            }
-
-            framesTextureData = new java.util.ArrayList<>();
-            framesTextureData.add(new int[][] {pixels});
-            return false;
-        }
-
-        private static int alpha(int color)
-        {
-            return color >>> 24 & 255;
-        }
-
-        private static int red(int color)
-        {
-            return color >> 16 & 255;
-        }
-
-        private static int green(int color)
-        {
-            return color >> 8 & 255;
-        }
-
-        private static int blue(int color)
-        {
-            return color & 255;
-        }
-
-        private static int multiply(int first, int second)
-        {
-            return (int) (first * (second / 255f));
-        }
-
-        private static int compose(int r, int g, int b, int a)
-        {
-            return a << 24 | r << 16 | g << 8 | b;
-        }
-    }
 }
