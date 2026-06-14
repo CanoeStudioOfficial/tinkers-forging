@@ -1,6 +1,7 @@
 package com.alcatrazescapee.tinkersforging.client.material;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -44,6 +45,8 @@ public final class MaterialRenderRegistry
 {
     private static final Map<String, MaterialRenderInfo> MATERIAL_RENDER_INFO = new HashMap<>();
     private static final Map<String, TextureAtlasSprite> GENERATED_TEXTURES = new HashMap<>();
+    /** Names of materials for which at least one stitched texture was generated. */
+    private static final java.util.Set<String> GENERATED_MATERIALS = new HashSet<>();
 
     private static final ResourceLocation HAMMER_METAL_TEMPLATE = new ResourceLocation(MOD_ID, "items/hammer/metal");
     private static final ResourceLocation ANVIL_TEMPLATE = new ResourceLocation(MOD_ID, "blocks/metal_block");
@@ -53,6 +56,7 @@ public final class MaterialRenderRegistry
     {
         MATERIAL_RENDER_INFO.clear();
         GENERATED_TEXTURES.clear();
+        GENERATED_MATERIALS.clear();
 
         if (!Loader.isModLoaded("tconstruct"))
         {
@@ -109,9 +113,48 @@ public final class MaterialRenderRegistry
         }
     }
 
+    /**
+     * True for any material that Tinkers Construct knows how to render (i.e. it has a
+     * {@link MaterialRenderInfo}). This covers BOTH stitched (metal/multicolor/block/...) and
+     * vertex-colored (Default / "colored") materials. Use this to decide whether Tinkers owns the
+     * rendering of a material at all.
+     */
     public static boolean hasMaterialTexture(MaterialType material)
     {
         return material != null && MATERIAL_RENDER_INFO.containsKey(material.getName());
+    }
+
+    /**
+     * True only if a per-material texture was actually generated and stitched for the given
+     * template. Vertex-colored materials (type "colored") never produce a texture, so this returns
+     * false for them and the caller must fall back to vertex coloring instead.
+     */
+    public static boolean hasGeneratedTexture(MaterialType material)
+    {
+        return material != null && GENERATED_MATERIALS.contains(material.getName());
+    }
+
+    /**
+     * Returns the Tinkers vertex color for a material (used by {@code MaterialRenderInfo.Default}
+     * / "colored" materials). For non-Tinkers materials returns the material's own color so callers
+     * can use it as a unified color source.
+     */
+    public static int getMaterialColor(MaterialType material)
+    {
+        if (material == null)
+        {
+            return 0xffffff;
+        }
+        MaterialRenderInfo info = MATERIAL_RENDER_INFO.get(material.getName());
+        if (info != null)
+        {
+            try
+            {
+                return info.getVertexColor();
+            }
+            catch (Throwable ignored) {}
+        }
+        return material.getColor();
     }
 
     @Nullable
@@ -217,6 +260,7 @@ public final class MaterialRenderRegistry
         {
             map.setTextureEntry(sprite);
             GENERATED_TEXTURES.put(getKey(material, template, key), sprite);
+            GENERATED_MATERIALS.add(material.getName());
         }
     }
 
