@@ -150,26 +150,35 @@ public class BakedMaterialOverrideModel implements IBakedModel
         if (stack.getItem() instanceof ItemToolHead)
         {
             ItemToolHead item = (ItemToolHead) stack.getItem();
-            if (MaterialRenderRegistry.hasMaterialTexture(item.getMaterial()))
+            ItemType type = item.getType();
+            ResourceLocation template = MaterialRenderRegistry.getTemplate(type);
+            String key = "item_" + type.name().toLowerCase();
+            // Only wrap if a texture was actually generated for THIS item+material combination,
+            // otherwise the item would render as a blank texture. Falling through (return null) lets
+            // it keep its normal model + vertex coloring.
+            if (MaterialRenderRegistry.hasGeneratedTexture(item.getMaterial(), template, key))
             {
-                ItemType type = item.getType();
-                return new BakedMaterialOverrideModel(parent, item.getMaterial(), MaterialRenderRegistry.getTemplate(type), "item_" + type.name().toLowerCase());
+                return new BakedMaterialOverrideModel(parent, item.getMaterial(), template, key);
             }
         }
         if (stack.getItem() instanceof ItemHammer)
         {
             MaterialType material = ((ItemHammer) stack.getItem()).getMaterial();
-            if (material != null && MaterialRenderRegistry.hasMaterialTexture(material))
+            ResourceLocation template = MaterialRenderRegistry.getHammerMetalTemplate();
+            String key = "item_hammer";
+            if (material != null && MaterialRenderRegistry.hasGeneratedTexture(material, template, key))
             {
-                return new BakedMaterialOverrideModel(parent, material, MaterialRenderRegistry.getHammerMetalTemplate(), "item_hammer");
+                return new BakedMaterialOverrideModel(parent, material, template, key);
             }
         }
         if (stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock() instanceof BlockTinkersAnvil)
         {
             BlockTinkersAnvil block = (BlockTinkersAnvil) ((ItemBlock) stack.getItem()).getBlock();
-            if (MaterialRenderRegistry.hasMaterialTexture(block.getMaterial()))
+            ResourceLocation template = MaterialRenderRegistry.getAnvilTemplate();
+            String key = "block_tinkers_anvil";
+            if (MaterialRenderRegistry.hasGeneratedTexture(block.getMaterial(), template, key))
             {
-                return new BakedMaterialOverrideModel(parent, block.getMaterial(), MaterialRenderRegistry.getAnvilTemplate(), "block_tinkers_anvil");
+                return new BakedMaterialOverrideModel(parent, block.getMaterial(), template, key);
             }
         }
         return null;
