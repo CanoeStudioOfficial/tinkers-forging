@@ -8,6 +8,7 @@ package com.alcatrazescapee.tinkersforging.common.container;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -44,7 +45,14 @@ public class ContainerForge extends ContainerTileInventory<TileForge>
     }
 
     @Override
-    public boolean canInteractWith(EntityPlayer entityPlayer) {
-        return false;
+    public boolean canInteractWith(EntityPlayer entityPlayer)
+    {
+        if (tile == null || tile.getWorld() == null || tile.isInvalid())
+            return false;
+
+        BlockPos pos = tile.getPos();
+        return entityPlayer.world == tile.getWorld()
+                && tile.getWorld().getTileEntity(pos) == tile
+                && entityPlayer.getDistanceSq((double) pos.getX() + 0.5D, (double) pos.getY() + 0.5D, (double) pos.getZ() + 0.5D) <= 64.0D;
     }
 }
