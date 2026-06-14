@@ -34,9 +34,11 @@ public class GuiCharcoalForge extends GuiContainerTileCore<TileCharcoalForge>
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
-
         int x = (width - xSize) / 2;
         int y = (height - ySize) / 2;
+
+        mc.getTextureManager().bindTexture(BACKGROUND);
+        drawTexturedModalRect(x, y, 0, 0, xSize, ySize);
 
         int fuelTicksRemaining = tile.getField(FIELD_FUEL);
         if (fuelTicksRemaining > 0 && tile.getWorld().getBlockState(tile.getPos()).getValue(LIT))

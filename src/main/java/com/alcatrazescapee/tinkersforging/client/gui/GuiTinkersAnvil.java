@@ -96,6 +96,8 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
+        mc.getTextureManager().bindTexture(BACKGROUND);
+        drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
         // JEI Question Mark Icon
         if (isJEIEnabled)
