@@ -1,17 +1,13 @@
 package com.alcatrazescapee.tinkersforging.client.material;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.fml.common.Loader;
@@ -130,13 +126,35 @@ public final class MaterialRenderRegistry
 
     /**
      * True only if a per-material texture was actually generated and stitched for the given
-     * template. Both stitched materials (metal/multicolor/block/...) and vertex-colored materials
-     * (Default / "colored") end up with a generated texture, so this returns true for all Tinkers
-     * materials once textures are registered.
+     * template. Vertex-colored materials (type "colored") never produce a texture, so this returns
+     * false for them and the caller must fall back to vertex coloring instead.
      */
     public static boolean hasGeneratedTexture(MaterialType material)
     {
         return material != null && GENERATED_MATERIALS.contains(material.getName());
+    }
+
+    /**
+     * Returns the Tinkers vertex color for a material (used by {@code MaterialRenderInfo.Default}
+     * / "colored" materials). For non-Tinkers materials returns the material's own color so callers
+     * can use it as a unified color source.
+     */
+    public static int getMaterialColor(MaterialType material)
+    {
+        if (material == null)
+        {
+            return 0xffffff;
+        }
+        MaterialRenderInfo info = MATERIAL_RENDER_INFO.get(material.getName());
+        if (info != null)
+        {
+            try
+            {
+                return info.getVertexColor();
+            }
+            catch (Throwable ignored) {}
+        }
+        return material.getColor();
     }
 
     @Nullable
@@ -183,27 +201,22 @@ public final class MaterialRenderRegistry
     }
 
     /**
-     * Generates a single per-material texture for the given template.
-     *
-     * Two cases, both ending with a fully-colored, stitched texture that BakedMaterialOverrideModel
-     * (which only does whole-texture replacement via BakedQuadRetextured) can use directly:
-     *
-     *  - Stitched materials (metal / metal_textured / multicolor / inverse_multicolor / block):
-     *    delegate to Tinkers' {@code renderInfo.getTexture(baseTexture, location)}, which already
-     *    bakes the color into the pixels. This also honors the {@code suffix} (e.g. metal_base)
-     *    fallback, mirroring Tinkers' {@code CustomTextureCreator.createTexture}.
-     *
-     *  - Vertex-colored materials (Default / "colored"): Tinkers returns the UNCOLORED base texture
-     *    because it expects the caller to apply vertex coloring. BakedMaterialOverrideModel cannot
-     *    do vertex coloring (it swaps whole textures), so we generate a colored texture ourselves
-     *    by multiplying the template's pixels by the material's vertex color. This is what makes
-     *    these materials render correctly instead of appearing pure white.
+     * Generates a single per-material texture by asking the Tinkers render info to produce it
+     * for the given template (base) texture. This mirrors the logic in Tinkers'
+     * {@code CustomTextureCreator.createTexture}, including the {@code suffix} (e.g. metal_base)
+     * fallback that allows the material JSON to reference an alternate base texture.
      */
     @SideOnly(Side.CLIENT)
     private static void registerGeneratedTexture(TextureMap map, MaterialType material, ResourceLocation template, String key)
     {
         MaterialRenderInfo info = MATERIAL_RENDER_INFO.get(material.getName());
         if (info == null)
+        {
+            return;
+        }
+
+        // Vertex-colored materials (Default / "colored" type) don't generate a texture.
+        if (!info.isStitched())
         {
             return;
         }
@@ -235,17 +248,7 @@ public final class MaterialRenderRegistry
         TextureAtlasSprite sprite;
         try
         {
-            if (info.isStitched())
-            {
-                // Stitched materials: Tinkers bakes the color in for us.
-                sprite = info.getTexture(baseTexture, location);
-            }
-            else
-            {
-                // Vertex-colored materials: Tinkers returns the uncolored base texture. We bake the
-                // vertex color into the pixels ourselves so whole-texture replacement works.
-                sprite = new ColoredTextureSprite(location, baseTexture, info.getVertexColor());
-            }
+            sprite = info.getTexture(baseTexture, location);
         }
         catch (Throwable e)
         {
@@ -306,72 +309,4 @@ public final class MaterialRenderRegistry
     }
 
     private MaterialRenderRegistry() {}
-
-    /**
-     * A custom TextureAtlasSprite that bakes a solid vertex color into a base (template) texture by
-     * multiplying each non-transparent pixel's RGB by the material color. Used for Tinkers
-     * vertex-colored materials (MaterialRenderInfo.Default / "colored" type), which otherwise only
-     * provide an uncolored base texture and rely on per-quad vertex coloring that
-     * BakedMaterialOverrideModel (whole-texture swap) cannot apply.
-     */
-    private static final class ColoredTextureSprite extends TextureAtlasSprite
-    {
-        private final ResourceLocation baseTexture;
-        private final int color;
-
-        ColoredTextureSprite(String spriteName, ResourceLocation baseTexture, int color)
-        {
-            super(spriteName);
-            this.baseTexture = baseTexture;
-            this.color = color;
-        }
-
-        @Override
-        public Collection<ResourceLocation> getDependencies()
-        {
-            return Arrays.asList(baseTexture);
-        }
-
-        @Override
-        public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean load(IResourceManager manager, ResourceLocation location, Function<ResourceLocation, TextureAtlasSprite> textureGetter)
-        {
-            TextureAtlasSprite baseSprite = textureGetter.apply(baseTexture);
-            if (baseSprite == null || baseSprite.getFrameCount() <= 0)
-            {
-                return false;
-            }
-
-            copyFrom(baseSprite);
-            int[][] original = baseSprite.getFrameTextureData(0);
-            int[] pixels = Arrays.copyOf(original[0], original[0].length);
-
-            int cr = (color >> 16) & 0xFF;
-            int cg = (color >> 8) & 0xFF;
-            int cb = color & 0xFF;
-
-            for (int i = 0; i < pixels.length; i++)
-            {
-                int pixel = pixels[i];
-                int a = (pixel >>> 24) & 0xFF;
-                if (a == 0)
-                {
-                    continue;
-                }
-                int r = (int) (((pixel >> 16) & 0xFF) * (cr / 255f));
-                int g = (int) (((pixel >> 8) & 0xFF) * (cg / 255f));
-                int b = (int) ((pixel & 0xFF) * (cb / 255f));
-                pixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
-            }
-
-            framesTextureData = new java.util.ArrayList<>();
-            framesTextureData.add(new int[][] {pixels});
-            return false;
-        }
-    }
 }

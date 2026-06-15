@@ -112,9 +112,9 @@ public final class ClientEventHandler
             if (stack.getItem() instanceof ItemToolHead)
             {
                 MaterialType material = ((ItemToolHead) stack.getItem()).getMaterial();
-                // Tinkers materials always produce a fully-colored texture (stitched, or baked by us
-                // for vertex-colored materials), so return white to show the texture's own colors.
-                return MaterialRenderRegistry.hasGeneratedTexture(material) ? 0xffffff : material.getColor();
+                // Stitched Tinkers textures render themselves -> white; otherwise use the material's
+                // Tinkers vertex color (or its own color for non-Tinkers materials).
+                return MaterialRenderRegistry.hasGeneratedTexture(material) ? 0xffffff : MaterialRenderRegistry.getMaterialColor(material);
             }
             return 0xffffff;
         }, ItemToolHead.getAll().toArray(new ItemToolHead[0]));
@@ -124,7 +124,7 @@ public final class ClientEventHandler
             if (stack.getItem() instanceof ItemHammer && tintIndex == 1)
             {
                 MaterialType material = ((ItemHammer) stack.getItem()).getMaterial();
-                return material != null && !MaterialRenderRegistry.hasGeneratedTexture(material) ? material.getColor() : 0xffffff;
+                return material != null && !MaterialRenderRegistry.hasGeneratedTexture(material) ? MaterialRenderRegistry.getMaterialColor(material) : 0xffffff;
             }
             return 0xffffff;
         }, ItemHammer.getAll().toArray(new ItemHammer[0]));
@@ -133,7 +133,7 @@ public final class ClientEventHandler
             if (stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock() instanceof BlockTinkersAnvil)
             {
                 BlockTinkersAnvil block = (BlockTinkersAnvil) ((ItemBlock) stack.getItem()).getBlock();
-                return MaterialRenderRegistry.hasGeneratedTexture(block.getMaterial()) ? 0xffffff : block.getMaterial().getColor();
+                return MaterialRenderRegistry.hasGeneratedTexture(block.getMaterial()) ? 0xffffff : MaterialRenderRegistry.getMaterialColor(block.getMaterial());
             }
             return 0xffffff;
         }, BlockTinkersAnvil.getAll().toArray(new BlockTinkersAnvil[0]));
@@ -142,7 +142,7 @@ public final class ClientEventHandler
             if (state.getBlock() instanceof BlockTinkersAnvil)
             {
                 MaterialType material = ((BlockTinkersAnvil) state.getBlock()).getMaterial();
-                return MaterialRenderRegistry.hasGeneratedTexture(material) ? 0xffffff : material.getColor();
+                return MaterialRenderRegistry.hasGeneratedTexture(material) ? 0xffffff : MaterialRenderRegistry.getMaterialColor(material);
             }
             return 0xffffff;
         }, BlockTinkersAnvil.getAll().toArray(new BlockTinkersAnvil[0]));
