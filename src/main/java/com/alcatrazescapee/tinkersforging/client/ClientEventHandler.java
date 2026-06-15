@@ -6,6 +6,7 @@
 
 package com.alcatrazescapee.tinkersforging.client;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.resources.I18n;
@@ -16,9 +17,11 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import com.alcatrazescapee.alcatrazcore.AlcatrazCore;
 import com.alcatrazescapee.alcatrazcore.util.RegistryHelper;
 import com.alcatrazescapee.tinkersforging.client.render.TESRTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
@@ -27,6 +30,7 @@ import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
+import com.alcatrazescapee.tinkersforging.util.TickTimer;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
 import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
@@ -49,6 +53,16 @@ public final class ClientEventHandler
                 event.getToolTip().add(GREEN + I18n.format(MOD_ID + ".tooltip.has_been_worked"));
                 cap.addTooltipInfo(event.getToolTip());
             }
+        }
+    }
+
+    @SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    public static void onClientTick(TickEvent.ClientTickEvent event)
+    {
+        if (event.phase == TickEvent.Phase.START && !Minecraft.getMinecraft().isGamePaused() && Minecraft.getMinecraft().player != null)
+        {
+            TickTimer.update(AlcatrazCore.getProxy().getClientWorld().getTotalWorldTime());
         }
     }
 

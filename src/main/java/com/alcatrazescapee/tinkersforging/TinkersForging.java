@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.ICrashCallable;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -19,13 +20,14 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
-import com.alcatrazescapee.tinkersforging.client.ModGuiHandler;
 import com.alcatrazescapee.tinkersforging.common.blocks.ModBlocks;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
+import com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler;
 import com.alcatrazescapee.tinkersforging.common.items.ModItems;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilButton;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilRecipeUpdate;
 import com.alcatrazescapee.tinkersforging.common.network.PacketUpdateForgeItem;
+import com.alcatrazescapee.tinkersforging.common.proxy.CommonProxy;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
 import com.alcatrazescapee.tinkersforging.integration.PatchouliIntegration;
 import com.alcatrazescapee.tinkersforging.integration.TinkersIntegration;
@@ -55,6 +57,9 @@ public final class TinkersForging
     @Mod.Instance
     private static TinkersForging instance;
 
+    @SidedProxy(clientSide = "com.alcatrazescapee.tinkersforging.client.ClientProxy", serverSide = "com.alcatrazescapee.tinkersforging.common.proxy.CommonProxy")
+    private static CommonProxy proxy;
+
     public static Logger getLog()
     {
         return instance.log;
@@ -63,6 +68,11 @@ public final class TinkersForging
     public static SimpleNetworkWrapper getNetwork()
     {
         return instance.network;
+    }
+
+    public static CommonProxy getProxy()
+    {
+        return proxy;
     }
 
     private Logger log;
@@ -90,6 +100,7 @@ public final class TinkersForging
         network.registerMessage(new PacketUpdateForgeItem.Handler(), PacketUpdateForgeItem.class, ++id, Side.CLIENT);
 
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new ModGuiHandler());
+        proxy.preInit(event);
 
         // Pre-Init Managers
         MaterialRegistry.preInit(); // Setup materials first
@@ -126,6 +137,7 @@ public final class TinkersForging
         ModItems.init();
         ModBlocks.init();
         ModRecipes.init();
+        proxy.init(event);
     }
 
     @Mod.EventHandler
@@ -136,6 +148,7 @@ public final class TinkersForging
 
         // Post-Init Managers
         ModRecipes.postInit();
+        proxy.postInit(event);
     }
 
     @Mod.EventHandler

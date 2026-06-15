@@ -9,7 +9,6 @@ package com.alcatrazescapee.tinkersforging;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.SoundEvents;
@@ -34,10 +33,7 @@ import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-import com.alcatrazescapee.alcatrazcore.AlcatrazCore;
 import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.alcatrazcore.util.RegistryHelper;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockCharcoalForge;
@@ -125,16 +121,6 @@ public final class ModEventHandler
         if (event.phase == TickEvent.Phase.START)
         {
             TickTimer.update(event.world.getTotalWorldTime());
-        }
-    }
-
-    @SubscribeEvent
-    @SideOnly(Side.CLIENT)
-    public static void onClientTick(TickEvent.ClientTickEvent event)
-    {
-        if (event.phase == TickEvent.Phase.START && !Minecraft.getMinecraft().isGamePaused() && Minecraft.getMinecraft().player != null)
-        {
-            TickTimer.update(AlcatrazCore.getProxy().getClientWorld().getTotalWorldTime());
         }
     }
 

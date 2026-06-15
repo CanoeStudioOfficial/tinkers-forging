@@ -41,7 +41,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.block.BlockTileCore;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
-import com.alcatrazescapee.tinkersforging.client.ModGuiHandler;
+import com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 

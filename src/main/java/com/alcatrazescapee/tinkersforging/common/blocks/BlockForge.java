@@ -34,8 +34,8 @@ import com.alcatrazescapee.alcatrazcore.block.BlockTileCore;
 import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.alcatrazcore.util.compat.FireRegistry;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
-import com.alcatrazescapee.tinkersforging.client.ModGuiHandler;
 import com.alcatrazescapee.tinkersforging.client.particle.ParticleForgeFlame;
+import com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler;
 import com.alcatrazescapee.tinkersforging.common.tile.TileForge;
 import com.alcatrazescapee.tinkersforging.util.property.IBurnBlock;
 
