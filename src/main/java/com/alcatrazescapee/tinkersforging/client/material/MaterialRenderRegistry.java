@@ -79,7 +79,6 @@ public final class MaterialRenderRegistry
         }
 
         // Cache the render info for every Tinkers-backed MaterialType we know about.
-        int found = 0, missing = 0;
         for (MaterialType material : MaterialRegistry.getAllMaterials())
         {
             if (!MaterialRegistry.isTinkersMaterial(material))
@@ -90,15 +89,8 @@ public final class MaterialRenderRegistry
             if (info != null)
             {
                 MATERIAL_RENDER_INFO.put(material.getName(), info);
-                found++;
-            }
-            else
-            {
-                missing++;
-                TinkersForging.getLog().warn("[TinkersForging] Tinkers material '{}' has no renderInfo (skipping texture generation)", material.getName());
             }
         }
-        TinkersForging.getLog().info("[TinkersForging] Material render info: {} materials with renderInfo, {} missing", found, missing);
 
         TextureMap map = event.getMap();
         for (ItemToolHead item : ItemToolHead.getAll())
@@ -145,17 +137,6 @@ public final class MaterialRenderRegistry
     public static boolean hasGeneratedTexture(MaterialType material)
     {
         return material != null && GENERATED_MATERIALS.contains(material.getName());
-    }
-
-    /**
-     * True only if a texture was generated for THIS material on THIS specific template/key.
-     * Use this (rather than {@link #hasMaterialTexture}) before wrapping a model in
-     * BakedMaterialOverrideModel, so that items whose texture didn't generate fall back to their
-     * normal model + vertex coloring instead of being wrapped and rendered as a blank/white texture.
-     */
-    public static boolean hasGeneratedTexture(MaterialType material, ResourceLocation template, String key)
-    {
-        return material != null && GENERATED_TEXTURES.containsKey(getKey(material, template, key));
     }
 
     @Nullable
@@ -277,13 +258,6 @@ public final class MaterialRenderRegistry
             map.setTextureEntry(sprite);
             GENERATED_TEXTURES.put(getKey(material, template, key), sprite);
             GENERATED_MATERIALS.add(material.getName());
-            TinkersForging.getLog().info("[TinkersForging] Generated texture OK: material='{}' template='{}' key='{}' stitched={} class={}",
-                    material.getName(), template, key, info.isStitched(), sprite.getClass().getSimpleName());
-        }
-        else
-        {
-            TinkersForging.getLog().warn("[TinkersForging] Generated texture NULL: material='{}' template='{}' key='{}' stitched={}",
-                    material.getName(), template, key, info.isStitched());
         }
     }
 
