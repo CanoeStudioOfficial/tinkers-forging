@@ -29,6 +29,7 @@ import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
+import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.TickTimer;
@@ -95,6 +96,8 @@ public final class ClientEventHandler
             }
             return 0xffffff;
         }, ItemToolHead.getAll().toArray(new ItemToolHead[0]));
+
+        itemColors.registerItemColorHandler((stack, tintIndex) -> 0xffffff, ItemExtendedToolHead.getAll().toArray(new ItemExtendedToolHead[0]));
 
         // Hammers
         itemColors.registerItemColorHandler((stack, tintIndex) -> {

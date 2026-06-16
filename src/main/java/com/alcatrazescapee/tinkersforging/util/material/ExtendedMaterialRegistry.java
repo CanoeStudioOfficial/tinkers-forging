@@ -1,0 +1,199 @@
+/*
+ * Part of the Tinkers Forging Mod by alcatrazEscapee
+ * Work under Copyright. Licensed under the GPL-3.0.
+ * See the project LICENSE.md for more information.
+ */
+
+package com.alcatrazescapee.tinkersforging.util.material;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
+
+import com.alcatrazescapee.tinkersforging.TinkersForging;
+
+@ParametersAreNonnullByDefault
+public final class ExtendedMaterialRegistry
+{
+    public static final String TAG_MATERIAL = "TFExtendedMaterial";
+
+    private static final Map<String, Definition> MATERIALS = new LinkedHashMap<>();
+
+    @Nullable
+    public static Definition registerItemMaterial(String name, ItemStack sourceStack, int tier, float workTemp, float meltTemp)
+    {
+        if (sourceStack.isEmpty() || sourceStack.getItem().getRegistryName() == null)
+        {
+            TinkersForging.getLog().warn("Unable to register extended material '{}' from an empty or unregistered stack.", name);
+            return null;
+        }
+
+        String id = cleanName(name);
+        if (id.isEmpty())
+        {
+            id = getDefaultName(sourceStack);
+        }
+
+        Definition definition = new Definition(id, sourceStack, tier, workTemp, meltTemp);
+        if (MATERIALS.containsKey(id))
+        {
+            TinkersForging.getLog().debug("Extended material {} was overridden!", id);
+        }
+        MATERIALS.put(id, definition);
+        return definition;
+    }
+
+    @Nonnull
+    public static String getDefaultName(ItemStack sourceStack)
+    {
+        ResourceLocation name = sourceStack.getItem().getRegistryName();
+        if (name == null)
+        {
+            return "unknown";
+        }
+        String value = name.getNamespace() + "_" + name.getPath();
+        if (sourceStack.getMetadata() != 0)
+        {
+            value += "_" + sourceStack.getMetadata();
+        }
+        return cleanName(value);
+    }
+
+    @Nonnull
+    public static Collection<Definition> getAll()
+    {
+        return Collections.unmodifiableCollection(MATERIALS.values());
+    }
+
+    @Nullable
+    public static Definition get(String id)
+    {
+        return MATERIALS.get(id);
+    }
+
+    @Nullable
+    public static Definition get(ItemStack stack)
+    {
+        String id = getMaterialId(stack);
+        return id == null ? null : get(id);
+    }
+
+    @Nullable
+    public static String getMaterialId(ItemStack stack)
+    {
+        if (stack.isEmpty() || !stack.hasTagCompound())
+        {
+            return null;
+        }
+        String id = stack.getTagCompound().getString(TAG_MATERIAL);
+        return id.isEmpty() ? null : id;
+    }
+
+    @Nonnull
+    public static ItemStack setMaterial(ItemStack stack, Definition material)
+    {
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null)
+        {
+            tag = new NBTTagCompound();
+        }
+        tag.setString(TAG_MATERIAL, material.getId());
+        stack.setTagCompound(tag);
+        return stack;
+    }
+
+    @Nonnull
+    private static String cleanName(String name)
+    {
+        String value = name.toLowerCase(Locale.ROOT);
+        StringBuilder builder = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++)
+        {
+            char c = value.charAt(i);
+            if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || c == '-' || c == '.')
+            {
+                builder.append(c);
+            }
+            else
+            {
+                builder.append('_');
+            }
+        }
+        return builder.toString();
+    }
+
+    @ParametersAreNonnullByDefault
+    public static final class Definition
+    {
+        private final String id;
+        private final ItemStack sourceStack;
+        private final String displayName;
+        private final int tier;
+        private final float workTemp;
+        private final float meltTemp;
+
+        private Definition(String id, ItemStack sourceStack, int tier, float workTemp, float meltTemp)
+        {
+            this.id = id;
+            this.sourceStack = sourceStack.copy();
+            this.sourceStack.setCount(1);
+            this.displayName = sourceStack.getDisplayName();
+            this.tier = MathHelper.clamp(tier, 0, 5);
+            this.workTemp = MathHelper.clamp(workTemp, 100f, 1400f);
+            this.meltTemp = Math.max(this.workTemp + 100f, meltTemp);
+        }
+
+        @Nonnull
+        public String getId()
+        {
+            return id;
+        }
+
+        @Nonnull
+        public String getDisplayName()
+        {
+            return displayName;
+        }
+
+        @Nonnull
+        public ItemStack getSourceStack()
+        {
+            return getSourceStack(1);
+        }
+
+        @Nonnull
+        public ItemStack getSourceStack(int amount)
+        {
+            ItemStack stack = sourceStack.copy();
+            stack.setCount(amount);
+            return stack;
+        }
+
+        public int getTier()
+        {
+            return tier;
+        }
+
+        public float getWorkTemp()
+        {
+            return workTemp;
+        }
+
+        public float getMeltTemp()
+        {
+            return meltTemp;
+        }
+    }
+
+    private ExtendedMaterialRegistry() {}
+}

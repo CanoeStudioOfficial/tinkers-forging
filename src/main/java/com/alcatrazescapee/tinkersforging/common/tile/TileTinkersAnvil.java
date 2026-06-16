@@ -252,7 +252,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
                     // Consume input + produce output / throw it in the world
                     inventory.setStackInSlot(SLOT_INPUT, newInput);
-                    ImmutablePair<ItemStack, ItemStack> result = CoreHelpers.mergeStacksWithResult(output, cachedAnvilRecipe.getOutput());
+                    ImmutablePair<ItemStack, ItemStack> result = mergeRecipeOutput(output, cachedAnvilRecipe.getOutput());
                     inventory.setStackInSlot(SLOT_OUTPUT, result.getKey());
                     if (!result.getValue().isEmpty())
                     {
@@ -390,5 +390,31 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             steps.reset();
             rules = new ForgeRule[3];
         }
+    }
+
+    private ImmutablePair<ItemStack, ItemStack> mergeRecipeOutput(ItemStack output, ItemStack produced)
+    {
+        if (output.isEmpty())
+        {
+            return ImmutablePair.of(produced, ItemStack.EMPTY);
+        }
+        if (produced.isEmpty())
+        {
+            return ImmutablePair.of(output, ItemStack.EMPTY);
+        }
+        if (!CoreHelpers.canMergeStacksUseNBT(output, produced))
+        {
+            return ImmutablePair.of(output, produced);
+        }
+
+        int total = output.getCount() + produced.getCount();
+        int max = output.getMaxStackSize();
+        output.setCount(Math.min(total, max));
+        if (total <= max)
+        {
+            return ImmutablePair.of(output, ItemStack.EMPTY);
+        }
+        produced.setCount(total - max);
+        return ImmutablePair.of(output, produced);
     }
 }

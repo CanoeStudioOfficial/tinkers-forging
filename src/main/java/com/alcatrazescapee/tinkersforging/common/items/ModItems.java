@@ -62,6 +62,16 @@ public final class ModItems
             }
         }
 
+        r.registerItem(new ItemExtendedToolHead(ItemType.HAMMER_HEAD), "extended/" + ItemType.HAMMER_HEAD.name().toLowerCase());
+        for (ItemType type : ItemType.tools())
+        {
+            r.registerItem(new ItemExtendedToolHead(type), "extended/" + type.name().toLowerCase());
+        }
+        for (ItemType type : ItemType.ntpTools())
+        {
+            r.registerItem(new ItemExtendedToolHead(type), "extended/" + type.name().toLowerCase());
+        }
+
         r.registerItem(new ItemHammer(Item.ToolMaterial.WOOD), "hammer/wood", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.STONE), "hammer/stone", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.DIAMOND), "hammer/diamond", TAB_ITEMS);
@@ -87,6 +97,12 @@ public final class ModItems
                 item.setCreativeTab(TAB_ITEMS);
                 item.setTranslationKey(MOD_ID + ":" + item.getType().name().toLowerCase());
             }
+        }
+
+        for (ItemExtendedToolHead item : ItemExtendedToolHead.getAll())
+        {
+            item.setCreativeTab(TAB_ITEMS);
+            item.setTranslationKey(MOD_ID + ":" + item.getType().name().toLowerCase());
         }
 
         // Add charcoal ore dict

@@ -30,9 +30,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
+import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.integration.TinkersClientIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
+import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
+import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry.Definition;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -69,6 +72,12 @@ public enum ForgingMaterialTextureManager
     {
         Map<String, TextureAtlasSprite> materialSprites = SPRITES.get(baseTexture.toString());
         return materialSprites == null ? null : materialSprites.get(material.getName());
+    }
+
+    public static TextureAtlasSprite getSprite(ResourceLocation baseTexture, Definition material)
+    {
+        Map<String, TextureAtlasSprite> materialSprites = SPRITES.get(baseTexture.toString());
+        return materialSprites == null ? null : materialSprites.get(material.getId());
     }
 
     public static boolean hasCustomTexture(ItemStack stack)
@@ -111,6 +120,14 @@ public enum ForgingMaterialTextureManager
                     materialSprites.put(material.getName(), sprite);
                 }
             }
+            for (Definition material : ExtendedMaterialRegistry.getAll())
+            {
+                TextureAtlasSprite sprite = createTexture(event.getMap(), resourceManager, baseTexture, material);
+                if (sprite != null)
+                {
+                    materialSprites.put(material.getId(), sprite);
+                }
+            }
             SPRITES.put(baseTexture.toString(), materialSprites);
         }
     }
@@ -129,6 +146,21 @@ public enum ForgingMaterialTextureManager
         }
 
         TextureAtlasSprite sprite = renderInfo.getTexture(baseTexture, customTexture.toString());
+        if (sprite != null && renderInfo.isStitched())
+        {
+            textureMap.setTextureEntry(sprite);
+        }
+        return sprite;
+    }
+
+    private static TextureAtlasSprite createTexture(TextureMap textureMap, IResourceManager resourceManager, ResourceLocation baseTexture, Definition material)
+    {
+        ForgingMaterialRenderInfo renderInfo = ItemStackMaterialRenderInfo.of(resourceManager, material.getSourceStack());
+        if (renderInfo == null)
+        {
+            return null;
+        }
+        TextureAtlasSprite sprite = renderInfo.getTexture(baseTexture, baseTexture + "_extended_" + material.getId());
         if (sprite != null && renderInfo.isStitched())
         {
             textureMap.setTextureEntry(sprite);
@@ -183,6 +215,10 @@ public enum ForgingMaterialTextureManager
         if (stack.getItem() instanceof ItemToolHead)
         {
             return getMaterialTexture(((ItemToolHead) stack.getItem()).getType());
+        }
+        if (stack.getItem() instanceof ItemExtendedToolHead)
+        {
+            return getMaterialTexture(((ItemExtendedToolHead) stack.getItem()).getType());
         }
         return null;
     }

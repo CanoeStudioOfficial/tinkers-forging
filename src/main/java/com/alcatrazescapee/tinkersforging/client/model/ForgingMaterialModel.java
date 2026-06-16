@@ -24,6 +24,8 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.tinkersforging.client.model.material.ForgingMaterialTextureManager;
+import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
+import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry.Definition;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -67,6 +69,15 @@ public final class ForgingMaterialModel implements IModel
             {
                 IModel retextured = baseModel.retexture(ImmutableMap.of("layer" + materialLayer, sprite.getIconName()));
                 materialModels.put(material.getName(), retextured.bake(state, format, bakedTextureGetter));
+            }
+        }
+        for (Definition material : ExtendedMaterialRegistry.getAll())
+        {
+            TextureAtlasSprite sprite = ForgingMaterialTextureManager.getSprite(baseTexture, material);
+            if (sprite != null)
+            {
+                IModel retextured = baseModel.retexture(ImmutableMap.of("layer" + materialLayer, sprite.getIconName()));
+                materialModels.put(material.getId(), retextured.bake(state, format, bakedTextureGetter));
             }
         }
 

@@ -10,9 +10,11 @@ import com.alcatrazescapee.tinkersforging.client.gui.GuiTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
+import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
+import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.IModPlugin;
@@ -67,6 +69,12 @@ public final class JEIIntegration implements IModPlugin
         for (ItemToolHead item : ItemToolHead.getAll())
         {
             if (!item.getMaterial().isEnabled() || !ModConfig.isBuiltInToolPartEnabled(item.getType(), item.getMaterial()))
+                blacklist.addIngredientToBlacklist(new ItemStack(item));
+        }
+
+        for (ItemExtendedToolHead item : ItemExtendedToolHead.getAll())
+        {
+            if (ExtendedMaterialRegistry.getAll().isEmpty() || item.getType().name().startsWith("NTP_") && (!Loader.isModLoaded("notreepunching") || !ModConfig.GENERAL.enableNoTreePunchingCompat))
                 blacklist.addIngredientToBlacklist(new ItemStack(item));
         }
 
