@@ -23,6 +23,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.AlcatrazCore;
 import com.alcatrazescapee.alcatrazcore.util.RegistryHelper;
+import com.alcatrazescapee.tinkersforging.client.model.material.ForgingMaterialTextureManager;
 import com.alcatrazescapee.tinkersforging.client.render.TESRTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
@@ -83,19 +84,28 @@ public final class ClientEventHandler
 
         // Tool Heads
         itemColors.registerItemColorHandler((stack, tintIndex) -> {
+            if (ForgingMaterialTextureManager.hasCustomTexture(stack))
+            {
+                return 0xffffff;
+            }
             if (stack.getItem() instanceof ItemToolHead)
             {
-                return ((ItemToolHead) stack.getItem()).getMaterial().getColor();
+                MaterialType material = ((ItemToolHead) stack.getItem()).getMaterial();
+                return ForgingMaterialTextureManager.getColor(stack, material.getColor());
             }
             return 0xffffff;
         }, ItemToolHead.getAll().toArray(new ItemToolHead[0]));
 
         // Hammers
         itemColors.registerItemColorHandler((stack, tintIndex) -> {
+            if (tintIndex == 1 && ForgingMaterialTextureManager.hasCustomTexture(stack))
+            {
+                return 0xffffff;
+            }
             if (stack.getItem() instanceof ItemHammer && tintIndex == 1)
             {
                 MaterialType material = ((ItemHammer) stack.getItem()).getMaterial();
-                return material != null ? material.getColor() : 0xffffff;
+                return material != null ? ForgingMaterialTextureManager.getColor(stack, material.getColor()) : 0xffffff;
             }
             return 0xffffff;
         }, ItemHammer.getAll().toArray(new ItemHammer[0]));

@@ -15,17 +15,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.item.ItemCore;
+import com.alcatrazescapee.tinkersforging.client.model.ForgingMaterialModelRegister;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -86,7 +85,7 @@ public class ItemToolHead extends ItemCore
     @Override
     public void registerModel()
     {
-        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(MOD_ID + ":" + type.name().toLowerCase()));
+        ForgingMaterialModelRegister.register(this, type.name().toLowerCase());
     }
 
     @SideOnly(Side.CLIENT)

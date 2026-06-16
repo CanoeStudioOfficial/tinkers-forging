@@ -13,6 +13,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -20,6 +23,8 @@ import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.tinkersforging.client.gui.GuiCharcoalForge;
 import com.alcatrazescapee.tinkersforging.client.gui.GuiForge;
 import com.alcatrazescapee.tinkersforging.client.gui.GuiTinkersAnvil;
+import com.alcatrazescapee.tinkersforging.client.model.ForgingMaterialModelLoader;
+import com.alcatrazescapee.tinkersforging.client.model.material.ForgingMaterialTextureManager;
 import com.alcatrazescapee.tinkersforging.common.blocks.ModBlocks;
 import com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler;
 import com.alcatrazescapee.tinkersforging.common.proxy.CommonProxy;
@@ -30,6 +35,14 @@ import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy
 {
+    @Override
+    public void preInit(FMLPreInitializationEvent event)
+    {
+        ModelLoaderRegistry.registerLoader(ForgingMaterialModelLoader.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(ForgingMaterialTextureManager.INSTANCE);
+        ForgingMaterialTextureManager.registerDefaultBaseTextures();
+    }
+
     @Nullable
     @Override
     @SuppressWarnings("ConstantConditions")
