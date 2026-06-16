@@ -9,7 +9,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.Loader;
 
-import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.integration.AdvToolboxIntegration;
 import com.alcatrazescapee.tinkersforging.integration.TinkersIntegration;
@@ -52,14 +51,6 @@ public final class MaterialRegistry
             TinkersIntegration.addAllMaterials();
         }
 
-        // Force Enable materials
-        for (String s : ModConfig.GENERAL.forceEnabledMetals)
-        {
-            if (MATERIALS.containsKey(s))
-            {
-                MATERIALS.get(s).setEnabled();
-            }
-        }
     }
 
     public static void addMaterial(MaterialType material)

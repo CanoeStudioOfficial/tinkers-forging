@@ -93,11 +93,6 @@ public final class ModConfig
         @Config.Comment("If this is true, any recipes that are added to the anvil that have a crafting equivalent (i.e. a shovel) will have their normal crafting recipes removed")
         public boolean removeCraftingRecipes = true;
 
-        @Config.Name("Force-Enabled Materials")
-        @Config.RequiresMcRestart
-        @Config.Comment({"This is a way to force Tinker's Forging to recognize other materials from other mods if they don't automatically get found.", "WARNING: This can cause broken recipes / items if you use it incorrectly. Only use it if you know what you are doing."})
-        public String[] forceEnabledMetals = {};
-
         @Config.Name("Enable Built-In Tool Part Blacklist")
         @Config.RequiresMcRestart
         @Config.Comment("If this is true, the built-in Tinker's Forging tool parts listed below will not be registered and their recipes will not be added. This does not affect Tinker's Construct parts.")
