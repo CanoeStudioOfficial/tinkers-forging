@@ -43,6 +43,12 @@ public class ClientProxy extends CommonProxy
         ForgingMaterialTextureManager.registerDefaultBaseTextures();
     }
 
+    @Override
+    public void onExtendedMaterialsChanged()
+    {
+        ClientEventHandler.queueResourceRefresh();
+    }
+
     @Nullable
     @Override
     @SuppressWarnings("ConstantConditions")

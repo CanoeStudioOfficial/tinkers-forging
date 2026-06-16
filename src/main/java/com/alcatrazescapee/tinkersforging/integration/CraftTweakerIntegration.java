@@ -177,6 +177,7 @@ public final class CraftTweakerIntegration
                     {
                         CapabilityForgeItem.registerStackCapability(IRecipeIngredient.of(material.getSourceStack()), material.getWorkTemp(), material.getMeltTemp());
                         ModRecipes.addRecipeAction(() -> addExtendedMaterialRecipes(material));
+                        TinkersForging.getProxy().onExtendedMaterialsChanged();
                     }
                 }
 
