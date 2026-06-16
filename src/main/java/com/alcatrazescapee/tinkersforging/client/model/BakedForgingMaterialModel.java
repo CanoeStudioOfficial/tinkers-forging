@@ -29,6 +29,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
+import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
@@ -118,16 +119,22 @@ public final class BakedForgingMaterialModel implements IBakedModel
         {
             if (stack.getItem() instanceof ItemToolHead)
             {
-                return ((ItemToolHead) stack.getItem()).getMaterial().getName();
+                return "material:" + ((ItemToolHead) stack.getItem()).getMaterial().getName();
             }
             if (stack.getItem() instanceof ItemExtendedToolHead)
             {
-                return ExtendedMaterialRegistry.getMaterialId(stack);
+                String material = ExtendedMaterialRegistry.getMaterialId(stack);
+                return material == null ? null : "extended:" + material;
+            }
+            if (stack.getItem() instanceof ItemExtendedHammer)
+            {
+                String material = ExtendedMaterialRegistry.getMaterialId(stack);
+                return material == null ? null : "extended:" + material;
             }
             if (stack.getItem() instanceof ItemHammer)
             {
                 MaterialType material = ((ItemHammer) stack.getItem()).getMaterial();
-                return material == null ? null : material.getName();
+                return material == null ? null : "material:" + material.getName();
             }
             return null;
         }

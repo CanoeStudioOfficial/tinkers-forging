@@ -9,6 +9,7 @@ package com.alcatrazescapee.tinkersforging.integration.jei;
 import com.alcatrazescapee.tinkersforging.client.gui.GuiTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
+import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
@@ -76,6 +77,11 @@ public final class JEIIntegration implements IModPlugin
         {
             if (ExtendedMaterialRegistry.getAll().isEmpty() || item.getType().name().startsWith("NTP_") && (!Loader.isModLoaded("notreepunching") || !ModConfig.GENERAL.enableNoTreePunchingCompat))
                 blacklist.addIngredientToBlacklist(new ItemStack(item));
+        }
+        ItemExtendedHammer extendedHammer = ItemExtendedHammer.getItem();
+        if (extendedHammer != null && ExtendedMaterialRegistry.getAll().isEmpty())
+        {
+            blacklist.addIngredientToBlacklist(new ItemStack(extendedHammer));
         }
 
         for (ItemHammer item : ItemHammer.getAll())

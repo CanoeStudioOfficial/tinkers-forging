@@ -204,7 +204,7 @@ public final class MaterialConfigLoader
         comments.put("comment", "Human-readable note. This field is ignored by Tinkers Forging.");
         comments.put("comments", "Human-readable field guide. This whole object is ignored by Tinkers Forging.");
         comments.put("load", "Set true to load this entry. Set false to keep it as a disabled example/template.");
-        comments.put("id", "Material id used internally and in generated registry names. Example: id diamond creates tinkersforging:tinkers_anvil/diamond when anvil is true. Use lowercase letters, numbers, underscores, hyphens, or dots.");
+        comments.put("id", "Material id used internally and in generated registry names. Example: id diamond creates tinkersforging:tinkers_anvil/diamond when anvil is true, plus material hammer/hammer-head items where applicable. Use lowercase letters, numbers, underscores, hyphens, or dots.");
         comments.put("ore", "Ore dictionary input used for normal material recipes and heat checks. If omitted, Tinkers Forging guesses ingot + material id, for example ingotCopper.");
         comments.put("color", "Fallback tint color used when no custom material texture is found. Accepts #RRGGBB, 0xRRGGBB, or decimal integer.");
         comments.put("tier", "Tool/anvil tier from 0 to 5. Higher tier anvils can work higher tier parts when Respect Tiers is enabled.");
@@ -217,7 +217,7 @@ public final class MaterialConfigLoader
         comments.put("tinkersConstruct", "If true and Tinkers Construct is installed/enabled in config, this material can generate Tinkers Construct part recipes.");
         comments.put("adventurersToolbox", "If true and Adventurer's Toolbox is installed, this material can generate Adventurer's Toolbox part recipes.");
         comments.put("requiredMod", "Optional mod id gate. If set, this material entry only loads when that mod is installed, for example tconstruct or toolbox.");
-        comments.put("sourceItem", "Optional item registry name used to register extended Tinkers Forging parts rendered from that item's model texture, for example minecraft:diamond.");
+        comments.put("sourceItem", "Optional item registry name used to register extended Tinkers Forging parts and an extended hammer rendered from that item's model texture, for example minecraft:diamond.");
         comments.put("sourceMeta", "Metadata/damage value for sourceItem. Usually 0; use another value for old 1.12 metadata items.");
         return comments;
     }

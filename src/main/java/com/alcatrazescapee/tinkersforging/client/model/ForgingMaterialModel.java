@@ -68,7 +68,7 @@ public final class ForgingMaterialModel implements IModel
             if (sprite != null)
             {
                 IModel retextured = baseModel.retexture(ImmutableMap.of("layer" + materialLayer, sprite.getIconName()));
-                materialModels.put(material.getName(), retextured.bake(state, format, bakedTextureGetter));
+                materialModels.put("material:" + material.getName(), retextured.bake(state, format, bakedTextureGetter));
             }
         }
         for (Definition material : ExtendedMaterialRegistry.getAll())
@@ -77,7 +77,7 @@ public final class ForgingMaterialModel implements IModel
             if (sprite != null)
             {
                 IModel retextured = baseModel.retexture(ImmutableMap.of("layer" + materialLayer, sprite.getIconName()));
-                materialModels.put(material.getId(), retextured.bake(state, format, bakedTextureGetter));
+                materialModels.put("extended:" + material.getId(), retextured.bake(state, format, bakedTextureGetter));
             }
         }
 

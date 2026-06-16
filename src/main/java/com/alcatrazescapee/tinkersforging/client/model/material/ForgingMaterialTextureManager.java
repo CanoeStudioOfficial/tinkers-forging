@@ -30,6 +30,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
+import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.integration.TinkersClientIntegration;
@@ -71,13 +72,13 @@ public enum ForgingMaterialTextureManager
     public static TextureAtlasSprite getSprite(ResourceLocation baseTexture, MaterialType material)
     {
         Map<String, TextureAtlasSprite> materialSprites = SPRITES.get(baseTexture.toString());
-        return materialSprites == null ? null : materialSprites.get(material.getName());
+        return materialSprites == null ? null : materialSprites.get("material:" + material.getName());
     }
 
     public static TextureAtlasSprite getSprite(ResourceLocation baseTexture, Definition material)
     {
         Map<String, TextureAtlasSprite> materialSprites = SPRITES.get(baseTexture.toString());
-        return materialSprites == null ? null : materialSprites.get(material.getId());
+        return materialSprites == null ? null : materialSprites.get("extended:" + material.getId());
     }
 
     public static boolean hasCustomTexture(ItemStack stack)
@@ -117,7 +118,7 @@ public enum ForgingMaterialTextureManager
                 TextureAtlasSprite sprite = createTexture(event.getMap(), baseTexture, material);
                 if (sprite != null)
                 {
-                    materialSprites.put(material.getName(), sprite);
+                    materialSprites.put("material:" + material.getName(), sprite);
                 }
             }
             for (Definition material : ExtendedMaterialRegistry.getAll())
@@ -125,7 +126,7 @@ public enum ForgingMaterialTextureManager
                 TextureAtlasSprite sprite = createTexture(event.getMap(), resourceManager, baseTexture, material);
                 if (sprite != null)
                 {
-                    materialSprites.put(material.getId(), sprite);
+                    materialSprites.put("extended:" + material.getId(), sprite);
                 }
             }
             SPRITES.put(baseTexture.toString(), materialSprites);
@@ -208,6 +209,10 @@ public enum ForgingMaterialTextureManager
 
     private static ResourceLocation getMaterialTexture(ItemStack stack)
     {
+        if (stack.getItem() instanceof ItemExtendedHammer)
+        {
+            return new ResourceLocation(MOD_ID, "items/hammer/metal");
+        }
         if (stack.getItem() instanceof ItemHammer && ((ItemHammer) stack.getItem()).getMaterial() != null)
         {
             return new ResourceLocation(MOD_ID, "items/hammer/metal");

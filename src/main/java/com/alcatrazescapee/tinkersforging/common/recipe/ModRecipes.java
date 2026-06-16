@@ -145,6 +145,8 @@ public final class ModRecipes
     {
         final IForgeRegistryModifiable<IRecipe> r = (IForgeRegistryModifiable<IRecipe>) event.getRegistry();
         final Collection<IRecipe> recipes = r.getValuesCollection();
+        ResourceLocation extendedHammerRecipe = new ResourceLocation(MOD_ID, "extended_hammer");
+        r.register(new RecipeExtendedHammer().setRegistryName(extendedHammerRecipe));
 
         for (MaterialType material : MaterialRegistry.getAllMaterials())
         {

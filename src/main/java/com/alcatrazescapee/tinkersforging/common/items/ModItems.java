@@ -76,6 +76,7 @@ public final class ModItems
         {
             r.registerItem(new ItemExtendedToolHead(type), "extended/" + type.name().toLowerCase());
         }
+        r.registerItem(new ItemExtendedHammer(), "extended/hammer");
 
         r.registerItem(new ItemHammer(Item.ToolMaterial.WOOD), "hammer/wood", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.STONE), "hammer/stone", TAB_ITEMS);
@@ -120,6 +121,12 @@ public final class ModItems
         {
             item.setCreativeTab(TAB_ITEMS);
             item.setTranslationKey(MOD_ID + ":" + item.getType().name().toLowerCase());
+        }
+        ItemExtendedHammer extendedHammer = ItemExtendedHammer.getItem();
+        if (extendedHammer != null)
+        {
+            extendedHammer.setCreativeTab(TAB_ITEMS);
+            extendedHammer.setTranslationKey(MOD_ID + ":hammer");
         }
 
         // Add charcoal ore dict
