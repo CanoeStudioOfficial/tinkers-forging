@@ -25,7 +25,27 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
 
 ```json
 {
-  "comment": "Example diamond material. Set load=true to enable it.",
+  "comment": "Example diamond material. JSON does not support // comments, so this comments object explains each field.",
+  "comments": {
+    "comment": "Human-readable note. Ignored by Tinkers Forging.",
+    "comments": "Human-readable field guide. Ignored by Tinkers Forging.",
+    "load": "Set true to load this entry. Set false to keep it as a disabled template.",
+    "id": "Material id and registry-name suffix. id diamond creates tinkersforging:tinkers_anvil/diamond when anvil is true.",
+    "ore": "Ore dictionary input used by normal material recipes and heat checks. Example: gemDiamond or ingotCopper.",
+    "color": "Fallback tint color when no custom material texture is found. Accepts #RRGGBB, 0xRRGGBB, or decimal.",
+    "tier": "Tool/anvil tier from 0 to 5.",
+    "workTemperature": "Temperature where this material becomes workable.",
+    "meltingTemperature": "Temperature where this material melts or becomes too hot.",
+    "replaceExisting": "true replaces an existing material with the same id. false only adds compatibility flags/sourceItem to it.",
+    "anvil": "true registers tinkersforging:tinkers_anvil/<id>.",
+    "enabled": "true forces the material to be usable even if the ore dictionary precondition is not found.",
+    "noTreePunching": "true enables No Tree Punching compat recipes when that compat is enabled.",
+    "tinkersConstruct": "true enables Tinkers Construct part recipes when TConstruct compat is enabled.",
+    "adventurersToolbox": "true enables Adventurer's Toolbox part recipes when that mod is installed.",
+    "requiredMod": "Optional mod id gate. The entry only loads when that mod is installed.",
+    "sourceItem": "Optional item used for extended Tinkers Forging parts rendered from that item's model texture.",
+    "sourceMeta": "Metadata/damage value for sourceItem. Usually 0."
+  },
   "load": true,
   "id": "diamond",
   "ore": "gemDiamond",
@@ -39,6 +59,7 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
   "noTreePunching": false,
   "tinkersConstruct": false,
   "adventurersToolbox": false,
+  "requiredMod": "",
   "sourceItem": "minecraft:diamond",
   "sourceMeta": 0
 }

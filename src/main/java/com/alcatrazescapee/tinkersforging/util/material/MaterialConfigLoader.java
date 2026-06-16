@@ -193,8 +193,33 @@ public final class MaterialConfigLoader
         example.load = false;
         example.replaceExisting = true;
         example.sourceItem = "minecraft:diamond";
-        example.comment = "Example only. Set load=true to register this material. anvil=true creates tinkersforging:tinkers_anvil/diamond. replaceExisting=true allows this file to replace an existing material with the same id. sourceItem adds extended Tinkers Forging parts rendered from that item's texture.";
+        example.comment = "Example only. JSON does not support // comments, so the comments object below explains each field. The loader ignores comments.";
+        example.comments = getExampleComments();
         writeIfMissing(new File(dir, "_example.json"), example);
+    }
+
+    private static Map<String, String> getExampleComments()
+    {
+        Map<String, String> comments = new HashMap<>();
+        comments.put("comment", "Human-readable note. This field is ignored by Tinkers Forging.");
+        comments.put("comments", "Human-readable field guide. This whole object is ignored by Tinkers Forging.");
+        comments.put("load", "Set true to load this entry. Set false to keep it as a disabled example/template.");
+        comments.put("id", "Material id used internally and in generated registry names. Example: id diamond creates tinkersforging:tinkers_anvil/diamond when anvil is true. Use lowercase letters, numbers, underscores, hyphens, or dots.");
+        comments.put("ore", "Ore dictionary input used for normal material recipes and heat checks. If omitted, Tinkers Forging guesses ingot + material id, for example ingotCopper.");
+        comments.put("color", "Fallback tint color used when no custom material texture is found. Accepts #RRGGBB, 0xRRGGBB, or decimal integer.");
+        comments.put("tier", "Tool/anvil tier from 0 to 5. Higher tier anvils can work higher tier parts when Respect Tiers is enabled.");
+        comments.put("workTemperature", "Temperature in Celsius where this material becomes workable on the forge/anvil.");
+        comments.put("meltingTemperature", "Temperature in Celsius where this material melts or becomes too hot. It should be higher than workTemperature.");
+        comments.put("replaceExisting", "If true, this entry replaces an already loaded material with the same id. If false, existing material stats stay unchanged and only compatibility flags/sourceItem are added.");
+        comments.put("anvil", "If true, registers a Tinker's Anvil block for this material at tinkersforging:tinkers_anvil/<id>.");
+        comments.put("enabled", "If true, forces this material to appear/register recipes even when the ore dictionary precondition is not currently found.");
+        comments.put("noTreePunching", "If true and No Tree Punching compat is enabled, this material can generate No Tree Punching tool part recipes.");
+        comments.put("tinkersConstruct", "If true and Tinkers Construct is installed/enabled in config, this material can generate Tinkers Construct part recipes.");
+        comments.put("adventurersToolbox", "If true and Adventurer's Toolbox is installed, this material can generate Adventurer's Toolbox part recipes.");
+        comments.put("requiredMod", "Optional mod id gate. If set, this material entry only loads when that mod is installed, for example tconstruct or toolbox.");
+        comments.put("sourceItem", "Optional item registry name used to register extended Tinkers Forging parts rendered from that item's model texture, for example minecraft:diamond.");
+        comments.put("sourceMeta", "Metadata/damage value for sourceItem. Usually 0; use another value for old 1.12 metadata items.");
+        return comments;
     }
 
     private static List<File> getJsonFiles(File dir)
@@ -440,6 +465,7 @@ public final class MaterialConfigLoader
     public static final class MaterialDefinition
     {
         public String comment;
+        public Map<String, String> comments;
         public boolean load = true;
         public String id;
         public String ore;
