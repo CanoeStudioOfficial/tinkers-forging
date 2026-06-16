@@ -6,11 +6,16 @@
 
 package com.alcatrazescapee.tinkersforging.integration;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.Optional;
 
-import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
-import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
+import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader;
+import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader.MaterialDefinition;
 import slimeknights.tconstruct.common.config.Config;
 import slimeknights.tconstruct.library.TinkerRegistry;
 import slimeknights.tconstruct.library.materials.HeadMaterialStats;
@@ -27,8 +32,9 @@ public final class TinkersIntegration
     }
 
     @Optional.Method(modid = "tconstruct")
-    public static void addAllMaterials()
+    public static void writeMaterialConfig(File dir)
     {
+        List<MaterialDefinition> definitions = new ArrayList<>();
         for (Material material : TinkerRegistry.getAllMaterials())
         {
             if (material.isCastable())
@@ -44,14 +50,16 @@ public final class TinkersIntegration
                     float meltTemp = Math.max(300, baseTemp * 3.5f - 250);
                     float workTemp = MathHelper.clamp(meltTemp * 0.8f, 150, 1400);
 
-                    MaterialType materialTF = new MaterialType(material.getIdentifier(), material.materialTextColor, headStats.harvestLevel, workTemp, meltTemp);
-                    materialTF.setEnabled();
-
-                    MaterialRegistry.addMaterial(materialTF);
-                    MaterialRegistry.addTinkersMaterial(materialTF);
+                    MaterialDefinition definition = MaterialConfigLoader.definition(material.getIdentifier(), MaterialConfigLoader.getDefaultOreName(material.getIdentifier()), material.materialTextColor, headStats.harvestLevel, workTemp, meltTemp, true, false, "tconstruct");
+                    definition.enabled = true;
+                    definition.replaceExisting = true;
+                    definition.comment = "Generated from Tinkers Construct. anvil=true creates tinkersforging:tinkers_anvil/" + material.getIdentifier() + ".";
+                    definitions.add(definition);
                 }
             }
         }
+        definitions.sort(Comparator.comparing(definition -> definition.id));
+        MaterialConfigLoader.writeIfMissing(new File(dir, "compat/tconstruct.json"), definitions);
     }
 
     @Optional.Method(modid = "tconstruct")
@@ -60,4 +68,5 @@ public final class TinkersIntegration
         // Hey Tinkers Construct, stop trying to access the tinker's anvil display inventory slot!
         Config.craftingStationBlacklist.add(MOD_ID + ":tinkers_anvil");
     }
+
 }

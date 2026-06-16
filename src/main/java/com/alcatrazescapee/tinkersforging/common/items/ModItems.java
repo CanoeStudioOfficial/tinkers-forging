@@ -25,6 +25,8 @@ import static com.alcatrazescapee.tinkersforging.client.ModCreativeTabs.TAB_ITEM
 @GameRegistry.ObjectHolder(value = MOD_ID)
 public final class ModItems
 {
+    private static final String[] BUILT_IN_HAMMER_MATERIALS = {"wood", "stone", "diamond"};
+
     public static void preInit()
     {
         RegistryHelper r = RegistryHelper.get(MOD_ID);
@@ -33,7 +35,10 @@ public final class ModItems
         {
             Item.ToolMaterial toolMaterial = material.getToolMaterial();
 
-            r.registerItem(new ItemHammer(material, toolMaterial), "hammer/" + material.getName());
+            if (!hasBuiltInHammer(material))
+            {
+                r.registerItem(new ItemHammer(material, toolMaterial), "hammer/" + material.getName());
+            }
             if (ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD, material))
             {
                 r.registerItem(new ItemToolHead(ItemType.HAMMER_HEAD, material), ItemType.HAMMER_HEAD.name() + "/" + material.getName());
@@ -75,6 +80,18 @@ public final class ModItems
         r.registerItem(new ItemHammer(Item.ToolMaterial.WOOD), "hammer/wood", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.STONE), "hammer/stone", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.DIAMOND), "hammer/diamond", TAB_ITEMS);
+    }
+
+    private static boolean hasBuiltInHammer(MaterialType material)
+    {
+        for (String name : BUILT_IN_HAMMER_MATERIALS)
+        {
+            if (name.equals(material.getName()))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void init()

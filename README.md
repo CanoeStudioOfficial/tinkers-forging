@@ -19,4 +19,38 @@ This mod has a Guide Book which is provided by Patchouli. It has explicit compat
 * Explicit mod integration with Tinker's Construct and Construct's Armor
 * JEI and Craft Tweaker integration.
 
+### Modpack Material Examples
+
+Tinker's Forging writes material config files to `config/tinkersforging/materials` on first launch. The main material id controls generated registry names such as `tinkersforging:tinkers_anvil/diamond`. Built-in materials are written to `builtin.json`, Tinkers Construct integration writes `compat/tconstruct.json`, Adventurer's Toolbox integration writes `compat/adventurers_toolbox.json`, and custom JSON files can be added anywhere under the same folder.
+
+```json
+{
+  "comment": "Example diamond material. Set load=true to enable it.",
+  "load": true,
+  "id": "diamond",
+  "ore": "gemDiamond",
+  "color": "#5eead4",
+  "tier": 3,
+  "workTemperature": 800.0,
+  "meltingTemperature": 1400.0,
+  "replaceExisting": true,
+  "anvil": true,
+  "enabled": true,
+  "noTreePunching": false,
+  "tinkersConstruct": false,
+  "adventurersToolbox": false,
+  "sourceItem": "minecraft:diamond",
+  "sourceMeta": 0
+}
+```
+
+`anvil=true` creates a matching Tinker's Anvil block. `replaceExisting=false` lets a compat JSON only add flags such as `adventurersToolbox=true` to an existing material id. `sourceItem` is optional; when present it also creates extended Tinker's Forging parts rendered from that item's item model texture.
+
+CraftTweaker can also register item-backed extended parts:
+
+```zenscript
+mods.TinkersForging.Materials.addItemMaterial(<minecraft:diamond>);
+mods.TinkersForging.Materials.addItemMaterial("diamond", <minecraft:diamond>, 3, 800, 1400);
+```
+
 ![Splash Image](https://github.com/alcatrazEscapee/tinkers-forging/blob/1.12/src/main/resources/assets/splash.png?raw=true)

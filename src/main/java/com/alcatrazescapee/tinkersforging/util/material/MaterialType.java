@@ -37,6 +37,7 @@ public class MaterialType implements IHeatRegistry
     private final String translationKey;
     private final Item.ToolMaterial toolMaterial;
     private final BooleanSupplier precondition;
+    private final boolean anvil;
 
     private boolean enabled;
 
@@ -46,6 +47,11 @@ public class MaterialType implements IHeatRegistry
     }
 
     public MaterialType(String name, @Nullable Item.ToolMaterial toolMaterial, int color, int tier, float workTemp, float meltTemp)
+    {
+        this(name, toolMaterial, color, tier, workTemp, meltTemp, true);
+    }
+
+    public MaterialType(String name, @Nullable Item.ToolMaterial toolMaterial, int color, int tier, float workTemp, float meltTemp, boolean anvil)
     {
         this.name = name.toLowerCase();
         this.oreName = OreDictionaryHelper.UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + this.name);
@@ -60,9 +66,15 @@ public class MaterialType implements IHeatRegistry
         this.tier = MathHelper.clamp(tier, 0, 5);
         this.workTemp = MathHelper.clamp(100, workTemp, 1400);
         this.meltTemp = Math.max(workTemp + 100, meltTemp);
+        this.anvil = anvil;
     }
 
     public MaterialType(String name, String oreName, BooleanSupplier precondition, @Nullable Item.ToolMaterial toolMaterial, int color, int tier, float workTemp, float meltTemp)
+    {
+        this(name, oreName, precondition, toolMaterial, color, tier, workTemp, meltTemp, true);
+    }
+
+    public MaterialType(String name, String oreName, BooleanSupplier precondition, @Nullable Item.ToolMaterial toolMaterial, int color, int tier, float workTemp, float meltTemp, boolean anvil)
     {
         this.name = name.toLowerCase();
         this.oreName = oreName;
@@ -76,6 +88,7 @@ public class MaterialType implements IHeatRegistry
         this.tier = MathHelper.clamp(tier, 0, 5);
         this.workTemp = workTemp;
         this.meltTemp = meltTemp;
+        this.anvil = anvil;
     }
 
     @Nonnull
@@ -125,6 +138,11 @@ public class MaterialType implements IHeatRegistry
     public int getTier()
     {
         return tier;
+    }
+
+    public boolean hasAnvil()
+    {
+        return anvil;
     }
 
     @Override

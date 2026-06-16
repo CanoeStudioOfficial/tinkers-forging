@@ -36,7 +36,10 @@ public final class ModBlocks
 
         for (MaterialType material : MaterialRegistry.getAllMaterials())
         {
-            r.registerBlock(new BlockTinkersAnvil(material), "tinkers_anvil/" + material.getName());
+            if (material.hasAnvil())
+            {
+                r.registerBlock(new BlockTinkersAnvil(material), "tinkers_anvil/" + material.getName());
+            }
         }
 
         r.registerTile(TileTinkersAnvil.class, "tinkers_anvil");

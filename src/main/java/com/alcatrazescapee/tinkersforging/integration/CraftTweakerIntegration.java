@@ -11,19 +11,13 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.Loader;
-
 import com.alcatrazescapee.alcatrazcore.inventory.ingredient.IRecipeIngredient;
-import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
-import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
-import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
-import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry.Definition;
 import crafttweaker.CraftTweakerAPI;
 import crafttweaker.IAction;
 import crafttweaker.annotations.ZenRegister;
@@ -172,13 +166,7 @@ public final class CraftTweakerIntegration
                 @Override
                 public void apply()
                 {
-                    Definition material = ExtendedMaterialRegistry.registerItemMaterial(name, sourceStack, tier, workingTemperature, meltingTemperature);
-                    if (material != null)
-                    {
-                        CapabilityForgeItem.registerStackCapability(IRecipeIngredient.of(material.getSourceStack()), material.getWorkTemp(), material.getMeltTemp());
-                        ModRecipes.addRecipeAction(() -> addExtendedMaterialRecipes(material));
-                        TinkersForging.getProxy().onExtendedMaterialsChanged();
-                    }
+                    ExtendedMaterialRegistry.registerItemMaterialWithRecipes(name, sourceStack, tier, workingTemperature, meltingTemperature);
                 }
 
                 @Override
@@ -187,32 +175,6 @@ public final class CraftTweakerIntegration
                     return "Adding Tinkers Forging extended material '" + name + "' from " + sourceStack.getDisplayName() + "\n";
                 }
             });
-        }
-
-        private static void addExtendedMaterialRecipes(Definition material)
-        {
-            addExtendedMaterialRecipe(ItemType.HAMMER_HEAD, material);
-            for (ItemType type : ItemType.tools())
-            {
-                addExtendedMaterialRecipe(type, material);
-            }
-            if (Loader.isModLoaded("notreepunching") && ModConfig.GENERAL.enableNoTreePunchingCompat)
-            {
-                for (ItemType type : ItemType.ntpTools())
-                {
-                    addExtendedMaterialRecipe(type, material);
-                }
-            }
-        }
-
-        private static void addExtendedMaterialRecipe(ItemType type, Definition material)
-        {
-            ItemStack output = ItemExtendedToolHead.get(type, material, 1);
-            ItemStack input = material.getSourceStack(type.getAmount());
-            if (!output.isEmpty() && !input.isEmpty())
-            {
-                ModRecipes.ANVIL.add(new AnvilRecipe(output, input, material.getTier(), type.getRules()));
-            }
         }
     }
 
