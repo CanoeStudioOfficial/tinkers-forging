@@ -37,6 +37,7 @@ import com.alcatrazescapee.tinkersforging.integration.TinkersClientIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry.Definition;
+import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -95,8 +96,7 @@ public enum ForgingMaterialTextureManager
         {
             return sprite;
         }
-        Definition extended = ExtendedMaterialRegistry.get(material.getName());
-        return extended == null ? null : getSprite(ANVIL_BASE_TEXTURE, extended);
+        return null;
     }
 
     public static boolean hasAnvilCustomTexture(MaterialType material)
@@ -138,7 +138,7 @@ public enum ForgingMaterialTextureManager
             Map<String, TextureAtlasSprite> materialSprites = new HashMap<>();
             for (MaterialType material : MaterialRegistry.getAllMaterials())
             {
-                TextureAtlasSprite sprite = createTexture(event.getMap(), baseTexture, material);
+                TextureAtlasSprite sprite = createTexture(event.getMap(), resourceManager, baseTexture, material);
                 if (sprite != null)
                 {
                     materialSprites.put("material:" + material.getName(), sprite);
@@ -156,10 +156,18 @@ public enum ForgingMaterialTextureManager
         }
     }
 
-    private static TextureAtlasSprite createTexture(TextureMap textureMap, ResourceLocation baseTexture, MaterialType material)
+    private static TextureAtlasSprite createTexture(TextureMap textureMap, IResourceManager resourceManager, ResourceLocation baseTexture, MaterialType material)
     {
         ResourceLocation customTexture = new ResourceLocation(baseTexture.getNamespace(), baseTexture.getPath() + "_" + material.getName());
         ForgingMaterialRenderInfo renderInfo = getRenderInfo(material);
+        if (renderInfo == null)
+        {
+            ItemStack sourceStack = MaterialConfigLoader.getSourceStack(material);
+            if (!sourceStack.isEmpty())
+            {
+                renderInfo = ItemStackMaterialRenderInfo.of(resourceManager, sourceStack);
+            }
+        }
         if (renderInfo == null)
         {
             return exists(customTexture) ? textureMap.registerSprite(customTexture) : null;

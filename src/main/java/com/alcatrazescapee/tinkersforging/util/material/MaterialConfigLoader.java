@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Charsets;
@@ -48,7 +47,7 @@ public final class MaterialConfigLoader
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String DIRECTORY = "tinkersforging/materials";
     private static final Map<String, Integer> FALLBACK_COLORS = new HashMap<>();
-    private static final List<PendingExtendedMaterial> PENDING_EXTENDED_MATERIALS = new ArrayList<>();
+    private static final Map<String, SourceItem> SOURCE_ITEMS = new HashMap<>();
 
     static
     {
@@ -79,7 +78,7 @@ public final class MaterialConfigLoader
 
     public static void load(File configDir)
     {
-        PENDING_EXTENDED_MATERIALS.clear();
+        SOURCE_ITEMS.clear();
         File dir = new File(configDir, DIRECTORY);
         if (!dir.exists() && !dir.mkdirs())
         {
@@ -103,22 +102,6 @@ public final class MaterialConfigLoader
             {
                 TinkersForging.getLog().warn("Falling back to internal built-in material definitions because {} could not be parsed.", file);
                 loadDefinitions(file, getBuiltInDefinitions());
-            }
-        }
-    }
-
-    public static void registerExtendedMaterials()
-    {
-        for (PendingExtendedMaterial material : PENDING_EXTENDED_MATERIALS)
-        {
-            ItemStack sourceStack = material.source.get();
-            if (sourceStack.isEmpty())
-            {
-                TinkersForging.getLog().warn("Unable to register extended parts for material '{}': source item '{}' was not found.", material.id, material.sourceName);
-            }
-            else
-            {
-                ExtendedMaterialRegistry.registerItemMaterialWithRecipes(material.id, sourceStack, material.tier, material.workTemperature, material.meltingTemperature);
             }
         }
     }
@@ -220,15 +203,15 @@ public final class MaterialConfigLoader
         comments.put("tier", "Tool/anvil tier from 0 to 5. Higher tier anvils can work higher tier parts when Respect Tiers is enabled.");
         comments.put("workTemperature", "Temperature in Celsius where this material becomes workable on the forge/anvil.");
         comments.put("meltingTemperature", "Temperature in Celsius where this material melts or becomes too hot. It should be higher than workTemperature.");
-        comments.put("replaceExisting", "If true, this entry replaces an already loaded material with the same id. If false, existing material stats stay unchanged and only compatibility flags/sourceItem are added.");
+        comments.put("replaceExisting", "If true, this entry replaces an already loaded material with the same id. If false, existing material stats stay unchanged and only compatibility flags/source texture are added.");
         comments.put("anvil", "If true, registers a Tinker's Anvil block for this material at tinkersforging:tinkers_anvil/<id>.");
         comments.put("enabled", "If true, forces this material to appear/register recipes even when the ore dictionary precondition is not currently found.");
         comments.put("noTreePunching", "If true and No Tree Punching compat is enabled, this material can generate No Tree Punching tool part recipes.");
         comments.put("tinkersConstruct", "If true and Tinkers Construct is installed/enabled in config, this material can generate Tinkers Construct part recipes. When Tinkers Construct compat is enabled, Tinkers Forging's own pickaxe_head/axe_head/shovel_head/hoe_head/sword_blade items are intentionally not registered; use the tconstruct part item ids instead.");
         comments.put("adventurersToolbox", "If true and Adventurer's Toolbox is installed, this material can generate Adventurer's Toolbox part recipes.");
         comments.put("requiredMod", "Optional mod id gate. If set, this material entry only loads when that mod is installed, for example tconstruct or toolbox.");
-        comments.put("sourceItem", "Optional item registry name used to register extended Tinkers Forging parts and an extended hammer rendered from that item's model texture, for example minecraft:diamond.");
-        comments.put("sourceMeta", "Metadata/damage value for sourceItem. Usually 0; use another value for old 1.12 metadata items.");
+        comments.put("sourceItem", "Optional item registry name used only as the texture source for this JSON material's normal parts, hammer, and anvil. Example: minecraft:diamond reads that item's model/texture so diamond parts render like the resource pack's diamond. This does not create NBT extended parts; use CraftTweaker addItemMaterial for that.");
+        comments.put("sourceMeta", "Metadata/damage value for sourceItem. Usually 0; use another value for old 1.12 metadata items with different sub-item textures.");
         return comments;
     }
 
@@ -381,9 +364,9 @@ public final class MaterialConfigLoader
         MaterialType existing = MaterialRegistry.getMaterial(id);
         if (existing != null && !definition.replaceExisting)
         {
-            TinkersForging.getLog().debug("Material '{}' already exists; adding flags/source item from {} {} without replacing stats.", id, file, entryName);
+            TinkersForging.getLog().debug("Material '{}' already exists; adding flags/source texture from {} {} without replacing stats.", id, file, entryName);
             MaterialRegistry.addMaterialFlags(existing, definition.tinkersConstruct, definition.noTreePunching, definition.adventurersToolbox);
-            addPendingExtendedMaterial(definition, id);
+            addSourceItem(definition, id, false);
             return;
         }
 
@@ -399,7 +382,7 @@ public final class MaterialConfigLoader
             material.setEnabled();
         }
         MaterialRegistry.addMaterial(material, definition.tinkersConstruct, definition.noTreePunching, definition.adventurersToolbox);
-        addPendingExtendedMaterial(definition, id);
+        addSourceItem(definition, id, true);
     }
 
     private static String getEntryName(int index)
@@ -407,12 +390,22 @@ public final class MaterialConfigLoader
         return index < 0 ? "root object" : "at index " + index;
     }
 
-    private static void addPendingExtendedMaterial(MaterialDefinition definition, String id)
+    private static void addSourceItem(MaterialDefinition definition, String id, boolean replace)
     {
         if (definition.sourceItem != null && !definition.sourceItem.trim().isEmpty())
         {
-            PENDING_EXTENDED_MATERIALS.add(new PendingExtendedMaterial(id, definition.sourceItem, () -> getSourceStack(definition.sourceItem, definition.sourceMeta), definition.tier, definition.workTemperature, definition.meltingTemperature));
+            SOURCE_ITEMS.put(id, new SourceItem(definition.sourceItem.trim(), definition.sourceMeta));
         }
+        else if (replace)
+        {
+            SOURCE_ITEMS.remove(id);
+        }
+    }
+
+    public static ItemStack getSourceStack(MaterialType material)
+    {
+        SourceItem source = SOURCE_ITEMS.get(material.getName());
+        return source == null ? ItemStack.EMPTY : getSourceStack(source.itemName, source.meta);
     }
 
     @Nullable
@@ -530,23 +523,15 @@ public final class MaterialConfigLoader
         public int sourceMeta = 0;
     }
 
-    private static final class PendingExtendedMaterial
+    private static final class SourceItem
     {
-        private final String id;
-        private final String sourceName;
-        private final Supplier<ItemStack> source;
-        private final int tier;
-        private final float workTemperature;
-        private final float meltingTemperature;
+        private final String itemName;
+        private final int meta;
 
-        private PendingExtendedMaterial(String id, String sourceName, Supplier<ItemStack> source, int tier, float workTemperature, float meltingTemperature)
+        private SourceItem(String itemName, int meta)
         {
-            this.id = id;
-            this.sourceName = sourceName;
-            this.source = source;
-            this.tier = tier;
-            this.workTemperature = workTemperature;
-            this.meltingTemperature = meltingTemperature;
+            this.itemName = itemName;
+            this.meta = meta;
         }
     }
 

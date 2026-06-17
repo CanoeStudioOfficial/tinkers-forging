@@ -33,7 +33,6 @@ import com.alcatrazescapee.tinkersforging.integration.PatchouliIntegration;
 import com.alcatrazescapee.tinkersforging.integration.TinkersIntegration;
 import com.alcatrazescapee.tinkersforging.integration.TwilightIntegration;
 import com.alcatrazescapee.tinkersforging.util.TickTimer;
-import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 
 import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
@@ -148,7 +147,6 @@ public final class TinkersForging
             log.warn("You are not running an official build. This version will NOT be supported by the author.");
 
         // Post-Init Managers
-        MaterialConfigLoader.registerExtendedMaterials();
         ModRecipes.postInit();
         proxy.postInit(event);
     }

@@ -70,7 +70,7 @@ public final class ItemStackMaterialRenderInfo implements ForgingMaterialRenderI
             ResourceLocation texture = readLayer0Texture(new JsonParser().parse(reader).getAsJsonObject());
             if (texture != null && textureExists(resourceManager, texture))
             {
-                TinkersForging.getLog().debug("Resolved extended material source {} to item model texture {}.", itemName, texture);
+                TinkersForging.getLog().debug("Resolved material source {} to item model texture {}.", itemName, texture);
                 return texture;
             }
         }
@@ -85,10 +85,10 @@ public final class ItemStackMaterialRenderInfo implements ForgingMaterialRenderI
         ResourceLocation fallback = new ResourceLocation(itemName.getNamespace(), "items/" + itemName.getPath());
         if (textureExists(resourceManager, fallback))
         {
-            TinkersForging.getLog().debug("Resolved extended material source {} to fallback item texture {}.", itemName, fallback);
+            TinkersForging.getLog().debug("Resolved material source {} to fallback item texture {}.", itemName, fallback);
             return fallback;
         }
-        TinkersForging.getLog().warn("Unable to find item texture for extended material source {}.", itemName);
+        TinkersForging.getLog().warn("Unable to find item texture for material source {}.", itemName);
         return null;
     }
 
