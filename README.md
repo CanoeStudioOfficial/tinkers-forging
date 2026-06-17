@@ -67,6 +67,8 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
 
 `anvil=true` creates a matching Tinker's Anvil block. `replaceExisting=false` lets a compat JSON only add flags such as `adventurersToolbox=true` to an existing material id. `sourceItem` is optional; when present it also creates extended Tinker's Forging parts and an extended hammer rendered from that item's item model texture. The extended hammer uses one shared registry item, `tinkersforging:extended/hammer`, with the material id stored in NBT.
 
+When Tinkers Construct compat is enabled (`useTinkersConstruct=true` and TConstruct is installed), Tinkers Forging does not register its own normal `pickaxe_head/<id>`, `axe_head/<id>`, `shovel_head/<id>`, `hoe_head/<id>`, or `sword_blade/<id>` items. Hammer heads and hammers are still registered, and the normal tool part recipes target TConstruct's part items instead.
+
 CraftTweaker can also register item-backed extended parts:
 
 ```zenscript

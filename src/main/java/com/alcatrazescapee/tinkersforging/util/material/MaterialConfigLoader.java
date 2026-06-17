@@ -96,9 +96,14 @@ public final class MaterialConfigLoader
             AdvToolboxIntegration.writeMaterialConfig(dir);
         }
 
+        File builtInFile = new File(dir, "builtin.json");
         for (File file : getJsonFiles(dir))
         {
-            loadFile(file);
+            if (!loadFile(file) && normalize(file).equals(normalize(builtInFile)))
+            {
+                TinkersForging.getLog().warn("Falling back to internal built-in material definitions because {} could not be parsed.", file);
+                loadDefinitions(file, getBuiltInDefinitions());
+            }
         }
     }
 
@@ -177,6 +182,19 @@ public final class MaterialConfigLoader
 
     private static void writeDefaultFiles(File dir)
     {
+        writeIfMissing(new File(dir, "builtin.json"), getBuiltInDefinitions());
+
+        MaterialDefinition example = definition("diamond", "gemDiamond", 0x5eead4, 3, 800f, 1400f, false, false, null, false);
+        example.load = false;
+        example.replaceExisting = true;
+        example.sourceItem = "minecraft:diamond";
+        example.comment = "Example only. JSON does not support // comments, so the comments object below explains each field. The loader ignores comments.";
+        example.comments = getExampleComments();
+        writeIfMissing(new File(dir, "_example.json"), example);
+    }
+
+    private static List<MaterialDefinition> getBuiltInDefinitions()
+    {
         List<MaterialDefinition> builtIn = new ArrayList<>();
         builtIn.add(definition("iron", "ingotIron", 0xffffff, 2, 1350f, 1600f, false, false, null, true));
         builtIn.add(definition("gold", "ingotGold", 0xfff835, 1, 700f, 1100f, false, false, null, true));
@@ -187,15 +205,7 @@ public final class MaterialConfigLoader
         builtIn.add(definition("lead", "ingotLead", 0x65527f, 1, 200f, 350f, false, false, null, false));
         builtIn.add(definition("silver", "ingotSilver", 0xeff6ff, 1, 700f, 950f, false, false, null, false));
         builtIn.add(definition("aluminium", "ingotAluminium", 0xe0e0e0, 1, 450f, 700f, false, false, null, false));
-        writeIfMissing(new File(dir, "builtin.json"), builtIn);
-
-        MaterialDefinition example = definition("diamond", "gemDiamond", 0x5eead4, 3, 800f, 1400f, false, false, null, false);
-        example.load = false;
-        example.replaceExisting = true;
-        example.sourceItem = "minecraft:diamond";
-        example.comment = "Example only. JSON does not support // comments, so the comments object below explains each field. The loader ignores comments.";
-        example.comments = getExampleComments();
-        writeIfMissing(new File(dir, "_example.json"), example);
+        return builtIn;
     }
 
     private static Map<String, String> getExampleComments()
@@ -214,7 +224,7 @@ public final class MaterialConfigLoader
         comments.put("anvil", "If true, registers a Tinker's Anvil block for this material at tinkersforging:tinkers_anvil/<id>.");
         comments.put("enabled", "If true, forces this material to appear/register recipes even when the ore dictionary precondition is not currently found.");
         comments.put("noTreePunching", "If true and No Tree Punching compat is enabled, this material can generate No Tree Punching tool part recipes.");
-        comments.put("tinkersConstruct", "If true and Tinkers Construct is installed/enabled in config, this material can generate Tinkers Construct part recipes.");
+        comments.put("tinkersConstruct", "If true and Tinkers Construct is installed/enabled in config, this material can generate Tinkers Construct part recipes. When Tinkers Construct compat is enabled, Tinkers Forging's own pickaxe_head/axe_head/shovel_head/hoe_head/sword_blade items are intentionally not registered; use the tconstruct part item ids instead.");
         comments.put("adventurersToolbox", "If true and Adventurer's Toolbox is installed, this material can generate Adventurer's Toolbox part recipes.");
         comments.put("requiredMod", "Optional mod id gate. If set, this material entry only loads when that mod is installed, for example tconstruct or toolbox.");
         comments.put("sourceItem", "Optional item registry name used to register extended Tinkers Forging parts and an extended hammer rendered from that item's model texture, for example minecraft:diamond.");
@@ -285,7 +295,7 @@ public final class MaterialConfigLoader
         }
     }
 
-    private static void loadFile(File file)
+    private static boolean loadFile(File file)
     {
         Reader reader = null;
         try
@@ -295,19 +305,21 @@ public final class MaterialConfigLoader
             if (json.isJsonArray())
             {
                 JsonArray array = json.getAsJsonArray();
-                for (JsonElement element : array)
+                for (int i = 0; i < array.size(); i++)
                 {
-                    loadElement(file, element);
+                    loadElement(file, array.get(i), i);
                 }
             }
             else
             {
-                loadElement(file, json);
+                loadElement(file, json, -1);
             }
+            return true;
         }
         catch (Exception e)
         {
-            TinkersForging.getLog().warn("Unable to load material config {}", file, e);
+            TinkersForging.getLog().warn("Unable to parse material config {}. No entries from this file were loaded.", file, e);
+            return false;
         }
         finally
         {
@@ -315,32 +327,61 @@ public final class MaterialConfigLoader
         }
     }
 
-    private static void loadElement(File file, JsonElement element)
+    private static void loadDefinitions(File file, List<MaterialDefinition> definitions)
+    {
+        for (int i = 0; i < definitions.size(); i++)
+        {
+            loadDefinition(file, definitions.get(i), "fallback entry " + i);
+        }
+    }
+
+    private static void loadElement(File file, JsonElement element, int index)
     {
         if (!element.isJsonObject())
         {
-            TinkersForging.getLog().warn("Skipping non-object material entry in {}", file);
+            TinkersForging.getLog().warn("Skipping non-object material entry {} in {}", getEntryName(index), file);
             return;
         }
-        MaterialDefinition definition = GSON.fromJson(element, MaterialDefinition.class);
+        MaterialDefinition definition;
+        try
+        {
+            definition = GSON.fromJson(element, MaterialDefinition.class);
+        }
+        catch (RuntimeException e)
+        {
+            TinkersForging.getLog().warn("Skipping invalid material entry {} in {}", getEntryName(index), file, e);
+            return;
+        }
+        loadDefinition(file, definition, getEntryName(index));
+    }
+
+    private static void loadDefinition(File file, @Nullable MaterialDefinition definition, String entryName)
+    {
         if (definition == null || !definition.load)
         {
+            TinkersForging.getLog().debug("Skipping disabled material entry {} in {}", entryName, file);
             return;
         }
         if (definition.requiredMod != null && !definition.requiredMod.trim().isEmpty() && !Loader.isModLoaded(definition.requiredMod.trim()))
         {
+            TinkersForging.getLog().debug("Skipping material entry {} in {} because required mod '{}' is not loaded.", entryName, file, definition.requiredMod.trim());
             return;
         }
         if (definition.id == null || definition.id.trim().isEmpty())
         {
-            TinkersForging.getLog().warn("Skipping material entry with no id in {}", file);
+            TinkersForging.getLog().warn("Skipping material entry {} with no id in {}", entryName, file);
             return;
         }
 
         String id = cleanId(definition.id);
+        if (!id.equals(definition.id))
+        {
+            TinkersForging.getLog().warn("Material id '{}' in {} {} was normalized to '{}'.", definition.id, file, entryName, id);
+        }
         MaterialType existing = MaterialRegistry.getMaterial(id);
         if (existing != null && !definition.replaceExisting)
         {
+            TinkersForging.getLog().debug("Material '{}' already exists; adding flags/source item from {} {} without replacing stats.", id, file, entryName);
             MaterialRegistry.addMaterialFlags(existing, definition.tinkersConstruct, definition.noTreePunching, definition.adventurersToolbox);
             addPendingExtendedMaterial(definition, id);
             return;
@@ -359,6 +400,11 @@ public final class MaterialConfigLoader
         }
         MaterialRegistry.addMaterial(material, definition.tinkersConstruct, definition.noTreePunching, definition.adventurersToolbox);
         addPendingExtendedMaterial(definition, id);
+    }
+
+    private static String getEntryName(int index)
+    {
+        return index < 0 ? "root object" : "at index " + index;
     }
 
     private static void addPendingExtendedMaterial(MaterialDefinition definition, String id)

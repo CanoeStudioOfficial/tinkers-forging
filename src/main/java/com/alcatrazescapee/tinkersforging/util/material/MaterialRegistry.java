@@ -35,6 +35,7 @@ public final class MaterialRegistry
         if (MATERIALS.containsKey(material.getName()))
         {
             TinkersForging.getLog().debug("Material {} was overriden!", material.getName());
+            clearMaterialFlags(material);
         }
         MATERIALS.put(material.getName(), material);
         addMaterialFlags(material, tinkers, noTreePunching, toolbox);
@@ -97,5 +98,12 @@ public final class MaterialRegistry
     public static boolean isToolboxMaterial(MaterialType material)
     {
         return TOOLBOX_MATERIALS.contains(material.getName());
+    }
+
+    private static void clearMaterialFlags(MaterialType material)
+    {
+        TINKERS_MATERIALS.remove(material.getName());
+        NTP_MATERIALS.remove(material.getName());
+        TOOLBOX_MATERIALS.remove(material.getName());
     }
 }
