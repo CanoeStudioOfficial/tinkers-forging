@@ -7,11 +7,12 @@
 package com.alcatrazescapee.tinkersforging.client.model;
 
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -50,10 +51,9 @@ public final class TinkersAnvilModel implements IModel
     @Override
     public Collection<ResourceLocation> getTextures()
     {
-        ImmutableList.Builder<ResourceLocation> builder = ImmutableList.builder();
-        builder.addAll(baseModel.getTextures());
-        builder.add(ANVIL_TEXTURE);
-        return builder.build();
+        List<ResourceLocation> textures = new ArrayList<>(baseModel.getTextures());
+        textures.add(ANVIL_TEXTURE);
+        return textures;
     }
 
     @Override
@@ -67,7 +67,10 @@ public final class TinkersAnvilModel implements IModel
             TextureAtlasSprite sprite = ForgingMaterialTextureManager.getAnvilSprite(material);
             if (sprite != null)
             {
-                IModel retextured = baseModel.retexture(ImmutableMap.of("all", sprite.getIconName(), "particle", sprite.getIconName()));
+                Map<String, String> textures = new HashMap<>();
+                textures.put("all", sprite.getIconName());
+                textures.put("particle", sprite.getIconName());
+                IModel retextured = baseModel.retexture(ImmutableMap.copyOf(textures));
                 materialModels.put(material.getName(), retextured.bake(state, format, bakedTextureGetter));
             }
         }

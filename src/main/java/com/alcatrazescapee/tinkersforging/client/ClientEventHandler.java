@@ -23,7 +23,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.AlcatrazCore;
 import com.alcatrazescapee.alcatrazcore.util.RegistryHelper;
-import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.client.model.material.ForgingMaterialTextureManager;
 import com.alcatrazescapee.tinkersforging.client.render.TESRTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
@@ -45,13 +44,6 @@ import static net.minecraft.util.text.TextFormatting.GREEN;
 @Mod.EventBusSubscriber(Side.CLIENT)
 public final class ClientEventHandler
 {
-    private static boolean refreshResources;
-
-    public static void queueResourceRefresh()
-    {
-        refreshResources = true;
-    }
-
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public static void onItemTooltipEvent(ItemTooltipEvent event)
@@ -71,12 +63,6 @@ public final class ClientEventHandler
     @SideOnly(Side.CLIENT)
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
-        if (event.phase == TickEvent.Phase.START && refreshResources)
-        {
-            refreshResources = false;
-            TinkersForging.getLog().debug("Reloading client resources for extended material models.");
-            Minecraft.getMinecraft().refreshResources();
-        }
         if (event.phase == TickEvent.Phase.START && !Minecraft.getMinecraft().isGamePaused() && Minecraft.getMinecraft().player != null)
         {
             TickTimer.update(AlcatrazCore.getProxy().getClientWorld().getTotalWorldTime());

@@ -44,10 +44,8 @@ public class ClientProxy extends CommonProxy
     }
 
     @Override
-    public void onExtendedMaterialsChanged()
-    {
-        ClientEventHandler.queueResourceRefresh();
-    }
+    public void onExtendedMaterialsChanged() {}
+
 
     @Nullable
     @Override

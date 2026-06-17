@@ -8,11 +8,11 @@ package com.alcatrazescapee.tinkersforging.client.model;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.block.state.IBlockState;
@@ -114,7 +114,7 @@ public final class BakedTinkersAnvilModel implements IBakedModel
     {
         private AnvilOverrideList()
         {
-            super(ImmutableList.of());
+            super(Collections.emptyList());
         }
 
         @Nonnull
