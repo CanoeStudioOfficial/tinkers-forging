@@ -40,16 +40,26 @@ public enum ForgingMaterialModelLoader implements ICustomModelLoader
     INSTANCE;
 
     public static final String EXTENSION = ".tfmat";
+    public static final String ANVIL_EXTENSION = ".tfanvil";
 
     @Override
     public boolean accepts(ResourceLocation modelLocation)
     {
-        return modelLocation.getPath().endsWith(EXTENSION);
+        String path = modelLocation.getPath();
+        return path.endsWith(EXTENSION) || path.endsWith(ANVIL_EXTENSION);
     }
 
     @Override
     public IModel loadModel(ResourceLocation modelLocation) throws Exception
     {
+        if (modelLocation.getPath().endsWith(ANVIL_EXTENSION))
+        {
+            ResourceLocation baseModelLocation = getAnvilBaseModelLocation(modelLocation);
+            IModel baseModel = ModelLoaderRegistry.getModel(baseModelLocation);
+            ForgingMaterialTextureManager.registerAnvilBaseTexture();
+            return new TinkersAnvilModel(baseModel);
+        }
+
         ResourceLocation baseModelLocation = getBaseModelLocation(modelLocation);
         IModel baseModel = ModelLoaderRegistry.getModel(baseModelLocation);
         ImmutableList<ResourceLocation> textures = loadTextures(baseModelLocation);
@@ -70,8 +80,28 @@ public enum ForgingMaterialModelLoader implements ICustomModelLoader
 
     private static ResourceLocation getBaseModelLocation(ResourceLocation modelLocation)
     {
+        return getBaseModelLocation(modelLocation, EXTENSION);
+    }
+
+    private static ResourceLocation getAnvilBaseModelLocation(ResourceLocation modelLocation)
+    {
         String path = modelLocation.getPath();
-        path = path.substring(0, path.length() - EXTENSION.length());
+        path = path.substring(0, path.length() - ANVIL_EXTENSION.length());
+        if (path.startsWith("models/"))
+        {
+            path = path.substring("models/".length());
+        }
+        if (!path.contains("/"))
+        {
+            path = "block/" + path;
+        }
+        return new ResourceLocation(modelLocation.getNamespace(), path);
+    }
+
+    private static ResourceLocation getBaseModelLocation(ResourceLocation modelLocation, String extension)
+    {
+        String path = modelLocation.getPath();
+        path = path.substring(0, path.length() - extension.length());
         if (path.startsWith("models/"))
         {
             path = path.substring("models/".length());

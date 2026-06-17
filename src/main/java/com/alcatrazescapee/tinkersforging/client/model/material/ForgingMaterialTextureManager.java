@@ -47,6 +47,7 @@ public enum ForgingMaterialTextureManager
 {
     INSTANCE;
 
+    private static final ResourceLocation ANVIL_BASE_TEXTURE = new ResourceLocation(MOD_ID, "blocks/metal_block");
     private static final Set<ResourceLocation> BASE_TEXTURES = new HashSet<>();
     private static final Map<String, Map<String, TextureAtlasSprite>> SPRITES = new HashMap<>();
 
@@ -57,6 +58,7 @@ public enum ForgingMaterialTextureManager
 
     public static void registerDefaultBaseTextures()
     {
+        registerAnvilBaseTexture();
         registerBaseTexture(new ResourceLocation(MOD_ID, "items/hammer/metal"));
         registerBaseTexture(new ResourceLocation(MOD_ID, "items/axe_head"));
         registerBaseTexture(new ResourceLocation(MOD_ID, "items/pickaxe_head"));
@@ -69,6 +71,11 @@ public enum ForgingMaterialTextureManager
         registerBaseTexture(new ResourceLocation(MOD_ID, "items/saw_head"));
     }
 
+    public static void registerAnvilBaseTexture()
+    {
+        registerBaseTexture(ANVIL_BASE_TEXTURE);
+    }
+
     public static TextureAtlasSprite getSprite(ResourceLocation baseTexture, MaterialType material)
     {
         Map<String, TextureAtlasSprite> materialSprites = SPRITES.get(baseTexture.toString());
@@ -79,6 +86,22 @@ public enum ForgingMaterialTextureManager
     {
         Map<String, TextureAtlasSprite> materialSprites = SPRITES.get(baseTexture.toString());
         return materialSprites == null ? null : materialSprites.get("extended:" + material.getId());
+    }
+
+    public static TextureAtlasSprite getAnvilSprite(MaterialType material)
+    {
+        TextureAtlasSprite sprite = getSprite(ANVIL_BASE_TEXTURE, material);
+        if (sprite != null)
+        {
+            return sprite;
+        }
+        Definition extended = ExtendedMaterialRegistry.get(material.getName());
+        return extended == null ? null : getSprite(ANVIL_BASE_TEXTURE, extended);
+    }
+
+    public static boolean hasAnvilCustomTexture(MaterialType material)
+    {
+        return getAnvilSprite(material) != null;
     }
 
     public static boolean hasCustomTexture(ItemStack stack)

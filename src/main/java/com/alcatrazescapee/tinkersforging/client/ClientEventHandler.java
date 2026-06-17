@@ -137,6 +137,10 @@ public final class ClientEventHandler
             if (stack.getItem() instanceof ItemBlock && ((ItemBlock) stack.getItem()).getBlock() instanceof BlockTinkersAnvil)
             {
                 BlockTinkersAnvil block = (BlockTinkersAnvil) ((ItemBlock) stack.getItem()).getBlock();
+                if (ForgingMaterialTextureManager.hasAnvilCustomTexture(block.getMaterial()))
+                {
+                    return 0xffffff;
+                }
                 return block.getMaterial().getColor();
             }
             return 0xffffff;
@@ -145,7 +149,12 @@ public final class ClientEventHandler
         blockColors.registerBlockColorHandler((state, world, pos, tintIndex) -> {
             if (state.getBlock() instanceof BlockTinkersAnvil)
             {
-                return ((BlockTinkersAnvil) state.getBlock()).getMaterial().getColor();
+                BlockTinkersAnvil block = (BlockTinkersAnvil) state.getBlock();
+                if (ForgingMaterialTextureManager.hasAnvilCustomTexture(block.getMaterial()))
+                {
+                    return 0xffffff;
+                }
+                return block.getMaterial().getColor();
             }
             return 0xffffff;
         }, BlockTinkersAnvil.getAll().toArray(new BlockTinkersAnvil[0]));
