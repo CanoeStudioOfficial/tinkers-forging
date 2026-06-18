@@ -39,6 +39,7 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
 {
     private static final String TRANSLATION_KEY = MOD_ID + ".jei.category.anvil";
     private static final ResourceLocation BACKGROUND_LOCATION = new ResourceLocation(MOD_ID, "textures/jei/anvil.png");
+    private static final ResourceLocation ANVIL_GUI_LOCATION = new ResourceLocation(MOD_ID, "textures/gui/tinkers_anvil.png");
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -125,9 +126,9 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
                 if (rule != null)
                 {
                     // The rule icon
-                    ruleDrawables[i] = JEIIntegration.guiHelper.createDrawable(BACKGROUND_LOCATION, rule.getIconU() - 41, rule.getIconV(), 14, 14);
+                    ruleDrawables[i] = JEIIntegration.guiHelper.createDrawable(ANVIL_GUI_LOCATION, rule.getIconU(), rule.getIconV(), 16, 16);
                     // The color / border
-                    ruleDrawables[i + rules.length] = JEIIntegration.guiHelper.createDrawable(BACKGROUND_LOCATION, rule.getOutlineU() + 18 - 41, rule.getOutlineV(), 18, 24);
+                    ruleDrawables[i + rules.length] = JEIIntegration.guiHelper.createDrawable(ANVIL_GUI_LOCATION, rule.getOutlineU(), rule.getOutlineV(), 20, 22);
                 }
             }
         }
@@ -144,8 +145,11 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
         {
             for (int i = 0; i < rules.length; i++)
             {
-                ruleDrawables[i].draw(minecraft, 39 + 22 * i, 27);
-                ruleDrawables[i + rules.length].draw(minecraft, 37 + 22 * i, 25);
+                if (ruleDrawables[i] != null && ruleDrawables[i + rules.length] != null)
+                {
+                    ruleDrawables[i].draw(minecraft, 39 + 22 * i, 25);
+                    ruleDrawables[i + rules.length].draw(minecraft, 37 + 22 * i, 25);
+                }
             }
         }
 
@@ -155,7 +159,8 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
         {
             for (int i = 0; i < rules.length; i++)
             {
-                if (mouseX >= 37 && mouseY >= 25 && mouseX < 37 + 22 * i + 18 && mouseY < 25 + 24)
+                int x = 37 + 22 * i;
+                if (mouseX >= x && mouseY >= 25 && mouseX < x + 20 && mouseY < 25 + 22)
                 {
                     ForgeRule rule = rules[i];
                     if (rule != null)
