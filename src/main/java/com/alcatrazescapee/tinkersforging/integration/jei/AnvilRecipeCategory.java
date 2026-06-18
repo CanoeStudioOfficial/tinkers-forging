@@ -6,7 +6,6 @@
 
 package com.alcatrazescapee.tinkersforging.integration.jei;
 
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,7 +21,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.blocks.ModBlocks;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
-import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IDrawableAnimated;
@@ -40,23 +38,9 @@ import static com.alcatrazescapee.tinkersforging.integration.jei.JEIIntegration.
 public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.Wrapper>
 {
     private static final String TRANSLATION_KEY = MOD_ID + ".jei.category.anvil";
-    private static final ResourceLocation BACKGROUND_LOCATION = new ResourceLocation(MOD_ID, "textures/jei/anvil.png");
-    private static final ResourceLocation ANVIL_GUI_LOCATION = new ResourceLocation(MOD_ID, "textures/gui/tinkers_anvil.png");
     private static final ResourceLocation ICONS_LOCATION = new ResourceLocation(MOD_ID, "textures/gui/jei/icons.png");
     private static final int WIDTH = 98;
-    private static final int HEIGHT = 52;
-    private static final int RULE_Y = 27;
-    private static final int RULE_OUTLINE_U = 187;
-    private static final int RULE_OUTLINE_V_OFFSET = 40;
-    private static final int RULE_OUTLINE_WIDTH = 18;
-    private static final int RULE_OUTLINE_HEIGHT = 24;
-    private static final int RULE_SPACING = 4;
-    private static final int RULE_ICON_U_OFFSET = 1;
-    private static final int RULE_ICON_V_OFFSET = 1;
-    private static final int RULE_ICON_WIDTH = 14;
-    private static final int RULE_ICON_HEIGHT = 14;
-    private static final int RULE_ICON_X_OFFSET = 2;
-    private static final int RULE_ICON_Y_OFFSET = 2;
+    private static final int HEIGHT = 26;
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -138,25 +122,11 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     {
         private final List<List<ItemStack>> inputLists;
         private final ItemStack output;
-        private final ForgeRule[] rules;
-        private final IDrawable[] ruleDrawables;
 
         public Wrapper(AnvilRecipe recipe)
         {
             inputLists = java.util.Collections.singletonList(recipe.getInput().getStacks());
             output = recipe.getOutput();
-            rules = recipe.getRules();
-            ruleDrawables = new IDrawable[rules.length * 2];
-
-            for (int i = 0; i < rules.length; i++)
-            {
-                ForgeRule rule = rules[i];
-                if (rule != null && JEIIntegration.guiHelper != null)
-                {
-                    ruleDrawables[i] = JEIIntegration.guiHelper.createDrawable(ANVIL_GUI_LOCATION, rule.getIconU() + RULE_ICON_U_OFFSET, rule.getIconV() + RULE_ICON_V_OFFSET, RULE_ICON_WIDTH, RULE_ICON_HEIGHT);
-                    ruleDrawables[i + rules.length] = JEIIntegration.guiHelper.createDrawable(BACKGROUND_LOCATION, RULE_OUTLINE_U, RULE_OUTLINE_V_OFFSET + rule.getOutlineV(), RULE_OUTLINE_WIDTH, RULE_OUTLINE_HEIGHT);
-                }
-            }
         }
 
         @Override
@@ -182,41 +152,6 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
             {
                 arrowAnimated.draw(minecraft, 36, 5);
             }
-
-            for (int i = 0; i < rules.length; i++)
-            {
-                if (ruleDrawables[i] != null && ruleDrawables[i + rules.length] != null)
-                {
-                    int x = getRuleX(i, rules.length);
-                    ruleDrawables[i].draw(minecraft, x + RULE_ICON_X_OFFSET, RULE_Y + RULE_ICON_Y_OFFSET);
-                    ruleDrawables[i + rules.length].draw(minecraft, x, RULE_Y);
-                }
-            }
-        }
-
-        @Override
-        @Nonnull
-        public List<String> getTooltipStrings(int mouseX, int mouseY)
-        {
-            for (int i = 0; i < rules.length; i++)
-            {
-                int x = getRuleX(i, rules.length);
-                if (mouseX >= x && mouseY >= RULE_Y && mouseX < x + RULE_OUTLINE_WIDTH && mouseY < RULE_Y + RULE_OUTLINE_HEIGHT)
-                {
-                    ForgeRule rule = rules[i];
-                    if (rule != null)
-                    {
-                        return Collections.singletonList(I18n.format(MOD_ID + ".tooltip." + rule.name().toLowerCase()));
-                    }
-                }
-            }
-            return IRecipeWrapper.super.getTooltipStrings(mouseX, mouseY);
-        }
-
-        private static int getRuleX(int index, int ruleCount)
-        {
-            int totalWidth = ruleCount * RULE_OUTLINE_WIDTH + Math.max(0, ruleCount - 1) * RULE_SPACING;
-            return (WIDTH - totalWidth) / 2 + index * (RULE_OUTLINE_WIDTH + RULE_SPACING);
         }
     }
 }
