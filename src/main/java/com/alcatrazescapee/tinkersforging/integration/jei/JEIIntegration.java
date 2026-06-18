@@ -94,6 +94,6 @@ public final class JEIIntegration implements IModPlugin
         // Anvil Recipes
         registry.handleRecipes(AnvilRecipe.class, AnvilRecipeCategory.Wrapper::new, ANVIL_UID);
         registry.addRecipes(ModRecipes.ANVIL.getAll(), ANVIL_UID);
-        registry.addRecipeClickArea(GuiTinkersAnvil.class, 163, 4, 9, 11, ANVIL_UID);
+        registry.addRecipeClickArea(GuiTinkersAnvil.class, 141, 40, 9, 14, ANVIL_UID);
     }
 }

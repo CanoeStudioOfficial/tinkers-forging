@@ -25,7 +25,7 @@ class GuiButtonAnvilStep extends GuiButton
 
     GuiButtonAnvilStep(ForgeStep step, int guiLeft, int guiTop)
     {
-        super(step.ordinal(), guiLeft + step.getX(), guiTop + step.getY(), 20, 20, "");
+        super(step.ordinal(), guiLeft + step.getX(), guiTop + step.getY(), 16, 16, "");
         this.step = step;
     }
 

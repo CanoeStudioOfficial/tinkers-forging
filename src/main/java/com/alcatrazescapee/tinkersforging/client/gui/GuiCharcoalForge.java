@@ -6,15 +6,16 @@
 
 package com.alcatrazescapee.tinkersforging.client.gui;
 
+import java.util.Collections;
+
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.client.gui.GuiContainerTileCore;
-import com.alcatrazescapee.tinkersforging.ModConfig;
+import com.alcatrazescapee.tinkersforging.common.capability.heat.Heat;
 import com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge;
 
 import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
@@ -30,7 +31,7 @@ public class GuiCharcoalForge extends GuiContainerTileCore<TileCharcoalForge>
     public GuiCharcoalForge(TileCharcoalForge tile, Container container, InventoryPlayer playerInv, String titleKey)
     {
         super(tile, container, playerInv, BACKGROUND, titleKey);
-        this.ySize = 222;
+        this.ySize = 186;
     }
 
     @Override
@@ -55,7 +56,22 @@ public class GuiCharcoalForge extends GuiContainerTileCore<TileCharcoalForge>
         if (temperature > 0)
         {
             int scaledTemp = Math.round(51 * temperature / MAX_TEMPERATURE);
-            drawTexturedModalRect(guiLeft + 8, guiTop + 76 - Math.min(51, scaledTemp), 176, 0, 15, Math.min(51, scaledTemp));
+            drawTexturedModalRect(guiLeft + 8, guiTop + 76 - Math.min(51, scaledTemp), 176, 0, 15, 5);
         }
+    }
+
+    @Override
+    protected void renderHoveredToolTip(int mouseX, int mouseY)
+    {
+        if (mouseX >= guiLeft + 8 && mouseX < guiLeft + 23 && mouseY >= guiTop + 25 && mouseY < guiTop + 76)
+        {
+            int temperature = tile.getField(FIELD_TEMPERATURE);
+            if (temperature > 0)
+            {
+                drawHoveringText(Collections.singletonList(Heat.getTooltipFor(temperature)), mouseX, mouseY);
+                return;
+            }
+        }
+        super.renderHoveredToolTip(mouseX, mouseY);
     }
 }

@@ -18,7 +18,10 @@ import net.minecraftforge.items.IItemHandler;
 
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 
+import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.SLOT_CATALYST;
 import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.SLOT_HAMMER;
+import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.SLOT_INPUT_MAIN;
+import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.SLOT_INPUT_SECOND;
 
 @SideOnly(Side.CLIENT)
 public class TESRTinkersAnvil extends TileEntitySpecialRenderer<TileTinkersAnvil>
@@ -33,17 +36,41 @@ public class TESRTinkersAnvil extends TileEntitySpecialRenderer<TileTinkersAnvil
         {
             int rotation = tile.getBlockMetadata();
 
-            // Current Item
-            ItemStack stack = cap.getStackInSlot(SLOT_HAMMER);
             GlStateManager.pushMatrix();
-            GlStateManager.translate(x + 0.5, y + 0.03125D + 0.6875, z + 0.5);
-            GlStateManager.scale(0.35f, 0.35f, 0.35f);
+            GlStateManager.translate(x + 0.5, y + 0.003125D + 0.6875D, z + 0.5);
+            GlStateManager.scale(0.3f, 0.3f, 0.3f);
             GlStateManager.rotate(90f, 1f, 0f, 0f);
-            GlStateManager.rotate(90f * (float) rotation, 0f, 0f, 1f);
-            GlStateManager.translate(-0.7, 0, 0);
-            Minecraft.getMinecraft().getRenderItem().renderItem(stack, ItemCameraTransforms.TransformType.FIXED);
+            GlStateManager.rotate(90f * (float) rotation + 270f, 0f, 0f, 1f);
+            GlStateManager.translate(-0.4f, 0, 0);
+
+            renderStack(cap.getStackInSlot(SLOT_HAMMER));
+
+            GlStateManager.translate(1.15f, 0, 0);
+            renderStack(cap.getStackInSlot(SLOT_INPUT_MAIN));
+
+            GlStateManager.translate(0.4f, 0, -0.05f);
+            renderStack(cap.getStackInSlot(SLOT_INPUT_SECOND));
+
+            ItemStack catalyst = cap.getStackInSlot(SLOT_CATALYST);
+            if (!catalyst.isEmpty())
+            {
+                GlStateManager.pushMatrix();
+                GlStateManager.translate(-0.9f, -0.25f, 0.05f);
+                GlStateManager.scale(0.6f, 0.6f, 0.6f);
+                renderStack(catalyst);
+                GlStateManager.popMatrix();
+            }
+
             GlStateManager.popMatrix();
 
+        }
+    }
+
+    private void renderStack(ItemStack stack)
+    {
+        if (!stack.isEmpty())
+        {
+            Minecraft.getMinecraft().getRenderItem().renderItem(stack, ItemCameraTransforms.TransformType.FIXED);
         }
     }
 

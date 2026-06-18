@@ -11,7 +11,6 @@ import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -97,8 +96,6 @@ public class GuiTinkersAnvilPlan extends GuiContainerTileCore<TileTinkersAnvil>
     {
         mc.getTextureManager().bindTexture(BACKGROUND);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
-        String text = I18n.format(MOD_ID + ".tooltip.anvil_plan");
-        fontRenderer.drawString(text, guiLeft + 8, guiTop + 6, 0x404040);
     }
 
     @Override

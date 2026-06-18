@@ -71,16 +71,8 @@ public enum ForgeRule
         this.order = order;
         this.type = type;
 
-        if (type == HIT_LIGHT || type == HIT_MEDIUM || type == HIT_HARD)
-        {
-            iconU = 176;
-            iconV = 54;
-        }
-        else
-        {
-            iconU = type.textureU + 3;
-            iconV = type.textureV + 3;
-        }
+        iconU = type.textureU;
+        iconV = type.textureV;
     }
 
     public boolean matches(@Nonnull ForgeSteps steps)
@@ -117,7 +109,7 @@ public enum ForgeRule
     @SideOnly(Side.CLIENT)
     public int getOutlineU()
     {
-        return 210;
+        return 198;
     }
 
     @SideOnly(Side.CLIENT)
@@ -139,11 +131,11 @@ public enum ForgeRule
 
     private enum Order
     {
-        ANY(40),
-        LAST(88),
-        NOT_LAST(64),
-        SECOND_LAST(112),
-        THIRD_LAST(136);
+        ANY(88),
+        LAST(0),
+        NOT_LAST(66),
+        SECOND_LAST(22),
+        THIRD_LAST(44);
 
         private final int textureV;
 

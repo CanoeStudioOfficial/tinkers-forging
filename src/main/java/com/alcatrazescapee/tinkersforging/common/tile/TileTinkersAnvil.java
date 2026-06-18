@@ -26,7 +26,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.alcatrazcore.tile.ITileFields;
 import com.alcatrazescapee.alcatrazcore.tile.TileInventory;
 import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
-import com.alcatrazescapee.alcatrazcore.util.collections.ImmutablePair;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;

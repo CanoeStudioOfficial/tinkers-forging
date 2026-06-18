@@ -13,14 +13,14 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public enum ForgeStep
 {
-    HIT_LIGHT(-3, 8, 66, 176, 0),
-    HIT_MEDIUM(-6, 30, 66, 196, 0),
-    HIT_HARD(-9, 8, 88, 216, 0),
-    DRAW(-15, 30, 88, 236, 0),
-    PUNCH(2, 126, 66, 176, 20),
-    BEND(7, 148, 66, 196, 20),
-    UPSET(13, 126, 88, 216, 20),
-    SHRINK(16, 148, 88, 236, 20);
+    HIT_LIGHT(-3, 53, 56, 64, 240),
+    HIT_MEDIUM(-6, 71, 56, 80, 240),
+    HIT_HARD(-9, 53, 74, 96, 240),
+    DRAW(-15, 71, 74, 112, 240),
+    PUNCH(2, 89, 56, 0, 240),
+    BEND(7, 107, 56, 16, 240),
+    UPSET(13, 89, 74, 32, 240),
+    SHRINK(16, 107, 74, 48, 240);
 
     private static final ForgeStep[] values = values();
 

@@ -161,6 +161,15 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         {
             return false;
         }
+        ForgeStep step = ForgeStep.valueOf(amount);
+        if (step == null)
+        {
+            return false;
+        }
+        if (cap.getSteps().isEmpty() && cap.getWork() == IForgeItem.MIN_WORK && step.getStepAmount() < 0)
+        {
+            return false;
+        }
         if (tile.getTier() < recipe.getTier())
         {
             sendProblem("tier_too_low");

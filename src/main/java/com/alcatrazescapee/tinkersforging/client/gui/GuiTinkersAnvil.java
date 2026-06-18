@@ -10,6 +10,7 @@ import java.io.IOException;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
@@ -19,9 +20,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.client.gui.GuiContainerTileCore;
+import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilButton;
+import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeStep;
@@ -42,7 +45,7 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     {
         super(tile, container, playerInv, BACKGROUND, translationKey);
 
-        this.ySize = 222;
+        this.ySize = 207;
     }
 
     @Override
@@ -65,12 +68,12 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     protected void renderHoveredToolTip(int mouseX, int mouseY)
     {
         // Rule tooltips
-        int x = guiLeft + 57;
-        int y = guiTop + 42;
+        int x = guiLeft + 59;
+        int y = guiTop + 13;
 
         for (int i = FIELD_FIRST_RULE; i <= FIELD_THIRD_RULE; i++)
         {
-            if (mouseX >= x && mouseY >= y && mouseX < x + 18 && mouseY < y + 24)
+            if (mouseX >= x && mouseY >= y && mouseX < x + 20 && mouseY < y + 22)
             {
                 ForgeRule rule = ForgeRule.valueOf(tile.getField(i));
                 if (rule != null)
@@ -78,7 +81,7 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
                     drawHoveringText(I18n.format(MOD_ID + ".tooltip." + rule.name().toLowerCase()), mouseX, mouseY);
                 }
             }
-            x += 22;
+            x += 19;
         }
 
         // Step Button Tooltips
@@ -108,14 +111,19 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
 
         // JEI Question Mark Icon
         if (isJEIEnabled)
-            drawTexturedModalRect(guiLeft + 165, guiTop + 6, 246, 40, 5, 7);
+            drawTexturedModalRect(guiLeft + 141, guiTop + 40, 0, 207, 9, 14);
 
-        // Progress + Target
-        int progress = tile.getField(TileTinkersAnvil.FIELD_PROGRESS);
-        drawTexturedModalRect(guiLeft + 10 + progress, guiTop + 112, 196, 40, 7, 6);
+        AnvilRecipe recipe = tile.getRecipe();
+        if (recipe != null)
+        {
+            // Progress + Target
+            int progress = tile.getField(TileTinkersAnvil.FIELD_PROGRESS);
+            drawTexturedModalRect(guiLeft + 13 + progress, guiTop + 104, 176, 0, 5, 5);
 
-        int target = tile.getField(TileTinkersAnvil.FIELD_TARGET);
-        drawTexturedModalRect(guiLeft + 10 + target, guiTop + 119, 203, 40, 7, 6);
+            int target = tile.getField(TileTinkersAnvil.FIELD_TARGET);
+            int range = ModConfig.BALANCE.forgeTargetRange + (5 - recipe.getTier()) * ModConfig.BALANCE.forgeTierRangeMod;
+            drawTarget(target, range);
+        }
 
         // Last Three Steps
         for (int i = FIELD_LAST_STEP; i <= FIELD_THIRD_STEP; i++)
@@ -123,27 +131,62 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
             ForgeStep step = ForgeStep.valueOf(tile.getField(i));
             if (step != null)
             {
-                int xOffset = 22 * (2 - i + FIELD_LAST_STEP);
-                drawTexturedModalRect(guiLeft + 59 + xOffset, guiTop + 69, step.getTexU() + 3, step.getTexV() + 3, 14, 14);
+                int xOffset = 19 * (i - FIELD_LAST_STEP);
+                drawTexturedModalRect(guiLeft + 99 - xOffset, guiTop + 34, step.getTexU(), step.getTexV(), 16, 16);
             }
         }
 
         ForgeSteps steps = tile.getSteps();
 
         // Rules
-        for (int i = FIELD_FIRST_RULE; i <= FIELD_THIRD_RULE; i++)
+        if (recipe != null)
         {
-            ForgeRule rule = ForgeRule.valueOf(tile.getField(i));
-            if (rule != null)
+            for (int i = FIELD_FIRST_RULE; i <= FIELD_THIRD_RULE; i++)
             {
-                int xOffset = 22 * (i - FIELD_FIRST_RULE);
-                // The rule icon
-                drawTexturedModalRect(guiLeft + 59 + xOffset, guiTop + 44, rule.getIconU(), rule.getIconV(), 14, 14);
-                // The color / border
-                drawTexturedModalRect(guiLeft + 57 + xOffset, guiTop + 42, rule.getOutlineU() + (rule.matches(steps) ? 0 : 18), rule.getOutlineV(), 18, 24);
+                ForgeRule rule = ForgeRule.valueOf(tile.getField(i));
+                if (rule != null)
+                {
+                    int xOffset = 19 * (i - FIELD_FIRST_RULE);
+                    // The rule icon
+                    drawTexturedModalRect(guiLeft + 61 + xOffset, guiTop + 13, rule.getIconU(), rule.getIconV(), 16, 16);
+                    if (rule.matches(steps))
+                    {
+                        GlStateManager.color(0f, 0.6f, 0.2f, 1f);
+                    }
+                    else
+                    {
+                        GlStateManager.color(1f, 0.4f, 0f, 1f);
+                    }
+                    drawTexturedModalRect(guiLeft + 59 + xOffset, guiTop + 13, rule.getOutlineU(), rule.getOutlineV(), 20, 22);
+                    GlStateManager.color(1f, 1f, 1f, 1f);
+                }
             }
         }
 
+    }
+
+    private void drawTarget(int target, int range)
+    {
+        if (range < 2)
+        {
+            drawTexturedModalRect(guiLeft + 13 + target, guiTop + 98, 181, 0, 5, 5);
+        }
+        else
+        {
+            int leftLimit = Math.max(0, target - range);
+            int rightLimit = Math.min(145, target + range);
+
+            drawTexturedModalRect(guiLeft + 13 + leftLimit, guiTop + 96, 176, 7, 5, 7);
+            drawTexturedModalRect(guiLeft + 13 + rightLimit, guiTop + 96, 186, 7, 5, 7);
+            for (int i = leftLimit + 2; i < rightLimit - 1; i++)
+            {
+                drawTexturedModalRect(guiLeft + 15 + i, guiTop + 94, 192, 5, 1, 5);
+            }
+            if (range > 2)
+            {
+                drawTexturedModalRect(guiLeft + 13 + (rightLimit + leftLimit) / 2, guiTop + 94, 181, 5, 5, 5);
+            }
+        }
     }
 
     @Override

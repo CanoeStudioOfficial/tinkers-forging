@@ -61,6 +61,10 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
 
     public static boolean isValidSideBlocks(World world, BlockPos pos)
     {
+        if (!TileCharcoalForge.isValidSideBlock(world.getBlockState(pos.down())))
+        {
+            return false;
+        }
         for (EnumFacing face : EnumFacing.HORIZONTALS)
         {
             if (!TileCharcoalForge.isValidSideBlock(world.getBlockState(pos.offset(face))))
@@ -80,6 +84,7 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
     private int fuelTicksMax;
     private float temperature;
     private boolean isClosed;
+    private boolean needsSlotUpdate;
 
     public TileCharcoalForge()
     {
@@ -109,25 +114,25 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
 
         if (fuelTicksRemaining > 0)
         {
-            // Consume fuel ticks
-            fuelTicksRemaining -= isClosed ? 1 : 2;
-
-            if (fuelTicksRemaining <= 0)
+            boolean isValid = isValidSideBlocks(world, pos) && world.isAirBlock(pos.up());
+            boolean isRaining = world.isRainingAt(pos.up()) || world.isRainingAt(pos.up(2));
+            if (!isValid)
             {
-                consumeFuel();
+                extinguish();
+            }
+            else
+            {
+                // Consume fuel ticks
+                fuelTicksRemaining -= isClosed && !isRaining ? 1 : 2;
 
                 if (fuelTicksRemaining <= 0)
                 {
-                    // Couldn't consume any more fuel
-                    IBlockState state = world.getBlockState(pos);
-                    if (state.getBlock() == ModBlocks.CHARCOAL_FORGE)
+                    consumeFuel();
+
+                    if (fuelTicksRemaining <= 0)
                     {
-                        world.setBlockState(pos, world.getBlockState(pos).withProperty(LIT, false));
-                    }
-                    else
-                    {
-                        onBreakBlock();
-                        world.setBlockToAir(pos);
+                        // Couldn't consume any more fuel
+                        extinguish();
                     }
                 }
             }
@@ -177,7 +182,21 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
 
         if (world != null)
         {
+            if (needsSlotUpdate)
+            {
+                cascadeFuelSlots();
+            }
             world.markChunkDirty(pos, this);
+        }
+    }
+
+    @Override
+    public void setAndUpdateSlots(int slot)
+    {
+        super.setAndUpdateSlots(slot);
+        if (world != null && !world.isRemote && slot >= SLOT_FUEL_MIN && slot <= SLOT_FUEL_MAX)
+        {
+            needsSlotUpdate = true;
         }
     }
 
@@ -276,6 +295,7 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
             if (burn > 0)
             {
                 inventory.setStackInSlot(slot, CoreHelpers.consumeItem(fuelStack));
+                needsSlotUpdate = true;
                 fuelTicksRemaining += (int) (burn * ModConfig.BALANCE.charcoalForgeFuelModifier);
                 fuelTicksMax = fuelTicksRemaining;
                 return;
@@ -289,5 +309,40 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
             fuelTicksRemaining = (int) (FUEL_TICKS_MAX * ModConfig.BALANCE.charcoalForgeFuelModifier);
             fuelTicksMax = fuelTicksRemaining;
         }
+    }
+
+    private void extinguish()
+    {
+        IBlockState state = world.getBlockState(pos);
+        fuelTicksRemaining = 0;
+        fuelTicksMax = 0;
+        if (state.getBlock() == ModBlocks.CHARCOAL_FORGE)
+        {
+            world.setBlockState(pos, state.withProperty(LIT, false));
+        }
+        else
+        {
+            onBreakBlock();
+            world.setBlockToAir(pos);
+        }
+    }
+
+    private void cascadeFuelSlots()
+    {
+        int lowestAvailableSlot = SLOT_FUEL_MIN;
+        for (int i = SLOT_FUEL_MIN; i <= SLOT_FUEL_MAX; i++)
+        {
+            ItemStack stack = inventory.getStackInSlot(i);
+            if (!stack.isEmpty())
+            {
+                if (i > lowestAvailableSlot)
+                {
+                    inventory.setStackInSlot(lowestAvailableSlot, stack.copy());
+                    inventory.setStackInSlot(i, ItemStack.EMPTY);
+                }
+                lowestAvailableSlot++;
+            }
+        }
+        needsSlotUpdate = false;
     }
 }

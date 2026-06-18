@@ -24,6 +24,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.alcatrazcore.AlcatrazCore;
 import com.alcatrazescapee.alcatrazcore.util.RegistryHelper;
 import com.alcatrazescapee.tinkersforging.client.model.material.ForgingMaterialTextureManager;
+import com.alcatrazescapee.tinkersforging.client.render.TESRCharcoalForge;
 import com.alcatrazescapee.tinkersforging.client.render.TESRTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
@@ -32,6 +33,7 @@ import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
+import com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.TickTimer;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
@@ -75,6 +77,7 @@ public final class ClientEventHandler
     {
         RegistryHelper.get(MOD_ID).initModels(event);
         ClientRegistry.bindTileEntitySpecialRenderer(TileTinkersAnvil.class, new TESRTinkersAnvil());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileCharcoalForge.class, new TESRCharcoalForge());
     }
 
     @SubscribeEvent

@@ -38,7 +38,7 @@ class GuiButtonAnvilPage extends GuiButton
             GlStateManager.color(1, 1, 1, 1);
             hovered = mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
             mc.getTextureManager().bindTexture(GuiTinkersAnvilPlan.BACKGROUND);
-            drawModalRectWithCustomSizedTexture(x, y, delta < 0 ? 176 : 185, 0, width, height, 256, 256);
+            drawModalRectWithCustomSizedTexture(x, y, delta < 0 ? 201 : 212, 3, width, height, 256, 256);
             mouseDragged(mc, mouseX, mouseY);
         }
     }

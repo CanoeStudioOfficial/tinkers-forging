@@ -67,10 +67,13 @@ public class ForgeSteps implements INBTSerializable<NBTTagCompound>
         {
             case FIELD_LAST_STEP:
                 steps.set(0, ForgeStep.valueOf(step));
+                break;
             case FIELD_SECOND_STEP:
                 steps.set(1, ForgeStep.valueOf(step));
+                break;
             case FIELD_THIRD_STEP:
                 steps.set(2, ForgeStep.valueOf(step));
+                break;
         }
     }
 
