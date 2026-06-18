@@ -103,6 +103,7 @@ material.aluminium.name=Aluminium
 
 # Items
 
+item.tinkersforging:flux.name=Flux
 item.tinkersforging:hammer.name=Tinker's Hammer
 item.tinkersforging:hammer.wood.name=Wooden Tinker's Hammer
 item.tinkersforging:hammer.stone.name=Stone Tinker's Hammer
