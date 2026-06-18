@@ -83,7 +83,7 @@ public final class ModItems
         r.registerItem(new ItemHammer(Item.ToolMaterial.WOOD), "hammer/wood", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.STONE), "hammer/stone", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.DIAMOND), "hammer/diamond", TAB_ITEMS);
-        r.registerItem(FLUX = new Item().setTranslationKey(MOD_ID + ":flux"), "flux", TAB_ITEMS);
+        r.registerItem(FLUX = new ItemFlux().setTranslationKey(MOD_ID + ":flux"), "flux", TAB_ITEMS);
     }
 
     private static boolean hasBuiltInHammer(MaterialType material)
