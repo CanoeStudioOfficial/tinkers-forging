@@ -15,6 +15,7 @@ import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -86,6 +87,43 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     public ItemStack getInputStack()
     {
         return inventory.getStackInSlot(SLOT_INPUT_MAIN);
+    }
+
+    public ItemStack getSelectedPlanOutput()
+    {
+        return inventory.getStackInSlot(SLOT_DISPLAY);
+    }
+
+    public boolean hasSelectablePlan()
+    {
+        return !ModRecipes.ANVIL.getAllMatching(inventory.getStackInSlot(SLOT_INPUT_MAIN), getTier()).isEmpty();
+    }
+
+    public boolean canWeldNow()
+    {
+        return canWeldNow(null);
+    }
+
+    public boolean canWeldNow(@Nullable EntityPlayer player)
+    {
+        ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        ItemStack secondary = inventory.getStackInSlot(SLOT_INPUT_SECOND);
+        ItemStack hammer = getHammer(player).stack;
+        ItemStack flux = inventory.getStackInSlot(SLOT_CATALYST);
+
+        if (main.isEmpty() || secondary.isEmpty() || hammer.isEmpty() || flux.isEmpty())
+            return false;
+        if (!CoreHelpers.doesStackMatchOre(hammer, "hammer"))
+            return false;
+        if (!isFlux(flux))
+            return false;
+
+        IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        if ((mainHeat != null && !mainHeat.isWorkable()) || (secondHeat != null && !secondHeat.isWorkable()))
+            return false;
+
+        return CoreHelpers.canMergeStacksUseNBT(main.copy(), secondary.copy()) && main.getCount() < main.getMaxStackSize();
     }
 
     public void setRecipe(@Nullable AnvilRecipe recipe)
@@ -187,7 +225,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             case SLOT_HAMMER:
                 return CoreHelpers.doesStackMatchOre(stack, "hammer");
             case SLOT_CATALYST:
-                return CoreHelpers.doesStackMatchOre(stack, "flux") || CoreHelpers.doesStackMatchOre(stack, "dustFlux") || CoreHelpers.doesStackMatchOre(stack, "gemBorax");
+                return isFlux(stack);
             default:
                 return false;
         }
@@ -258,7 +296,6 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
                 int targetRange = ModConfig.BALANCE.forgeTargetRange + (5 - cachedAnvilRecipe.getTier()) * ModConfig.BALANCE.forgeTierRangeMod;
                 if (Math.abs(workingProgress - workingTarget) <= targetRange && cachedAnvilRecipe.stepsMatch(steps))
                 {
-                    ItemStack output = inventory.getStackInSlot(SLOT_OUTPUT);
                     ItemStack newInput = cachedAnvilRecipe.consumeInput(input);
                     if (!newInput.isEmpty())
                     {
@@ -270,14 +307,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
                         }
                     }
 
-                    // Consume input + produce output / throw it in the world
-                    inventory.setStackInSlot(SLOT_INPUT_MAIN, newInput);
-                    ImmutablePair<ItemStack, ItemStack> result = mergeRecipeOutput(output, cachedAnvilRecipe.getOutput());
-                    inventory.setStackInSlot(SLOT_OUTPUT, result.getKey());
-                    if (!result.getValue().isEmpty())
+                    if (!newInput.isEmpty())
                     {
-                        CoreHelpers.dropItemInWorld(world, pos, result.getValue());
+                        CoreHelpers.dropItemInWorld(world, pos, newInput);
                     }
+                    inventory.setStackInSlot(SLOT_INPUT_MAIN, cachedAnvilRecipe.getOutput());
 
                     // Play sound
                     world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
@@ -339,7 +373,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             return;
 
         ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
-        List<AnvilRecipe> recipes = ModRecipes.ANVIL.getAllMatching(stack);
+        List<AnvilRecipe> recipes = ModRecipes.ANVIL.getAllMatching(stack, getTier());
         if (index >= 0 && index < recipes.size())
         {
             updateRecipe(recipes.get(index));
@@ -354,20 +388,25 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
         ItemStack secondary = inventory.getStackInSlot(SLOT_INPUT_SECOND);
-        ItemStack hammer = inventory.getStackInSlot(SLOT_HAMMER);
         ItemStack flux = inventory.getStackInSlot(SLOT_CATALYST);
+        HammerStack hammer = getHammer(player);
 
         if (main.isEmpty() || secondary.isEmpty())
         {
             sendProblem(player, "weld_no_inputs");
             return false;
         }
-        if (hammer.isEmpty() || !CoreHelpers.doesStackMatchOre(hammer, "hammer"))
+        if (hammer.stack.isEmpty())
         {
             sendProblem(player, "no_hammer");
             return false;
         }
         if (flux.isEmpty())
+        {
+            sendProblem(player, "no_flux");
+            return false;
+        }
+        if (!isFlux(flux))
         {
             sendProblem(player, "no_flux");
             return false;
@@ -397,12 +436,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         main.grow(moved);
         secondary.shrink(moved);
         flux.shrink(1);
-        hammer.damageItem(1, player);
+        damageHammer(hammer, player);
 
         inventory.setStackInSlot(SLOT_INPUT_MAIN, main);
         inventory.setStackInSlot(SLOT_INPUT_SECOND, secondary.isEmpty() ? ItemStack.EMPTY : secondary);
         inventory.setStackInSlot(SLOT_CATALYST, flux.isEmpty() ? ItemStack.EMPTY : flux);
-        inventory.setStackInSlot(SLOT_HAMMER, hammer.isEmpty() ? ItemStack.EMPTY : hammer);
         world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
         setAndUpdateSlots(SLOT_INPUT_MAIN);
         return true;
@@ -500,29 +538,61 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + translationKey)));
     }
 
-    private ImmutablePair<ItemStack, ItemStack> mergeRecipeOutput(ItemStack output, ItemStack produced)
+    private boolean isFlux(ItemStack stack)
     {
-        if (output.isEmpty())
+        return CoreHelpers.doesStackMatchOre(stack, "flux") || CoreHelpers.doesStackMatchOre(stack, "dustFlux") || CoreHelpers.doesStackMatchOre(stack, "gemBorax");
+    }
+
+    private HammerStack getHammer(@Nullable EntityPlayer player)
+    {
+        ItemStack anvilHammer = inventory.getStackInSlot(SLOT_HAMMER);
+        if (!anvilHammer.isEmpty() && CoreHelpers.doesStackMatchOre(anvilHammer, "hammer"))
         {
-            return ImmutablePair.of(produced, ItemStack.EMPTY);
-        }
-        if (produced.isEmpty())
-        {
-            return ImmutablePair.of(output, ItemStack.EMPTY);
-        }
-        if (!CoreHelpers.canMergeStacksUseNBT(output, produced))
-        {
-            return ImmutablePair.of(output, produced);
+            return new HammerStack(anvilHammer, true, null);
         }
 
-        int total = output.getCount() + produced.getCount();
-        int max = output.getMaxStackSize();
-        output.setCount(Math.min(total, max));
-        if (total <= max)
+        if (player != null)
         {
-            return ImmutablePair.of(output, ItemStack.EMPTY);
+            ItemStack mainHand = player.getHeldItemMainhand();
+            if (!mainHand.isEmpty() && CoreHelpers.doesStackMatchOre(mainHand, "hammer"))
+            {
+                return new HammerStack(mainHand, false, EnumHand.MAIN_HAND);
+            }
+
+            ItemStack offHand = player.getHeldItemOffhand();
+            if (!offHand.isEmpty() && CoreHelpers.doesStackMatchOre(offHand, "hammer"))
+            {
+                return new HammerStack(offHand, false, EnumHand.OFF_HAND);
+            }
         }
-        produced.setCount(total - max);
-        return ImmutablePair.of(output, produced);
+        return new HammerStack(ItemStack.EMPTY, false, null);
     }
+
+    private void damageHammer(HammerStack hammer, EntityPlayer player)
+    {
+        hammer.stack.damageItem(1, player);
+        if (hammer.inAnvil)
+        {
+            inventory.setStackInSlot(SLOT_HAMMER, hammer.stack.isEmpty() || hammer.stack.getCount() <= 0 ? ItemStack.EMPTY : hammer.stack);
+        }
+        else if (hammer.hand != null && hammer.stack.getCount() <= 0)
+        {
+            player.setHeldItem(hammer.hand, ItemStack.EMPTY);
+        }
+    }
+
+    private static final class HammerStack
+    {
+        private final ItemStack stack;
+        private final boolean inAnvil;
+        private final EnumHand hand;
+
+        private HammerStack(ItemStack stack, boolean inAnvil, @Nullable EnumHand hand)
+        {
+            this.stack = stack;
+            this.inAnvil = inAnvil;
+            this.hand = hand;
+        }
+    }
+
 }

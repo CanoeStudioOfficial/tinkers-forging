@@ -35,14 +35,22 @@ public class GuiTinkersAnvilPlan extends GuiContainerTileCore<TileTinkersAnvil>
 {
     static final ResourceLocation BACKGROUND = new ResourceLocation(MOD_ID, "textures/gui/anvil_plan.png");
     private static final int RECIPES_PER_PAGE = 18;
+    private static final int PAGE_LEFT = -1;
+    private static final int PAGE_RIGHT = -2;
 
     private final List<AnvilRecipe> recipes;
+    private final java.util.List<GuiButtonAnvilPlanSelect> recipeButtons;
+    private GuiButtonAnvilPage leftButton;
+    private GuiButtonAnvilPage rightButton;
+    private int maxPageInclusive;
     private int page;
 
     public GuiTinkersAnvilPlan(TileTinkersAnvil tile, String translationKey, Container container, InventoryPlayer playerInv)
     {
         super(tile, container, playerInv, BACKGROUND, translationKey);
-        this.recipes = ModRecipes.ANVIL.getAllMatching(tile.getInputStack());
+        this.recipes = ModRecipes.ANVIL.getAllMatching(tile.getInputStack(), tile.getTier());
+        this.recipeButtons = new java.util.ArrayList<>();
+        this.maxPageInclusive = 0;
         this.page = 0;
     }
 
@@ -50,7 +58,23 @@ public class GuiTinkersAnvilPlan extends GuiContainerTileCore<TileTinkersAnvil>
     public void initGui()
     {
         super.initGui();
-        refreshButtons();
+        recipeButtons.clear();
+
+        for (int i = 0; i < recipes.size(); i++)
+        {
+            int buttonPage = i / RECIPES_PER_PAGE;
+            int index = i % RECIPES_PER_PAGE;
+            int x = guiLeft + 7 + (index % 9) * 18;
+            int y = guiTop + 17 + (index / 9) * 18;
+            GuiButtonAnvilPlanSelect button = new GuiButtonAnvilPlanSelect(ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE + i, x, y, i, buttonPage, recipes.get(i));
+            recipeButtons.add(button);
+            buttonList.add(button);
+        }
+
+        maxPageInclusive = Math.max(0, (recipes.size() - 1) / RECIPES_PER_PAGE);
+        buttonList.add(leftButton = new GuiButtonAnvilPage(PAGE_LEFT, guiLeft + 7, guiTop + 56, -1));
+        buttonList.add(rightButton = new GuiButtonAnvilPage(PAGE_RIGHT, guiLeft + 160, guiTop + 56, 1));
+        updateCurrentPage();
     }
 
     @Override
@@ -58,9 +82,9 @@ public class GuiTinkersAnvilPlan extends GuiContainerTileCore<TileTinkersAnvil>
     {
         for (GuiButton button : buttonList)
         {
-            if (button instanceof PlanButton && button.isMouseOver())
+            if (button instanceof GuiButtonAnvilPlanSelect && button.isMouseOver())
             {
-                ItemStack output = ((PlanButton) button).getRecipe().getOutput();
+                ItemStack output = ((GuiButtonAnvilPlanSelect) button).getRecipe().getOutput();
                 renderToolTip(output, mouseX, mouseY);
                 return;
             }
@@ -80,95 +104,36 @@ public class GuiTinkersAnvilPlan extends GuiContainerTileCore<TileTinkersAnvil>
     @Override
     protected void actionPerformed(GuiButton button) throws IOException
     {
-        if (button instanceof PageButton)
+        if (button instanceof GuiButtonAnvilPage)
         {
-            page += ((PageButton) button).delta;
-            refreshButtons();
+            page += ((GuiButtonAnvilPage) button).getDelta();
+            updateCurrentPage();
             return;
         }
-        if (button instanceof PlanButton)
+        if (button instanceof GuiButtonAnvilPlanSelect)
         {
-            TinkersForging.getNetwork().sendToServer(new PacketAnvilButton(ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE + ((PlanButton) button).recipeIndex));
+            TinkersForging.getNetwork().sendToServer(new PacketAnvilButton(ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE + ((GuiButtonAnvilPlanSelect) button).getRecipeIndex()));
             return;
         }
         super.actionPerformed(button);
     }
 
-    private void refreshButtons()
+    private void updateCurrentPage()
     {
-        buttonList.clear();
-        int maxPage = Math.max(0, (recipes.size() - 1) / RECIPES_PER_PAGE);
         if (page < 0) page = 0;
-        if (page > maxPage) page = maxPage;
+        if (page > maxPageInclusive) page = maxPageInclusive;
 
-        int start = page * RECIPES_PER_PAGE;
-        for (int i = 0; i < RECIPES_PER_PAGE && start + i < recipes.size(); i++)
+        for (GuiButtonAnvilPlanSelect button : recipeButtons)
         {
-            int x = guiLeft + 7 + (i % 9) * 18;
-            int y = guiTop + 17 + (i / 9) * 18;
-            buttonList.add(new PlanButton(ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE + start + i, x, y, start + i, recipes.get(start + i)));
+            button.setCurrentPage(page);
         }
-        if (page > 0)
+        if (leftButton != null)
         {
-            buttonList.add(new PageButton(-1, guiLeft + 7, guiTop + 56, -1));
+            leftButton.visible = leftButton.enabled = page > 0;
         }
-        if (page < maxPage)
+        if (rightButton != null)
         {
-            buttonList.add(new PageButton(-2, guiLeft + 160, guiTop + 56, 1));
-        }
-    }
-
-    private class PlanButton extends GuiButton
-    {
-        private final int recipeIndex;
-        private final AnvilRecipe recipe;
-
-        private PlanButton(int id, int x, int y, int recipeIndex, AnvilRecipe recipe)
-        {
-            super(id, x, y, 18, 18, "");
-            this.recipeIndex = recipeIndex;
-            this.recipe = recipe;
-        }
-
-        @Override
-        public void drawButton(net.minecraft.client.Minecraft mc, int mouseX, int mouseY, float partialTicks)
-        {
-            if (!visible)
-                return;
-
-            hovered = mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
-            mc.getTextureManager().bindTexture(BACKGROUND);
-            drawModalRectWithCustomSizedTexture(x, y, 176, 0, width, height, 256, 256);
-            ItemStack output = recipe.getOutput();
-            itemRender.renderItemAndEffectIntoGUI(output, x + 1, y + 1);
-            itemRender.renderItemOverlayIntoGUI(fontRenderer, output, x + 1, y + 1, null);
-        }
-
-        private AnvilRecipe getRecipe()
-        {
-            return recipe;
-        }
-    }
-
-    private class PageButton extends GuiButton
-    {
-        private final int delta;
-
-        private PageButton(int id, int x, int y, int delta)
-        {
-            super(id, x, y, 9, 13, "");
-            this.delta = delta;
-        }
-
-        @Override
-        public void drawButton(net.minecraft.client.Minecraft mc, int mouseX, int mouseY, float partialTicks)
-        {
-            if (!visible)
-                return;
-
-            hovered = mouseX >= x && mouseY >= y && mouseX < x + width && mouseY < y + height;
-            mc.getTextureManager().bindTexture(BACKGROUND);
-            drawModalRectWithCustomSizedTexture(x, y, delta < 0 ? 201 : 212, 3, width, height, 256, 256);
+            rightButton.visible = rightButton.enabled = page < maxPageInclusive;
         }
     }
 }

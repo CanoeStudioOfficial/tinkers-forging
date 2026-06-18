@@ -53,11 +53,12 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         // Draw buttons here
         for (ForgeStep step : ForgeStep.values())
         {
-            addButton(new GuiButtonTinkersAnvil(++id, guiLeft, guiTop, step));
+            ++id;
+            addButton(new GuiButtonAnvilStep(step, guiLeft, guiTop));
         }
 
-        addButton(new GuiButtonTinkersAnvil(ContainerTinkersAnvil.ACTION_PLAN, guiLeft + 137, guiTop + 56, true, MOD_ID + ".tooltip.anvil_plan"));
-        addButton(new GuiButtonTinkersAnvil(ContainerTinkersAnvil.ACTION_WELD, guiLeft + 21, guiTop + 56, false, MOD_ID + ".tooltip.anvil_weld"));
+        addButton(new GuiButtonAnvilPlan(tile, guiLeft, guiTop));
+        addButton(new GuiButtonAnvilWeld(tile, guiLeft, guiTop));
     }
 
     @Override
@@ -83,12 +84,17 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         // Step Button Tooltips
         for (GuiButton button : buttonList)
         {
-            if (button instanceof GuiButtonTinkersAnvil && ((GuiButtonTinkersAnvil) button).hasTooltip())
+            if (button instanceof GuiButtonAnvilStep && button.isMouseOver())
             {
-                if (button.isMouseOver())
-                {
-                    drawHoveringText(I18n.format(((GuiButtonTinkersAnvil) button).getTooltip()), mouseX, mouseY);
-                }
+                drawHoveringText(I18n.format(((GuiButtonAnvilStep) button).getTooltip()), mouseX, mouseY);
+            }
+            if (button instanceof GuiButtonAnvilPlan && button.isMouseOver())
+            {
+                drawHoveringText(I18n.format(((GuiButtonAnvilPlan) button).getTooltip()), mouseX, mouseY);
+            }
+            if (button instanceof GuiButtonAnvilWeld && button.isMouseOver())
+            {
+                drawHoveringText(I18n.format(((GuiButtonAnvilWeld) button).getTooltip()), mouseX, mouseY);
             }
         }
         super.renderHoveredToolTip(mouseX, mouseY);
@@ -144,7 +150,7 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     protected void actionPerformed(GuiButton button) throws IOException
     {
         // Handle gui buttons being clicked here
-        if (button instanceof GuiButtonTinkersAnvil)
+        if (button instanceof GuiButtonAnvilStep || button instanceof GuiButtonAnvilPlan || button instanceof GuiButtonAnvilWeld)
         {
             TinkersForging.getNetwork().sendToServer(new PacketAnvilButton(button.id));
         }

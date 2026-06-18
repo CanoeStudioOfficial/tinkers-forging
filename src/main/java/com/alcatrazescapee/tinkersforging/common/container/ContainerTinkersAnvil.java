@@ -6,6 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -14,13 +15,12 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import com.alcatrazescapee.alcatrazcore.inventory.container.ContainerTileInventory;
-import com.alcatrazescapee.alcatrazcore.inventory.slot.SlotOutput;
 import com.alcatrazescapee.alcatrazcore.inventory.slot.SlotTileCore;
+import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
-import com.alcatrazescapee.tinkersforging.common.slot.SlotDisplay;
 import com.alcatrazescapee.tinkersforging.common.slot.SlotForgeInput;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeStep;
@@ -138,12 +138,10 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         IItemHandler cap = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         if (cap != null)
         {
-            addSlotToContainer(new SlotForgeInput(cap, SLOT_INPUT_MAIN, 22, 21, tile));
-            addSlotToContainer(new SlotForgeInput(cap, SLOT_INPUT_SECOND, 22, 39, tile));
-            addSlotToContainer(new SlotOutput(cap, SLOT_OUTPUT, 140, 21));
-            addSlotToContainer(new SlotTileCore(cap, SLOT_HAMMER, 140, 39, tile));
-            addSlotToContainer(new SlotTileCore(cap, SLOT_CATALYST, 22, 57, tile));
-            addSlotToContainer(new SlotDisplay(cap, SLOT_DISPLAY, 80, 21));
+            addSlotToContainer(new SlotForgeInput(cap, SLOT_INPUT_MAIN, 22, 76, tile));
+            addSlotToContainer(new SlotForgeInput(cap, SLOT_INPUT_SECOND, 22, 20, tile));
+            addSlotToContainer(new SlotTileCore(cap, SLOT_HAMMER, 138, 76, tile));
+            addSlotToContainer(new SlotTileCore(cap, SLOT_CATALYST, 22, 38, tile));
         }
     }
 
@@ -174,33 +172,75 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
             return false;
         }
 
-        Slot slot = inventorySlots.get(SLOT_HAMMER);
-        if (slot == null)
-            return false;
-
-        stack = slot.getStack();
-        if (!stack.isEmpty())
-        {
-            stack.damageItem(amount, player);
-            if (stack.getCount() <= 0)
-            {
-                slot.putStack(ItemStack.EMPTY);
-            }
-            else
-            {
-                slot.putStack(stack);
-            }
-            return true;
-        }
-        else
+        HammerStack hammer = getHammer();
+        if (hammer.stack.isEmpty())
         {
             sendProblem("no_hammer");
             return false;
         }
+
+        hammer.stack.damageItem(amount, player);
+        if (hammer.slot != null)
+        {
+            if (hammer.stack.getCount() <= 0)
+            {
+                hammer.slot.putStack(ItemStack.EMPTY);
+            }
+            else
+            {
+                hammer.slot.putStack(hammer.stack);
+            }
+        }
+        else if (hammer.hand != null && hammer.stack.getCount() <= 0)
+        {
+            player.setHeldItem(hammer.hand, ItemStack.EMPTY);
+        }
+        return true;
+    }
+
+    private HammerStack getHammer()
+    {
+        Slot slot = inventorySlots.get(SLOT_HAMMER);
+        if (slot != null)
+        {
+            ItemStack stack = slot.getStack();
+            if (!stack.isEmpty() && CoreHelpers.doesStackMatchOre(stack, "hammer"))
+            {
+                return new HammerStack(stack, slot, null);
+            }
+        }
+
+        ItemStack mainHand = player.getHeldItemMainhand();
+        if (!mainHand.isEmpty() && CoreHelpers.doesStackMatchOre(mainHand, "hammer"))
+        {
+            return new HammerStack(mainHand, null, EnumHand.MAIN_HAND);
+        }
+
+        ItemStack offHand = player.getHeldItemOffhand();
+        if (!offHand.isEmpty() && CoreHelpers.doesStackMatchOre(offHand, "hammer"))
+        {
+            return new HammerStack(offHand, null, EnumHand.OFF_HAND);
+        }
+
+        return new HammerStack(ItemStack.EMPTY, null, null);
     }
 
     private void sendProblem(String translationKey)
     {
         player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + translationKey)));
+    }
+
+    private static final class HammerStack
+    {
+        private final ItemStack stack;
+        private final Slot slot;
+        private final EnumHand hand;
+
+        private HammerStack(ItemStack stack, Slot slot, EnumHand hand)
+        {
+            this.stack = stack;
+            this.slot = slot;
+            this.hand = hand;
+        }
     }
 }

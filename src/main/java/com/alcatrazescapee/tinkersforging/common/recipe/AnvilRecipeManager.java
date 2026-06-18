@@ -121,4 +121,9 @@ public class AnvilRecipeManager implements IRecipeManager<AnvilRecipe>
     {
         return recipes.stream().filter(x -> x.test(input)).collect(Collectors.toList());
     }
+
+    public List<AnvilRecipe> getAllMatching(Object input, int tier)
+    {
+        return recipes.stream().filter(x -> x.getTier() <= tier && x.test(input)).collect(Collectors.toList());
+    }
 }
