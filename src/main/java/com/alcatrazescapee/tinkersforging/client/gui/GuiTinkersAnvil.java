@@ -39,6 +39,12 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
 {
     static final ResourceLocation BACKGROUND = new ResourceLocation(MOD_ID, "textures/gui/tinkers_anvil.png");
 
+    private static final int WORK_BAR_X = 13;
+    private static final int WORK_BAR_WIDTH = 145;
+    private static final int WORK_SCALE_Y = 94;
+    private static final int WORK_SCALE_MAX_LABEL = 14;
+    private static final int WORK_SCALE_COLOR = 0x006CFF;
+
     private static final boolean isJEIEnabled = Loader.isModLoaded("jei");
 
     public GuiTinkersAnvil(TileTinkersAnvil tile, String translationKey, Container container, InventoryPlayer playerInv)
@@ -104,6 +110,13 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     }
 
     @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY)
+    {
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        drawWorkScaleLabels();
+    }
+
+    @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
         mc.getTextureManager().bindTexture(BACKGROUND);
@@ -163,6 +176,16 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
             }
         }
 
+    }
+
+    private void drawWorkScaleLabels()
+    {
+        for (int i = 0; i <= WORK_SCALE_MAX_LABEL; i++)
+        {
+            String label = Integer.toString(i);
+            int x = WORK_BAR_X + (i * WORK_BAR_WIDTH) / WORK_SCALE_MAX_LABEL - fontRenderer.getStringWidth(label) / 2;
+            fontRenderer.drawString(label, x, WORK_SCALE_Y, WORK_SCALE_COLOR);
+        }
     }
 
     private void drawTarget(int target, int range)
