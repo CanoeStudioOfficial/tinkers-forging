@@ -188,6 +188,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             // update server side fields
             workingProgress = cap.getWork();
             steps = cap.getSteps().copy();
+            if (steps.isEmpty() && workingProgress == IForgeItem.MAX_WORK / 2)
+            {
+                cap.setWork(IForgeItem.DEFAULT_WORK);
+                workingProgress = IForgeItem.DEFAULT_WORK;
+            }
 
             workingTarget = cachedAnvilRecipe.getWorkingTarget(world.getSeed());
             rules = cachedAnvilRecipe.getRules();

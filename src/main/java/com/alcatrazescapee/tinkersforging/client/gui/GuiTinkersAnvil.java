@@ -42,9 +42,6 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
 
     private static final int WORK_BAR_X = 13;
     private static final int WORK_BAR_WIDTH = 145;
-    private static final int WORK_SCALE_Y = 94;
-    private static final int WORK_SCALE_MAX_LABEL = 14;
-    private static final int WORK_SCALE_COLOR = 0x006CFF;
 
     private static final boolean isJEIEnabled = Loader.isModLoaded("jei");
 
@@ -111,13 +108,6 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY)
-    {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-        drawWorkScaleLabels();
-    }
-
-    @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY)
     {
         mc.getTextureManager().bindTexture(BACKGROUND);
@@ -132,7 +122,7 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         {
             // Progress + Target
             int progress = tile.getField(TileTinkersAnvil.FIELD_PROGRESS);
-            drawTexturedModalRect(guiLeft + WORK_BAR_X + scaleWork(progress), guiTop + 104, 176, 0, 5, 5);
+            drawTexturedModalRect(guiLeft + WORK_BAR_X + clampWork(progress), guiTop + 104, 176, 0, 5, 5);
 
             int target = tile.getField(TileTinkersAnvil.FIELD_TARGET);
             int range = ModConfig.BALANCE.forgeTargetRange + (5 - recipe.getTier()) * ModConfig.BALANCE.forgeTierRangeMod;
@@ -179,26 +169,16 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
 
     }
 
-    private void drawWorkScaleLabels()
-    {
-        for (int i = 0; i <= WORK_SCALE_MAX_LABEL; i++)
-        {
-            String label = Integer.toString(i);
-            int x = WORK_BAR_X + (i * WORK_BAR_WIDTH) / WORK_SCALE_MAX_LABEL - fontRenderer.getStringWidth(label) / 2;
-            fontRenderer.drawString(label, x, WORK_SCALE_Y, WORK_SCALE_COLOR);
-        }
-    }
-
     private void drawTarget(int target, int range)
     {
         if (range < 2)
         {
-            drawTexturedModalRect(guiLeft + WORK_BAR_X + scaleWork(target), guiTop + 98, 181, 0, 5, 5);
+            drawTexturedModalRect(guiLeft + WORK_BAR_X + clampWork(target), guiTop + 98, 181, 0, 5, 5);
         }
         else
         {
-            int leftLimit = scaleWork(Math.max(IForgeItem.MIN_WORK, target - range));
-            int rightLimit = scaleWork(Math.min(IForgeItem.MAX_WORK - 1, target + range));
+            int leftLimit = clampWork(target - range);
+            int rightLimit = clampWork(target + range);
 
             drawTexturedModalRect(guiLeft + WORK_BAR_X + leftLimit, guiTop + 96, 176, 7, 5, 7);
             drawTexturedModalRect(guiLeft + WORK_BAR_X + rightLimit, guiTop + 96, 186, 7, 5, 7);
@@ -213,10 +193,9 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         }
     }
 
-    private static int scaleWork(int work)
+    private static int clampWork(int work)
     {
-        int clamped = Math.max(IForgeItem.MIN_WORK, Math.min(IForgeItem.MAX_WORK - 1, work));
-        return Math.round((float) clamped * WORK_BAR_WIDTH / (IForgeItem.MAX_WORK - 1));
+        return Math.max(IForgeItem.MIN_WORK, Math.min(WORK_BAR_WIDTH, work));
     }
 
     @Override

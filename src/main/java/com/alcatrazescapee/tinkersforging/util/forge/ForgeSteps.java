@@ -91,11 +91,12 @@ public class ForgeSteps implements INBTSerializable<NBTTagCompound>
     @Override
     public void deserializeNBT(@Nullable NBTTagCompound nbt)
     {
-        if (nbt != null)
+        reset();
+        if (nbt != null && (nbt.hasKey("last") || nbt.hasKey("second") || nbt.hasKey("third")))
         {
-            addStep(ForgeStep.valueOf(nbt.getInteger("last")));
-            addStep(ForgeStep.valueOf(nbt.getInteger("second")));
-            addStep(ForgeStep.valueOf(nbt.getInteger("third")));
+            setStep(FIELD_LAST_STEP, nbt.hasKey("last") ? nbt.getInteger("last") : -1);
+            setStep(FIELD_SECOND_STEP, nbt.hasKey("second") ? nbt.getInteger("second") : -1);
+            setStep(FIELD_THIRD_STEP, nbt.hasKey("third") ? nbt.getInteger("third") : -1);
         }
     }
 
