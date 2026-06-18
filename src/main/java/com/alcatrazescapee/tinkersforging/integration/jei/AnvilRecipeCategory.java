@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -147,8 +148,11 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
             {
                 if (ruleDrawables[i] != null && ruleDrawables[i + rules.length] != null)
                 {
+                    GlStateManager.color(1f, 1f, 1f, 1f);
                     ruleDrawables[i].draw(minecraft, 39 + 22 * i, 25);
+                    GlStateManager.color(1f, 0.4f, 0f, 1f);
                     ruleDrawables[i + rules.length].draw(minecraft, 37 + 22 * i, 25);
+                    GlStateManager.color(1f, 1f, 1f, 1f);
                 }
             }
         }
