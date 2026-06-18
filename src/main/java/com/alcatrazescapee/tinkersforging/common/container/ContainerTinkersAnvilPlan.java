@@ -23,7 +23,7 @@ public class ContainerTinkersAnvilPlan extends ContainerTileInventory<TileTinker
 
     public ContainerTinkersAnvilPlan(EntityPlayer player, TileTinkersAnvil tile)
     {
-        super(player.inventory, tile, 0, 56);
+        super(player.inventory, tile, 0, 0);
         this.player = player;
         tile.setCurrentPlayer(player);
     }

@@ -22,7 +22,7 @@ public class ContainerCharcoalForge extends ContainerTileInventory<TileCharcoalF
 {
     public ContainerCharcoalForge(InventoryPlayer playerInv, TileCharcoalForge tile)
     {
-        super(playerInv, tile);
+        super(playerInv, tile, 0, 20);
     }
 
     @Override
