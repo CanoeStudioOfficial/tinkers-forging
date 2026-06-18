@@ -22,6 +22,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.alcatrazcore.client.gui.GuiContainerTileCore;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
+import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilButton;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
@@ -131,7 +132,7 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         {
             // Progress + Target
             int progress = tile.getField(TileTinkersAnvil.FIELD_PROGRESS);
-            drawTexturedModalRect(guiLeft + 13 + progress, guiTop + 104, 176, 0, 5, 5);
+            drawTexturedModalRect(guiLeft + WORK_BAR_X + scaleWork(progress), guiTop + 104, 176, 0, 5, 5);
 
             int target = tile.getField(TileTinkersAnvil.FIELD_TARGET);
             int range = ModConfig.BALANCE.forgeTargetRange + (5 - recipe.getTier()) * ModConfig.BALANCE.forgeTierRangeMod;
