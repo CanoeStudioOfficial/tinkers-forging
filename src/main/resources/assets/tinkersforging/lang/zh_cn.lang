@@ -76,6 +76,7 @@ tinkersforging.jei.category.anvil=锻造
 
 # Items
 
+item.tinkersforging:flux.name=助焊剂
 item.tinkersforging:hammer.wood.name=木制工匠锤
 item.tinkersforging:hammer.stone.name=石制工匠锤
 
