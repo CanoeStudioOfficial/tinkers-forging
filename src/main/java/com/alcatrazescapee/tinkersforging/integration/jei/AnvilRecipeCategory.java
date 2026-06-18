@@ -44,6 +44,12 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     private static final int JEI_RULE_OUTLINE_V_OFFSET = 40;
     private static final int JEI_RULE_OUTLINE_WIDTH = 18;
     private static final int JEI_RULE_OUTLINE_HEIGHT = 24;
+    private static final int JEI_RULE_ICON_U_OFFSET = 1;
+    private static final int JEI_RULE_ICON_V_OFFSET = 1;
+    private static final int JEI_RULE_ICON_WIDTH = 14;
+    private static final int JEI_RULE_ICON_HEIGHT = 14;
+    private static final int JEI_RULE_ICON_X_OFFSET = 2;
+    private static final int JEI_RULE_ICON_Y_OFFSET = 2;
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -130,7 +136,7 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
                 if (rule != null)
                 {
                     // The rule icon
-                    ruleDrawables[i] = JEIIntegration.guiHelper.createDrawable(ANVIL_GUI_LOCATION, rule.getIconU(), rule.getIconV(), 16, 16);
+                    ruleDrawables[i] = JEIIntegration.guiHelper.createDrawable(ANVIL_GUI_LOCATION, rule.getIconU() + JEI_RULE_ICON_U_OFFSET, rule.getIconV() + JEI_RULE_ICON_V_OFFSET, JEI_RULE_ICON_WIDTH, JEI_RULE_ICON_HEIGHT);
                     // The JEI card uses a smaller outline than the in-world anvil GUI.
                     ruleDrawables[i + rules.length] = JEIIntegration.guiHelper.createDrawable(BACKGROUND_LOCATION, JEI_RULE_OUTLINE_U, JEI_RULE_OUTLINE_V_OFFSET + rule.getOutlineV(), JEI_RULE_OUTLINE_WIDTH, JEI_RULE_OUTLINE_HEIGHT);
                 }
@@ -151,8 +157,10 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
             {
                 if (ruleDrawables[i] != null && ruleDrawables[i + rules.length] != null)
                 {
-                    ruleDrawables[i].draw(minecraft, 39 + 22 * i, 25);
-                    ruleDrawables[i + rules.length].draw(minecraft, 37 + 22 * i, 25);
+                    int x = 37 + 22 * i;
+                    int y = 25;
+                    ruleDrawables[i].draw(minecraft, x + JEI_RULE_ICON_X_OFFSET, y + JEI_RULE_ICON_Y_OFFSET);
+                    ruleDrawables[i + rules.length].draw(minecraft, x, y);
                 }
             }
         }
@@ -164,7 +172,7 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
             for (int i = 0; i < rules.length; i++)
             {
                 int x = 37 + 22 * i;
-                if (mouseX >= x && mouseY >= 25 && mouseX < x + 20 && mouseY < 25 + 22)
+                if (mouseX >= x && mouseY >= 25 && mouseX < x + JEI_RULE_OUTLINE_WIDTH && mouseY < 25 + JEI_RULE_OUTLINE_HEIGHT)
                 {
                     ForgeRule rule = rules[i];
                     if (rule != null)
