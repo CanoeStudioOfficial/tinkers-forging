@@ -7,6 +7,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -162,12 +165,12 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
         if (tile.getTier() < recipe.getTier())
         {
-            player.sendMessage(new net.minecraft.util.text.TextComponentString("" + net.minecraft.util.text.TextFormatting.RED).appendSibling(new net.minecraft.util.text.TextComponentTranslation(MOD_ID + ".tooltip.tier_too_low")));
+            sendProblem("tier_too_low");
             return false;
         }
         if (!cap.isWorkable())
         {
-            player.sendMessage(new net.minecraft.util.text.TextComponentString("" + net.minecraft.util.text.TextFormatting.RED).appendSibling(new net.minecraft.util.text.TextComponentTranslation(MOD_ID + ".tooltip.too_cold")));
+            sendProblem("too_cold");
             return false;
         }
 
@@ -191,8 +194,13 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
         else
         {
-            player.sendMessage(new net.minecraft.util.text.TextComponentString("" + net.minecraft.util.text.TextFormatting.RED).appendSibling(new net.minecraft.util.text.TextComponentTranslation(MOD_ID + ".tooltip.no_hammer")));
+            sendProblem("no_hammer");
             return false;
         }
+    }
+
+    private void sendProblem(String translationKey)
+    {
+        player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + translationKey)));
     }
 }
