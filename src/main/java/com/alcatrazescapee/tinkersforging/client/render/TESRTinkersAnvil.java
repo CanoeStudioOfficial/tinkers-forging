@@ -26,6 +26,8 @@ import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.SL
 @SideOnly(Side.CLIENT)
 public class TESRTinkersAnvil extends TileEntitySpecialRenderer<TileTinkersAnvil>
 {
+    private static final float ITEM_SCALE = 0.3f;
+
     @Override
     public void render(TileTinkersAnvil tile, double x, double y, double z, float partialTicks, int destroyStage, float alpha)
     {
@@ -35,42 +37,34 @@ public class TESRTinkersAnvil extends TileEntitySpecialRenderer<TileTinkersAnvil
         if (cap != null)
         {
             int rotation = tile.getBlockMetadata();
+            float yOffset = tile.getTier() == 0 ? 0.875f : 0.6875f;
 
             GlStateManager.pushMatrix();
-            GlStateManager.translate(x + 0.5, y + 0.003125D + 0.6875D, z + 0.5);
-            GlStateManager.scale(0.3f, 0.3f, 0.3f);
+            GlStateManager.translate(x + 0.5, y + 0.003125D + yOffset, z + 0.5);
+            GlStateManager.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
             GlStateManager.rotate(90f, 1f, 0f, 0f);
-            GlStateManager.rotate(90f * (float) rotation + 270f, 0f, 0f, 1f);
-            GlStateManager.translate(-0.4f, 0, 0);
+            GlStateManager.rotate(90f * (float) rotation + 180f, 0f, 0f, 1f);
 
-            renderStack(cap.getStackInSlot(SLOT_HAMMER));
+            renderStack(cap.getStackInSlot(SLOT_HAMMER), -0.4f, 0f, 0f, 1f);
+            renderStack(cap.getStackInSlot(SLOT_INPUT_MAIN), 0.75f, 0f, 0f, 1f);
+            renderStack(cap.getStackInSlot(SLOT_INPUT_SECOND), 1.15f, 0f, -0.05f, 1f);
 
-            GlStateManager.translate(1.15f, 0, 0);
-            renderStack(cap.getStackInSlot(SLOT_INPUT_MAIN));
-
-            GlStateManager.translate(0.4f, 0, -0.05f);
-            renderStack(cap.getStackInSlot(SLOT_INPUT_SECOND));
-
-            ItemStack catalyst = cap.getStackInSlot(SLOT_CATALYST);
-            if (!catalyst.isEmpty())
-            {
-                GlStateManager.pushMatrix();
-                GlStateManager.translate(-0.9f, -0.25f, 0.05f);
-                GlStateManager.scale(0.6f, 0.6f, 0.6f);
-                renderStack(catalyst);
-                GlStateManager.popMatrix();
-            }
+            renderStack(cap.getStackInSlot(SLOT_CATALYST), 0.25f, -0.25f, 0f, 0.6f);
 
             GlStateManager.popMatrix();
 
         }
     }
 
-    private void renderStack(ItemStack stack)
+    private void renderStack(ItemStack stack, float x, float y, float z, float scale)
     {
         if (!stack.isEmpty())
         {
+            GlStateManager.pushMatrix();
+            GlStateManager.translate(x, y, z);
+            GlStateManager.scale(scale, scale, scale);
             Minecraft.getMinecraft().getRenderItem().renderItem(stack, ItemCameraTransforms.TransformType.FIXED);
+            GlStateManager.popMatrix();
         }
     }
 
