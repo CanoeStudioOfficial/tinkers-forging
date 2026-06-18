@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -41,6 +40,10 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     private static final String TRANSLATION_KEY = MOD_ID + ".jei.category.anvil";
     private static final ResourceLocation BACKGROUND_LOCATION = new ResourceLocation(MOD_ID, "textures/jei/anvil.png");
     private static final ResourceLocation ANVIL_GUI_LOCATION = new ResourceLocation(MOD_ID, "textures/gui/tinkers_anvil.png");
+    private static final int JEI_RULE_OUTLINE_U = 187;
+    private static final int JEI_RULE_OUTLINE_V_OFFSET = 40;
+    private static final int JEI_RULE_OUTLINE_WIDTH = 18;
+    private static final int JEI_RULE_OUTLINE_HEIGHT = 24;
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -128,8 +131,8 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
                 {
                     // The rule icon
                     ruleDrawables[i] = JEIIntegration.guiHelper.createDrawable(ANVIL_GUI_LOCATION, rule.getIconU(), rule.getIconV(), 16, 16);
-                    // The color / border
-                    ruleDrawables[i + rules.length] = JEIIntegration.guiHelper.createDrawable(ANVIL_GUI_LOCATION, rule.getOutlineU(), rule.getOutlineV(), 20, 22);
+                    // The JEI card uses a smaller outline than the in-world anvil GUI.
+                    ruleDrawables[i + rules.length] = JEIIntegration.guiHelper.createDrawable(BACKGROUND_LOCATION, JEI_RULE_OUTLINE_U, JEI_RULE_OUTLINE_V_OFFSET + rule.getOutlineV(), JEI_RULE_OUTLINE_WIDTH, JEI_RULE_OUTLINE_HEIGHT);
                 }
             }
         }
@@ -148,11 +151,8 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
             {
                 if (ruleDrawables[i] != null && ruleDrawables[i + rules.length] != null)
                 {
-                    GlStateManager.color(1f, 1f, 1f, 1f);
                     ruleDrawables[i].draw(minecraft, 39 + 22 * i, 25);
-                    GlStateManager.color(1f, 0.4f, 0f, 1f);
                     ruleDrawables[i + rules.length].draw(minecraft, 37 + 22 * i, 25);
-                    GlStateManager.color(1f, 1f, 1f, 1f);
                 }
             }
         }
