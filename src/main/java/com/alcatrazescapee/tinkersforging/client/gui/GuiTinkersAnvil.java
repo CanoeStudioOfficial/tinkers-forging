@@ -20,6 +20,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.client.gui.GuiContainerTileCore;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
+import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilButton;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
@@ -55,8 +56,8 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
             addButton(new GuiButtonTinkersAnvil(++id, guiLeft, guiTop, step));
         }
 
-        addButton(new GuiButtonTinkersAnvil(++id, guiLeft + 63, guiTop + 21, false));
-        addButton(new GuiButtonTinkersAnvil(++id, guiLeft + 103, guiTop + 21, true));
+        addButton(new GuiButtonTinkersAnvil(ContainerTinkersAnvil.ACTION_PLAN, guiLeft + 137, guiTop + 56, true, MOD_ID + ".tooltip.anvil_plan"));
+        addButton(new GuiButtonTinkersAnvil(ContainerTinkersAnvil.ACTION_WELD, guiLeft + 21, guiTop + 56, false, MOD_ID + ".tooltip.anvil_weld"));
     }
 
     @Override
@@ -146,14 +147,6 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         if (button instanceof GuiButtonTinkersAnvil)
         {
             TinkersForging.getNetwork().sendToServer(new PacketAnvilButton(button.id));
-            if (button.id == 8)
-            {
-                tile.cycleForgeRecipe(false);
-            }
-            else if (button.id == 9)
-            {
-                tile.cycleForgeRecipe(true);
-            }
         }
         super.actionPerformed(button);
     }

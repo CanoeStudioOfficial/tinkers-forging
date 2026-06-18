@@ -23,6 +23,7 @@ import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.tinkersforging.client.gui.GuiCharcoalForge;
 import com.alcatrazescapee.tinkersforging.client.gui.GuiForge;
 import com.alcatrazescapee.tinkersforging.client.gui.GuiTinkersAnvil;
+import com.alcatrazescapee.tinkersforging.client.gui.GuiTinkersAnvilPlan;
 import com.alcatrazescapee.tinkersforging.client.model.ForgingMaterialModelLoader;
 import com.alcatrazescapee.tinkersforging.client.model.material.ForgingMaterialTextureManager;
 import com.alcatrazescapee.tinkersforging.common.blocks.ModBlocks;
@@ -59,6 +60,9 @@ public class ClientProxy extends CommonProxy
             case ModGuiHandler.TINKERS_ANVIL:
                 Block block = world.getBlockState(pos).getBlock();
                 return new GuiTinkersAnvil(CoreHelpers.getTE(world, pos, TileTinkersAnvil.class), block.getTranslationKey(), container, player.inventory);
+            case ModGuiHandler.TINKERS_ANVIL_PLAN:
+                block = world.getBlockState(pos).getBlock();
+                return new GuiTinkersAnvilPlan(CoreHelpers.getTE(world, pos, TileTinkersAnvil.class), block.getTranslationKey(), container, player.inventory);
             case ModGuiHandler.FORGE:
                 return new GuiForge(CoreHelpers.getTE(world, pos, TileForge.class), container, player.inventory, ModBlocks.FORGE.getTranslationKey());
             case ModGuiHandler.CHARCOAL_FORGE:

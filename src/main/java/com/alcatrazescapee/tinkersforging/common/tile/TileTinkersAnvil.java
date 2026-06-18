@@ -9,11 +9,16 @@ package com.alcatrazescapee.tinkersforging.common.tile;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import java.util.List;
+
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -33,6 +38,8 @@ import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeStep;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeSteps;
 
+import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
+
 @ParametersAreNonnullByDefault
 public class TileTinkersAnvil extends TileInventory implements ITileFields
 {
@@ -45,10 +52,15 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     public static final int FIELD_SECOND_RULE = 6;
     public static final int FIELD_THIRD_RULE = 7;
 
-    public static final int SLOT_INPUT = 0;
-    public static final int SLOT_OUTPUT = 1;
-    public static final int SLOT_HAMMER = 2;
-    public static final int SLOT_DISPLAY = 3;
+    public static final int SLOT_INPUT_MAIN = 0;
+    public static final int SLOT_INPUT_SECOND = 1;
+    public static final int SLOT_OUTPUT = 2;
+    public static final int SLOT_HAMMER = 3;
+    public static final int SLOT_CATALYST = 4;
+    public static final int SLOT_DISPLAY = 5;
+
+    @Deprecated
+    public static final int SLOT_INPUT = SLOT_INPUT_MAIN;
 
     private AnvilRecipe cachedAnvilRecipe = null;
     private EntityPlayer currentPlayer = null;
@@ -59,7 +71,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     public TileTinkersAnvil()
     {
-        super(4);
+        super(6);
 
         steps = new ForgeSteps();
         rules = new ForgeRule[3];
@@ -71,6 +83,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return cachedAnvilRecipe;
     }
 
+    public ItemStack getInputStack()
+    {
+        return inventory.getStackInSlot(SLOT_INPUT_MAIN);
+    }
+
     public void setRecipe(@Nullable AnvilRecipe recipe)
     {
         cachedAnvilRecipe = recipe;
@@ -79,7 +96,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         // note on client the recipe is only a shallow copy of the actual recipe (it has no input paramaters)
         if (recipe != null)
         {
-            ItemStack stack = inventory.getStackInSlot(SLOT_INPUT);
+            ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
             IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
             if (cap != null)
             {
@@ -102,7 +119,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         if (world.isRemote)
             return;
 
-        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT);
+        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
         IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
 
         if (cap != null)
@@ -165,9 +182,12 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         switch (slot)
         {
             case SLOT_INPUT:
+            case SLOT_INPUT_SECOND:
                 return stack.hasCapability(CapabilityForgeItem.CAPABILITY, null);
             case SLOT_HAMMER:
                 return CoreHelpers.doesStackMatchOre(stack, "hammer");
+            case SLOT_CATALYST:
+                return CoreHelpers.doesStackMatchOre(stack, "flux") || CoreHelpers.doesStackMatchOre(stack, "dustFlux") || CoreHelpers.doesStackMatchOre(stack, "gemBorax");
             default:
                 return false;
         }
@@ -179,7 +199,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         // -1 is to skip the display slot
         for (int i = 0; i < inventory.getSlots() - 1; ++i)
         {
-            if (i == SLOT_INPUT)
+            if (i == SLOT_INPUT_MAIN || i == SLOT_INPUT_SECOND)
             {
                 ItemStack input = inventory.getStackInSlot(i);
                 CapabilityForgeItem.clearStackCheckRecipe(input);
@@ -207,7 +227,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         // This is only called server side
         if (cachedAnvilRecipe != null)
         {
-            ItemStack stack = inventory.getStackInSlot(SLOT_INPUT);
+            ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
             if (isForwards)
                 cachedAnvilRecipe = ModRecipes.ANVIL.getNext(cachedAnvilRecipe, stack);
             else
@@ -219,7 +239,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     public void addStep(@Nullable ForgeStep step)
     {
         // This is only called on server
-        ItemStack input = inventory.getStackInSlot(SLOT_INPUT);
+        ItemStack input = inventory.getStackInSlot(SLOT_INPUT_MAIN);
         IForgeItem cap = input.getCapability(CapabilityForgeItem.CAPABILITY, null);
 
         if (cap != null)
@@ -251,7 +271,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
                     }
 
                     // Consume input + produce output / throw it in the world
-                    inventory.setStackInSlot(SLOT_INPUT, newInput);
+                    inventory.setStackInSlot(SLOT_INPUT_MAIN, newInput);
                     ImmutablePair<ItemStack, ItemStack> result = mergeRecipeOutput(output, cachedAnvilRecipe.getOutput());
                     inventory.setStackInSlot(SLOT_OUTPUT, result.getKey());
                     if (!result.getValue().isEmpty())
@@ -295,7 +315,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
                             newCap.reset();
                         }
                     }
-                    inventory.setStackInSlot(SLOT_INPUT, newInput);
+                    inventory.setStackInSlot(SLOT_INPUT_MAIN, newInput);
                     world.playSound(null, pos, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1.0f, 1.0f);
                 }
             }
@@ -303,6 +323,89 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             // update recipe
             setAndUpdateSlots(0);
         }
+    }
+
+    public void openPlanGui(EntityPlayer player)
+    {
+        if (world != null && !world.isRemote)
+        {
+            player.openGui(TinkersForging.getInstance(), com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler.TINKERS_ANVIL_PLAN, world, pos.getX(), pos.getY(), pos.getZ());
+        }
+    }
+
+    public void selectPlan(int index)
+    {
+        if (world == null || world.isRemote)
+            return;
+
+        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        List<AnvilRecipe> recipes = ModRecipes.ANVIL.getAllMatching(stack);
+        if (index >= 0 && index < recipes.size())
+        {
+            updateRecipe(recipes.get(index));
+            setAndUpdateSlots(SLOT_INPUT_MAIN);
+        }
+    }
+
+    public boolean tryWeld(EntityPlayer player)
+    {
+        if (world == null || world.isRemote)
+            return false;
+
+        ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        ItemStack secondary = inventory.getStackInSlot(SLOT_INPUT_SECOND);
+        ItemStack hammer = inventory.getStackInSlot(SLOT_HAMMER);
+        ItemStack flux = inventory.getStackInSlot(SLOT_CATALYST);
+
+        if (main.isEmpty() || secondary.isEmpty())
+        {
+            sendProblem(player, "weld_no_inputs");
+            return false;
+        }
+        if (hammer.isEmpty() || !CoreHelpers.doesStackMatchOre(hammer, "hammer"))
+        {
+            sendProblem(player, "no_hammer");
+            return false;
+        }
+        if (flux.isEmpty())
+        {
+            sendProblem(player, "no_flux");
+            return false;
+        }
+
+        IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        if ((mainHeat != null && !mainHeat.isWorkable()) || (secondHeat != null && !secondHeat.isWorkable()))
+        {
+            sendProblem(player, "too_cold");
+            return false;
+        }
+        if (!CoreHelpers.canMergeStacksUseNBT(main.copy(), secondary.copy()))
+        {
+            sendProblem(player, "weld_mismatch");
+            return false;
+        }
+
+        int max = main.getMaxStackSize();
+        int moved = Math.min(secondary.getCount(), max - main.getCount());
+        if (moved <= 0)
+        {
+            sendProblem(player, "weld_full");
+            return false;
+        }
+
+        main.grow(moved);
+        secondary.shrink(moved);
+        flux.shrink(1);
+        hammer.damageItem(1, player);
+
+        inventory.setStackInSlot(SLOT_INPUT_MAIN, main);
+        inventory.setStackInSlot(SLOT_INPUT_SECOND, secondary.isEmpty() ? ItemStack.EMPTY : secondary);
+        inventory.setStackInSlot(SLOT_CATALYST, flux.isEmpty() ? ItemStack.EMPTY : flux);
+        inventory.setStackInSlot(SLOT_HAMMER, hammer.isEmpty() ? ItemStack.EMPTY : hammer);
+        world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        setAndUpdateSlots(SLOT_INPUT_MAIN);
+        return true;
     }
 
     @Override
@@ -390,6 +493,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             steps.reset();
             rules = new ForgeRule[3];
         }
+    }
+
+    private void sendProblem(EntityPlayer player, String translationKey)
+    {
+        player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + translationKey)));
     }
 
     private ImmutablePair<ItemStack, ItemStack> mergeRecipeOutput(ItemStack output, ItemStack produced)

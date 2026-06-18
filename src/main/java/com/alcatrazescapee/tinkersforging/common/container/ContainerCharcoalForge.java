@@ -16,8 +16,7 @@ import com.alcatrazescapee.alcatrazcore.inventory.container.ContainerTileInvento
 import com.alcatrazescapee.alcatrazcore.inventory.slot.SlotTileCore;
 import com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge;
 
-import static com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge.SLOT_INPUT_MAX;
-import static com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge.SLOT_INPUT_MIN;
+import static com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge.*;
 
 public class ContainerCharcoalForge extends ContainerTileInventory<TileCharcoalForge>
 {
@@ -32,8 +31,24 @@ public class ContainerCharcoalForge extends ContainerTileInventory<TileCharcoalF
         IItemHandler cap = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         if (cap != null)
         {
-            for (int i = SLOT_INPUT_MIN; i < SLOT_INPUT_MAX; i++)
-                addSlotToContainer(new SlotTileCore(cap, i, 44 + 18 * (i - SLOT_INPUT_MIN), 23, tile));
+            int index = SLOT_FUEL_MIN;
+            addSlotToContainer(new SlotTileCore(cap, index++, 80, 70, tile));
+            addSlotToContainer(new SlotTileCore(cap, index++, 98, 52, tile));
+            addSlotToContainer(new SlotTileCore(cap, index++, 62, 52, tile));
+            addSlotToContainer(new SlotTileCore(cap, index++, 116, 34, tile));
+            addSlotToContainer(new SlotTileCore(cap, index, 44, 34, tile));
+
+            index = SLOT_INPUT_MIN;
+            addSlotToContainer(new SlotTileCore(cap, index++, 80, 52, tile));
+            addSlotToContainer(new SlotTileCore(cap, index++, 98, 34, tile));
+            addSlotToContainer(new SlotTileCore(cap, index++, 62, 34, tile));
+            addSlotToContainer(new SlotTileCore(cap, index++, 116, 16, tile));
+            addSlotToContainer(new SlotTileCore(cap, index, 44, 16, tile));
+
+            for (int i = SLOT_EXTRA_MIN; i <= SLOT_EXTRA_MAX; i++)
+            {
+                addSlotToContainer(new SlotTileCore(cap, i, 152, 16 + 18 * (i - SLOT_EXTRA_MIN), tile));
+            }
         }
     }
 

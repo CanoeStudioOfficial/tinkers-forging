@@ -1,9 +1,3 @@
-/*
- * Part of the Tinkers Forging Mod by alcatrazEscapee
- * Work under Copyright. Licensed under the GPL-3.0.
- * See the project LICENSE.md for more information.
- */
-
 package com.alcatrazescapee.tinkersforging.common.container;
 
 import javax.annotation.Nonnull;
@@ -13,9 +7,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -37,6 +28,11 @@ import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.*;
 @ParametersAreNonnullByDefault
 public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnvil>
 {
+    public static final int ACTION_PLAN = 8;
+    public static final int ACTION_WELD = 9;
+    public static final int ACTION_PLAN_SELECT_BASE = 100;
+    public static final int ACTION_PLAN_SELECT_MAX = ACTION_PLAN_SELECT_BASE + 4095;
+
     private final EntityPlayer player;
 
     public ContainerTinkersAnvil(EntityPlayer player, TileTinkersAnvil tile)
@@ -46,20 +42,27 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         tile.setCurrentPlayer(player);
     }
 
-    public void onReceivePacket(int buttonID)
+    public void onReceiveAction(int actionId)
     {
-        switch (buttonID)
+        if (actionId == ACTION_PLAN)
         {
-            case 8:
-                tile.cycleForgeRecipe(false);
-                break;
-            case 9:
-                tile.cycleForgeRecipe(true);
-                break;
-            default:
-                if (attemptWork(buttonID % 4))
-                    tile.addStep(ForgeStep.valueOf(buttonID));
-                break;
+            tile.openPlanGui(player);
+            return;
+        }
+        if (actionId == ACTION_WELD)
+        {
+            tile.tryWeld(player);
+            return;
+        }
+        if (actionId >= ACTION_PLAN_SELECT_BASE && actionId <= ACTION_PLAN_SELECT_MAX)
+        {
+            tile.selectPlan(actionId - ACTION_PLAN_SELECT_BASE);
+            return;
+        }
+        if (actionId >= 0 && actionId < ForgeStep.values().length)
+        {
+            if (attemptWork(actionId % 4))
+                tile.addStep(ForgeStep.valueOf(actionId));
         }
     }
 
@@ -67,19 +70,17 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index)
     {
-        // Slot that was clicked
         Slot slot = inventorySlots.get(index);
         if (slot == null || !slot.getHasStack())
             return ItemStack.EMPTY;
 
         ItemStack stack = slot.getStack().copy();
         ItemStack stackCopy = stack.copy();
-        int containerSlots = inventorySlots.size() - player.inventory.mainInventory.size(); // number of slots in the container
+        int containerSlots = inventorySlots.size() - player.inventory.mainInventory.size();
 
         if (index < containerSlots)
         {
             stack = slot.onTake(player, stack);
-            // Transfer out of the container
             if (!this.mergeItemStack(stack, containerSlots, inventorySlots.size(), true))
             {
                 return ItemStack.EMPTY;
@@ -87,7 +88,6 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
         else
         {
-            // Transfer into the container
             for (int i = 0; i < containerSlots; i++)
             {
                 if (inventorySlots.get(i).isItemValid(stack))
@@ -100,7 +100,6 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
             }
         }
 
-        // Required
         if (stack.getCount() == 0)
         {
             slot.putStack(ItemStack.EMPTY);
@@ -136,35 +135,26 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         IItemHandler cap = tile.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         if (cap != null)
         {
-            // Forging Slots
-            addSlotToContainer(new SlotForgeInput(cap, SLOT_INPUT, 21, 25, tile));
-            addSlotToContainer(new SlotOutput(cap, SLOT_OUTPUT, 21, 45));
-
-            // Hammer Slot
-            addSlotToContainer(new SlotTileCore(cap, SLOT_HAMMER, 138, 35, tile));
-
-            // Display Slot
-            addSlotToContainer(new SlotDisplay(cap, SLOT_DISPLAY, 80, 20));
+            addSlotToContainer(new SlotForgeInput(cap, SLOT_INPUT_MAIN, 22, 21, tile));
+            addSlotToContainer(new SlotForgeInput(cap, SLOT_INPUT_SECOND, 22, 39, tile));
+            addSlotToContainer(new SlotOutput(cap, SLOT_OUTPUT, 140, 21));
+            addSlotToContainer(new SlotTileCore(cap, SLOT_HAMMER, 140, 39, tile));
+            addSlotToContainer(new SlotTileCore(cap, SLOT_CATALYST, 22, 57, tile));
+            addSlotToContainer(new SlotDisplay(cap, SLOT_DISPLAY, 80, 21));
         }
     }
 
     private boolean attemptWork(int amount)
     {
-        // This only runs on server
-
-        // Get the slot for input
-        Slot slotInput = inventorySlots.get(SLOT_INPUT);
+        Slot slotInput = inventorySlots.get(SLOT_INPUT_MAIN);
         if (slotInput == null)
             return false;
 
         ItemStack stack = slotInput.getStack();
         IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
-
-        // The input must have the forge item capability
         if (cap == null)
             return false;
 
-        // A recipe must exist
         AnvilRecipe recipe = ModRecipes.ANVIL.getByName(cap.getRecipeName());
         if (recipe == null)
         {
@@ -172,13 +162,12 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
         if (tile.getTier() < recipe.getTier())
         {
-            player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip.tier_too_low")));
+            player.sendMessage(new net.minecraft.util.text.TextComponentString("" + net.minecraft.util.text.TextFormatting.RED).appendSibling(new net.minecraft.util.text.TextComponentTranslation(MOD_ID + ".tooltip.tier_too_low")));
             return false;
         }
-
         if (!cap.isWorkable())
         {
-            player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip.too_cold")));
+            player.sendMessage(new net.minecraft.util.text.TextComponentString("" + net.minecraft.util.text.TextFormatting.RED).appendSibling(new net.minecraft.util.text.TextComponentTranslation(MOD_ID + ".tooltip.too_cold")));
             return false;
         }
 
@@ -202,7 +191,7 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
         else
         {
-            player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip.no_hammer")));
+            player.sendMessage(new net.minecraft.util.text.TextComponentString("" + net.minecraft.util.text.TextFormatting.RED).appendSibling(new net.minecraft.util.text.TextComponentTranslation(MOD_ID + ".tooltip.no_hammer")));
             return false;
         }
     }

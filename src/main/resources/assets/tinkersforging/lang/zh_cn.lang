@@ -248,3 +248,12 @@ tile.tinkersforging:tinkers_anvil.electrum.name=ç¥ç€é‡‘å·¥åŒ ç §
 tile.tinkersforging:tinkers_anvil.invar.name=æ®·é’¢å·¥åŒ ç §
 tile.tinkersforging:tinkers_anvil.brass.name=é»„é“œå·¥åŒ ç §
 tile.tinkersforging:tinkers_anvil.mithril.name=ç§˜é“¶å·¥åŒ ç §
+
+tinkersforging.tooltip.anvil_plan=´ò¿ªÅä·½¼Æ»®
+tinkersforging.tooltip.anvil_weld=º¸½ÓÁ½¸öÎïÆ·
+tinkersforging.tooltip.no_flux=ÌúÕèÀïÃ»ÓĞÖúº¸¼Á£¡
+tinkersforging.tooltip.weld_no_inputs=ÇëÏÈ·ÅÈëÁ½¸ö¿Éº¸½ÓµÄ²ÄÁÏ¡£
+tinkersforging.tooltip.weld_mismatch=ÕâÁ½¸ö²ÄÁÏ²»ÄÜº¸½Ó¡£
+tinkersforging.tooltip.weld_full=Ö÷ÊäÈëÒÑ¾­ÂúÁË¡£
+tinkersforging.tooltip.anvil_plan_title=¹¤½³¼Æ»®Ãæ°å
+tinkersforging.tooltip.flux=Öúº¸¼Á

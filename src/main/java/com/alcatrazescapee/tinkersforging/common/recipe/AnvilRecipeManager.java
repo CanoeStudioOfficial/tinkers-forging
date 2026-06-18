@@ -117,7 +117,7 @@ public class AnvilRecipeManager implements IRecipeManager<AnvilRecipe>
             return list.get(idx + 1);
     }
 
-    private List<AnvilRecipe> getAllMatching(Object input)
+    public List<AnvilRecipe> getAllMatching(Object input)
     {
         return recipes.stream().filter(x -> x.test(input)).collect(Collectors.toList());
     }

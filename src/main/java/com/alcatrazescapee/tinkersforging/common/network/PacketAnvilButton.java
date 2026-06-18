@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import com.alcatrazescapee.alcatrazcore.AlcatrazCore;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
+import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvilPlan;
 import io.netty.buffer.ByteBuf;
 
 public class PacketAnvilButton implements IMessage
@@ -48,7 +49,12 @@ public class PacketAnvilButton implements IMessage
             if (player.openContainer instanceof ContainerTinkersAnvil)
             {
                 ContainerTinkersAnvil container = (ContainerTinkersAnvil) player.openContainer;
-                AlcatrazCore.getProxy().getThreadListener(ctx).addScheduledTask(() -> container.onReceivePacket(message.buttonId));
+                AlcatrazCore.getProxy().getThreadListener(ctx).addScheduledTask(() -> container.onReceiveAction(message.buttonId));
+            }
+            else if (player.openContainer instanceof ContainerTinkersAnvilPlan)
+            {
+                ContainerTinkersAnvilPlan container = (ContainerTinkersAnvilPlan) player.openContainer;
+                AlcatrazCore.getProxy().getThreadListener(ctx).addScheduledTask(() -> container.onReceiveAction(message.buttonId));
             }
             return null;
         }

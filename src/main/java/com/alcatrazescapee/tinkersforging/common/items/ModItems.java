@@ -27,6 +27,8 @@ public final class ModItems
 {
     private static final String[] BUILT_IN_HAMMER_MATERIALS = {"wood", "stone", "diamond"};
 
+    public static Item FLUX;
+
     public static void preInit()
     {
         RegistryHelper r = RegistryHelper.get(MOD_ID);
@@ -81,6 +83,7 @@ public final class ModItems
         r.registerItem(new ItemHammer(Item.ToolMaterial.WOOD), "hammer/wood", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.STONE), "hammer/stone", TAB_ITEMS);
         r.registerItem(new ItemHammer(Item.ToolMaterial.DIAMOND), "hammer/diamond", TAB_ITEMS);
+        r.registerItem(FLUX = new Item().setTranslationKey(MOD_ID + ":flux"), "flux", TAB_ITEMS);
     }
 
     private static boolean hasBuiltInHammer(MaterialType material)
@@ -129,7 +132,14 @@ public final class ModItems
             extendedHammer.setTranslationKey(MOD_ID + ":hammer");
         }
 
+        if (FLUX != null)
+        {
+            FLUX.setCreativeTab(TAB_ITEMS);
+            FLUX.setTranslationKey(MOD_ID + ":flux");
+        }
+
         // Add charcoal ore dict
         OreDictionary.registerOre("charcoal", new ItemStack(Items.COAL, 1, 1));
+        OreDictionary.registerOre("flux", new ItemStack(FLUX));
     }
 }

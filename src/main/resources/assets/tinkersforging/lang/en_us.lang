@@ -8,6 +8,14 @@ tinkersforging.tooltip.has_been_worked=This item has been worked.
 tinkersforging.tooltip.too_cold=The item is not hot enough to work!
 tinkersforging.tooltip.tier_too_low=This anvil is too low tier for that item!
 tinkersforging.tooltip.no_hammer=There is no hammer in the anvil!
+tinkersforging.tooltip.anvil_plan=Open recipe plan
+tinkersforging.tooltip.anvil_weld=Weld two items
+tinkersforging.tooltip.no_flux=There is no flux in the anvil!
+tinkersforging.tooltip.weld_no_inputs=Place two matching inputs first.
+tinkersforging.tooltip.weld_mismatch=Those two inputs cannot be welded together.
+tinkersforging.tooltip.weld_full=The main input is already full.
+tinkersforging.tooltip.anvil_plan_title=Anvil Plan
+tinkersforging.tooltip.flux=Flux
 tinkersforging.tooltip.anvil_tier=Tier: %d
 tinkersforging.tooltip.material=Material: %s
 

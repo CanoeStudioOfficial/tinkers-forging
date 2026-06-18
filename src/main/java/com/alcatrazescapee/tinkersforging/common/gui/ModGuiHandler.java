@@ -19,6 +19,7 @@ import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerCharcoalForge;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerForge;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
+import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvilPlan;
 import com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge;
 import com.alcatrazescapee.tinkersforging.common.tile.TileForge;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
@@ -28,6 +29,7 @@ public final class ModGuiHandler implements IGuiHandler
     public static final int TINKERS_ANVIL = 0;
     public static final int FORGE = 1;
     public static final int CHARCOAL_FORGE = 2;
+    public static final int TINKERS_ANVIL_PLAN = 3;
 
     @Nullable
     @SuppressWarnings("ConstantConditions")
@@ -38,6 +40,8 @@ public final class ModGuiHandler implements IGuiHandler
         {
             case TINKERS_ANVIL:
                 return new ContainerTinkersAnvil(player, CoreHelpers.getTE(world, pos, TileTinkersAnvil.class));
+            case TINKERS_ANVIL_PLAN:
+                return new ContainerTinkersAnvilPlan(player, CoreHelpers.getTE(world, pos, TileTinkersAnvil.class));
             case FORGE:
                 return new ContainerForge(player.inventory, CoreHelpers.getTE(world, pos, TileForge.class));
             case CHARCOAL_FORGE:

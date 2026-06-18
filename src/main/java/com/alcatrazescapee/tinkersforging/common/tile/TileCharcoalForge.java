@@ -13,6 +13,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -36,11 +37,16 @@ import static com.alcatrazescapee.tinkersforging.util.property.IPileBlock.LAYERS
 @ParametersAreNonnullByDefault
 public class TileCharcoalForge extends TileInventory implements ITickable, ITileFields
 {
-    public static final int SLOT_INPUT_MIN = 0;
-    public static final int SLOT_INPUT_MAX = 5;
+    public static final int SLOT_FUEL_MIN = 0;
+    public static final int SLOT_FUEL_MAX = 4;
+    public static final int SLOT_INPUT_MIN = 5;
+    public static final int SLOT_INPUT_MAX = 9;
+    public static final int SLOT_EXTRA_MIN = 10;
+    public static final int SLOT_EXTRA_MAX = 13;
 
     public static final int FIELD_FUEL = 0;
-    public static final int FIELD_TEMPERATURE = 1;
+    public static final int FIELD_FUEL_MAX = 1;
+    public static final int FIELD_TEMPERATURE = 2;
     public static final int FUEL_TICKS_MAX = 1600;
 
     public static void light(World world, BlockPos pos)
@@ -71,12 +77,13 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
     }
 
     private int fuelTicksRemaining;
+    private int fuelTicksMax;
     private float temperature;
     private boolean isClosed;
 
     public TileCharcoalForge()
     {
-        super(5);
+        super(14);
     }
 
     public void updateClosedState()
@@ -105,11 +112,11 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
             // Consume fuel ticks
             fuelTicksRemaining -= isClosed ? 1 : 2;
 
-            if (fuelTicksRemaining == 0)
+            if (fuelTicksRemaining <= 0)
             {
                 consumeFuel();
 
-                if (fuelTicksRemaining == 0)
+                if (fuelTicksRemaining <= 0)
                 {
                     // Couldn't consume any more fuel
                     IBlockState state = world.getBlockState(pos);
@@ -138,7 +145,7 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
                 temperature -= (float) ModConfig.BALANCE.charcoalForgeTemperatureModifier;
             }
 
-            for (int i = SLOT_INPUT_MIN; i < SLOT_INPUT_MAX; i++)
+            for (int i = SLOT_INPUT_MIN; i <= SLOT_INPUT_MAX; i++)
             {
                 ItemStack stack = inventory.getStackInSlot(i);
                 IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
@@ -177,7 +184,15 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
     @Override
     public boolean isItemValid(int slot, ItemStack stack)
     {
-        return stack.hasCapability(CapabilityForgeItem.CAPABILITY, null);
+        if (slot >= SLOT_FUEL_MIN && slot <= SLOT_FUEL_MAX)
+        {
+            return TileEntityFurnace.isItemFuel(stack) || CoreHelpers.doesStackMatchOre(stack, "charcoal");
+        }
+        if (slot >= SLOT_INPUT_MIN && slot <= SLOT_EXTRA_MAX)
+        {
+            return stack.hasCapability(CapabilityForgeItem.CAPABILITY, null);
+        }
+        return false;
     }
 
     @Override
@@ -185,6 +200,7 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
     {
         temperature = nbt.getFloat("temp");
         fuelTicksRemaining = nbt.getInteger("ticks");
+        fuelTicksMax = nbt.getInteger("maxTicks");
         isClosed = nbt.getBoolean("closed");
 
         super.readFromNBT(nbt);
@@ -196,6 +212,7 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
     {
         nbt.setFloat("temp", temperature);
         nbt.setInteger("ticks", fuelTicksRemaining);
+        nbt.setInteger("maxTicks", fuelTicksMax);
         nbt.setBoolean("closed", isClosed);
 
         return super.writeToNBT(nbt);
@@ -210,7 +227,7 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
     @Override
     public int getFieldCount()
     {
-        return 2;
+        return 3;
     }
 
     @Override
@@ -220,6 +237,8 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
         {
             case FIELD_FUEL:
                 return fuelTicksRemaining;
+            case FIELD_FUEL_MAX:
+                return fuelTicksMax;
             case FIELD_TEMPERATURE:
                 return (int) temperature;
             default:
@@ -236,6 +255,9 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
             case FIELD_FUEL:
                 fuelTicksRemaining = value;
                 break;
+            case FIELD_FUEL_MAX:
+                fuelTicksMax = value;
+                break;
             case FIELD_TEMPERATURE:
                 temperature = (float) value;
                 break;
@@ -247,12 +269,25 @@ public class TileCharcoalForge extends TileInventory implements ITickable, ITile
 
     private void consumeFuel()
     {
-        // Consume fuel
+        for (int slot = SLOT_FUEL_MIN; slot <= SLOT_FUEL_MAX; slot++)
+        {
+            ItemStack fuelStack = inventory.getStackInSlot(slot);
+            int burn = TileEntityFurnace.getItemBurnTime(fuelStack);
+            if (burn > 0)
+            {
+                inventory.setStackInSlot(slot, CoreHelpers.consumeItem(fuelStack));
+                fuelTicksRemaining += (int) (burn * ModConfig.BALANCE.charcoalForgeFuelModifier);
+                fuelTicksMax = fuelTicksRemaining;
+                return;
+            }
+        }
+
         IBlockState state = world.getBlockState(pos);
         if (state.getValue(LAYERS) > 2)
         {
             world.setBlockState(pos, state.withProperty(LAYERS, state.getValue(LAYERS) - 1));
             fuelTicksRemaining = (int) (FUEL_TICKS_MAX * ModConfig.BALANCE.charcoalForgeFuelModifier);
+            fuelTicksMax = fuelTicksRemaining;
         }
     }
 }

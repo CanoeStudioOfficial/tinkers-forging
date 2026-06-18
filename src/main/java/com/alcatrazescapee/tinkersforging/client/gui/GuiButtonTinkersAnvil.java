@@ -36,6 +36,14 @@ class GuiButtonTinkersAnvil extends GuiButton
         tooltip = null;
     }
 
+    GuiButtonTinkersAnvil(int id, int x, int y, boolean isPlanButton, String tooltip)
+    {
+        super(id, x, y, 18, 18, "");
+        this.textureU = 218;
+        this.textureV = 0;
+        this.tooltip = tooltip;
+    }
+
     // Step buttons
     GuiButtonTinkersAnvil(int id, int backgroundX, int backgroundY, ForgeStep step)
     {
@@ -55,6 +63,10 @@ class GuiButtonTinkersAnvil extends GuiButton
             mc.getTextureManager().bindTexture(BACKGROUND);
             hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
             drawModalRectWithCustomSizedTexture(x, y, textureU, textureV, width, height, 256, 256);
+            if (width == 18 && height == 18)
+            {
+                drawModalRectWithCustomSizedTexture(x + 1, y + 1, id == 8 ? 236 : 236, id == 8 ? 0 : 16, 16, 16, 256, 256);
+            }
             mouseDragged(mc, mouseX, mouseY);
         }
     }
