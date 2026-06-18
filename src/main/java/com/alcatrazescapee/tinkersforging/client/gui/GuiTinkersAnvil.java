@@ -193,24 +193,30 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
     {
         if (range < 2)
         {
-            drawTexturedModalRect(guiLeft + 13 + target, guiTop + 98, 181, 0, 5, 5);
+            drawTexturedModalRect(guiLeft + WORK_BAR_X + scaleWork(target), guiTop + 98, 181, 0, 5, 5);
         }
         else
         {
-            int leftLimit = Math.max(0, target - range);
-            int rightLimit = Math.min(145, target + range);
+            int leftLimit = scaleWork(Math.max(IForgeItem.MIN_WORK, target - range));
+            int rightLimit = scaleWork(Math.min(IForgeItem.MAX_WORK - 1, target + range));
 
-            drawTexturedModalRect(guiLeft + 13 + leftLimit, guiTop + 96, 176, 7, 5, 7);
-            drawTexturedModalRect(guiLeft + 13 + rightLimit, guiTop + 96, 186, 7, 5, 7);
+            drawTexturedModalRect(guiLeft + WORK_BAR_X + leftLimit, guiTop + 96, 176, 7, 5, 7);
+            drawTexturedModalRect(guiLeft + WORK_BAR_X + rightLimit, guiTop + 96, 186, 7, 5, 7);
             for (int i = leftLimit + 2; i < rightLimit - 1; i++)
             {
-                drawTexturedModalRect(guiLeft + 15 + i, guiTop + 94, 192, 5, 1, 5);
+                drawTexturedModalRect(guiLeft + WORK_BAR_X + 2 + i, guiTop + 94, 192, 5, 1, 5);
             }
             if (range > 2)
             {
-                drawTexturedModalRect(guiLeft + 13 + (rightLimit + leftLimit) / 2, guiTop + 94, 181, 5, 5, 5);
+                drawTexturedModalRect(guiLeft + WORK_BAR_X + (rightLimit + leftLimit) / 2, guiTop + 94, 181, 5, 5, 5);
             }
         }
+    }
+
+    private static int scaleWork(int work)
+    {
+        int clamped = Math.max(IForgeItem.MIN_WORK, Math.min(IForgeItem.MAX_WORK - 1, work));
+        return Math.round((float) clamped * WORK_BAR_WIDTH / (IForgeItem.MAX_WORK - 1));
     }
 
     @Override
