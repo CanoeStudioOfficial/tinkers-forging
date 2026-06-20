@@ -25,6 +25,7 @@ import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IDrawableAnimated;
 import mezz.jei.api.gui.IDrawableStatic;
+import mezz.jei.api.gui.IGuiItemStackGroup;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.IRecipeCategory;
@@ -41,11 +42,17 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     private static final ResourceLocation ICONS_LOCATION = new ResourceLocation(MOD_ID, "textures/gui/jei/icons.png");
     private static final int WIDTH = 98;
     private static final int HEIGHT = 26;
+    private static final int INPUT_X = 6;
+    private static final int INPUT_Y = 5;
+    private static final int OUTPUT_X = 76;
+    private static final int OUTPUT_Y = 5;
+    private static final int ARROW_X = 36;
+    private static final int ARROW_Y = 5;
 
     private final IDrawable background;
     private final IDrawable icon;
 
-    private static IDrawableStatic slot;
+    private static IDrawable slotBackground;
     private static IDrawableStatic arrow;
     private static IDrawableAnimated arrowAnimated;
 
@@ -54,7 +61,7 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
         background = guiHelper.createBlankDrawable(WIDTH, HEIGHT);
         ItemStack iconStack = getIconStack();
         icon = iconStack.isEmpty() ? guiHelper.createBlankDrawable(16, 16) : guiHelper.createDrawableIngredient(iconStack);
-        slot = guiHelper.getSlotDrawable();
+        slotBackground = new OffsetDrawable(guiHelper.getSlotDrawable(), -1, -1);
         arrow = guiHelper.createDrawable(ICONS_LOCATION, 0, 14, 22, 16);
         arrowAnimated = guiHelper.createAnimatedDrawable(guiHelper.createDrawable(ICONS_LOCATION, 22, 14, 22, 16), 80, IDrawableAnimated.StartDirection.LEFT, false);
     }
@@ -111,11 +118,15 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     @Override
     public void setRecipe(IRecipeLayout recipeLayout, Wrapper recipeWrapper, IIngredients ingredients)
     {
-        recipeLayout.getItemStacks().init(0, true, 6, 5);
-        recipeLayout.getItemStacks().set(0, ingredients.getInputs(ItemStack.class).get(0));
+        IGuiItemStackGroup itemStacks = recipeLayout.getItemStacks();
 
-        recipeLayout.getItemStacks().init(1, false, 76, 5);
-        recipeLayout.getItemStacks().set(1, ingredients.getOutputs(ItemStack.class).get(0));
+        itemStacks.init(0, true, INPUT_X, INPUT_Y);
+        itemStacks.setBackground(0, slotBackground);
+        itemStacks.set(0, ingredients.getInputs(ItemStack.class).get(0));
+
+        itemStacks.init(1, false, OUTPUT_X, OUTPUT_Y);
+        itemStacks.setBackground(1, slotBackground);
+        itemStacks.set(1, ingredients.getOutputs(ItemStack.class).get(0));
     }
 
     public static class Wrapper implements IRecipeWrapper
@@ -139,19 +150,46 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
         @Override
         public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY)
         {
-            if (slot != null)
-            {
-                slot.draw(minecraft, 5, 4);
-                slot.draw(minecraft, 75, 4);
-            }
             if (arrow != null)
             {
-                arrow.draw(minecraft, 36, 5);
+                arrow.draw(minecraft, ARROW_X, ARROW_Y);
             }
             if (arrowAnimated != null)
             {
-                arrowAnimated.draw(minecraft, 36, 5);
+                arrowAnimated.draw(minecraft, ARROW_X, ARROW_Y);
             }
+        }
+    }
+
+    private static class OffsetDrawable implements IDrawable
+    {
+        private final IDrawable drawable;
+        private final int xOffset;
+        private final int yOffset;
+
+        private OffsetDrawable(IDrawable drawable, int xOffset, int yOffset)
+        {
+            this.drawable = drawable;
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
+        }
+
+        @Override
+        public int getWidth()
+        {
+            return drawable.getWidth();
+        }
+
+        @Override
+        public int getHeight()
+        {
+            return drawable.getHeight();
+        }
+
+        @Override
+        public void draw(Minecraft minecraft, int xOffset, int yOffset)
+        {
+            drawable.draw(minecraft, xOffset + this.xOffset, yOffset + this.yOffset);
         }
     }
 }
