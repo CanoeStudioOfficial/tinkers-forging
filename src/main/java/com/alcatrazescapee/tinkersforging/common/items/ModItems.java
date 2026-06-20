@@ -15,6 +15,7 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import com.alcatrazescapee.alcatrazcore.util.RegistryHelper;
 import com.alcatrazescapee.tinkersforging.ModConfig;
+import com.alcatrazescapee.tinkersforging.integration.ModLoaderCompat;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
@@ -46,7 +47,7 @@ public final class ModItems
                 r.registerItem(new ItemToolHead(ItemType.HAMMER_HEAD, material), ItemType.HAMMER_HEAD.name() + "/" + material.getName());
             }
 
-            if (ModConfig.shouldRegisterBuiltInToolParts())
+            if (ModLoaderCompat.shouldRegisterBuiltInToolParts())
             {
                 for (ItemType type : ItemType.tools())
                 {

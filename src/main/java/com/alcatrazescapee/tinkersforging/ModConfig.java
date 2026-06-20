@@ -7,7 +7,6 @@
 package com.alcatrazescapee.tinkersforging;
 
 import net.minecraftforge.common.config.Config;
-import net.minecraftforge.fml.common.Loader;
 
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
@@ -20,16 +19,6 @@ public final class ModConfig
 {
     public static final GeneralConfig GENERAL = new GeneralConfig();
     public static final BalanceConfig BALANCE = new BalanceConfig();
-
-    public static boolean shouldRegisterBuiltInToolParts()
-    {
-        return !Loader.isModLoaded("tconstruct") || GENERAL.tinkersConstructCompatMode == TinkersConstructCompatMode.BOTH;
-    }
-
-    public static boolean shouldRegisterTinkersConstructParts()
-    {
-        return Loader.isModLoaded("tconstruct");
-    }
 
     public static boolean isBuiltInToolPartEnabled(ItemType type)
     {

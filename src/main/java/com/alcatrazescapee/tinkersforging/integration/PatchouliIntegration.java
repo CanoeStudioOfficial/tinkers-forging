@@ -42,7 +42,7 @@ public final class PatchouliIntegration
                         '0', getAPI().anyMatcher())).setSymmetrical(true);
 
         // Set config flags
-        getAPI().setConfigFlag(MOD_ID + ":tool_parts", ModConfig.shouldRegisterBuiltInToolParts());
+        getAPI().setConfigFlag(MOD_ID + ":tool_parts", ModLoaderCompat.shouldRegisterBuiltInToolParts());
         getAPI().setConfigFlag(MOD_ID + ":tooltip_advanced", ModConfig.BALANCE.enableAdvancedTemperatureTooltips);
     }
 

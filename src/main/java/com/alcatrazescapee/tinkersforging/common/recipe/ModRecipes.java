@@ -33,6 +33,7 @@ import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.integration.AdvToolboxIntegration;
+import com.alcatrazescapee.tinkersforging.integration.ModLoaderCompat;
 import com.alcatrazescapee.tinkersforging.integration.PatchouliIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
@@ -66,7 +67,7 @@ public final class ModRecipes
         }
 
         // Other tool part recipes
-        if (ModConfig.shouldRegisterBuiltInToolParts())
+        if (ModLoaderCompat.shouldRegisterBuiltInToolParts())
         {
             for (ItemType type : ItemType.tools())
             {
@@ -86,7 +87,7 @@ public final class ModRecipes
         }
 
         // Tinker's Construct Tool Parts
-        if (ModConfig.shouldRegisterTinkersConstructParts())
+        if (ModLoaderCompat.shouldRegisterTinkersConstructParts())
         {
             for (ItemType type : ItemType.tinkersParts())
             {
@@ -178,7 +179,7 @@ public final class ModRecipes
                 }
 
                 // Vanilla Tools
-                if (ModConfig.shouldRegisterBuiltInToolParts())
+                if (ModLoaderCompat.shouldRegisterBuiltInToolParts())
                 {
                     for (ItemType type : ItemType.tools())
                     {
