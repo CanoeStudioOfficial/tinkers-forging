@@ -46,7 +46,7 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     private static final int INPUT_Y = 5;
     private static final int OUTPUT_X = 76;
     private static final int OUTPUT_Y = 5;
-    private static final int ARROW_X = 38;
+    private static final int ARROW_X = 36;
     private static final int ARROW_Y = 5;
 
     private final IDrawable background;
