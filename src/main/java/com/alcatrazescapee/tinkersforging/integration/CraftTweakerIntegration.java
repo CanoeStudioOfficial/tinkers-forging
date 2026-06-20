@@ -17,7 +17,6 @@ import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
-import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
 import crafttweaker.CraftTweakerAPI;
 import crafttweaker.IAction;
 import crafttweaker.annotations.ZenRegister;
@@ -32,10 +31,6 @@ import stanhebben.zenscript.annotations.ZenMethod;
 @ZenClass("mods.TinkersForging.Anvil")
 public final class CraftTweakerIntegration
 {
-    private static final int DEFAULT_TIER = 3;
-    private static final int DEFAULT_WORK_TEMP = 800;
-    private static final int DEFAULT_MELT_TEMP = 1400;
-
     @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final String... ruleNames)
     {
@@ -132,50 +127,6 @@ public final class CraftTweakerIntegration
                 return "Adding heat registry for " + ingredient.getName() + "\n";
             }
         });
-    }
-
-    @ZenRegister
-    @SuppressWarnings("unused")
-    @ZenClass("mods.TinkersForging.Materials")
-    public static final class Materials
-    {
-        @ZenMethod
-        public static void addItemMaterial(final IItemStack source)
-        {
-            ItemStack stack = toStack(source);
-            addItemMaterial(ExtendedMaterialRegistry.getDefaultName(stack), source, DEFAULT_TIER, DEFAULT_WORK_TEMP, DEFAULT_MELT_TEMP);
-        }
-
-        @ZenMethod
-        public static void addItemMaterial(final String name, final IItemStack source)
-        {
-            addItemMaterial(name, source, DEFAULT_TIER, DEFAULT_WORK_TEMP, DEFAULT_MELT_TEMP);
-        }
-
-        @ZenMethod
-        public static void addItemMaterial(final String name, final IItemStack source, final int tier, final int workingTemperature, final int meltingTemperature)
-        {
-            final ItemStack sourceStack = toStack(source);
-            if (sourceStack.isEmpty())
-            {
-                CraftTweakerAPI.logError("Tinkers Forging extended material '" + name + "' has an empty source item.");
-                return;
-            }
-            CraftTweakerAPI.apply(new IAction()
-            {
-                @Override
-                public void apply()
-                {
-                    ExtendedMaterialRegistry.registerItemMaterialWithRecipes(name, sourceStack, tier, workingTemperature, meltingTemperature);
-                }
-
-                @Override
-                public String describe()
-                {
-                    return "Adding Tinkers Forging extended material '" + name + "' from " + sourceStack.getDisplayName() + "\n";
-                }
-            });
-        }
     }
 
     @Nonnull

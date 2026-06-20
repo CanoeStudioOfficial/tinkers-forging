@@ -30,7 +30,7 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
     "comment": "Human-readable note. Ignored by Tinkers Forging.",
     "comments": "Human-readable field guide. Ignored by Tinkers Forging.",
     "load": "Set true to load this entry. Set false to keep it as a disabled template.",
-    "id": "Material id and registry-name suffix. id diamond creates tinkersforging:tinkers_anvil/diamond when anvil is true, plus matching hammer/hammer-head items where applicable.",
+    "id": "Material id and registry-name suffix. id diamond creates generated material content such as tinkersforging:tinkers_anvil/diamond, hammer/diamond, hammer_head/diamond, and normal tool parts when those features are enabled.",
     "ore": "Ore dictionary input used by normal material recipes and heat checks. Example: gemDiamond or ingotCopper.",
     "color": "Fallback tint color when no custom material texture is found. Accepts #RRGGBB, 0xRRGGBB, or decimal.",
     "tier": "Tool/anvil tier from 0 to 5.",
@@ -43,8 +43,8 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
     "tinkersConstruct": "true enables Tinkers Construct part recipes when TConstruct compat is enabled.",
     "adventurersToolbox": "true enables Adventurer's Toolbox part recipes when that mod is installed.",
     "requiredMod": "Optional mod id gate. The entry only loads when that mod is installed.",
-    "sourceItem": "Optional item used for extended Tinkers Forging parts and an extended hammer rendered from that item's model texture.",
-    "sourceMeta": "Metadata/damage value for sourceItem. Usually 0."
+    "sourceItem": "Optional item registry name used as the render texture source for this JSON material's generated parts, hammer, and anvil. Resource packs that replace this item's model/texture are followed.",
+    "sourceMeta": "Metadata/damage value for sourceItem. Usually 0; use another value for 1.12 metadata items with different textures."
   },
   "load": true,
   "id": "diamond",
@@ -65,17 +65,10 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
 }
 ```
 
-`anvil=true` creates a matching Tinker's Anvil block. `replaceExisting=false` lets a compat JSON only add flags such as `adventurersToolbox=true` to an existing material id. `sourceItem` is optional; when present it also creates extended Tinker's Forging parts and an extended hammer rendered from that item's item model texture. The extended hammer uses one shared registry item, `tinkersforging:extended/hammer`, with the material id stored in NBT.
+JSON material configs are still the supported way to extend Tinker's Forging materials. A loaded JSON entry adds the material id to the material registry, then generated content such as hammer heads, hammers, normal tool parts, recipes, and Tinker's Anvil blocks are created from that material according to the enabled fields and compat config. `anvil=true` creates a matching Tinker's Anvil block. `replaceExisting=false` lets a compat JSON only add flags such as `adventurersToolbox=true` or a `sourceItem` texture source to an existing material id.
+
+`sourceItem` does not remove the JSON material system. It makes the generated material content render from an existing item model/texture, for example `minecraft:diamond`, so resource packs and modded item textures can drive the look of the generated parts, hammer, and anvil. CraftTweaker material registration was removed; use JSON files under `config/tinkersforging/materials` for this material/texture-backed extension path.
 
 When Tinkers Construct compat is enabled (`useTinkersConstruct=true` and TConstruct is installed), Tinkers Forging does not register its own normal `pickaxe_head/<id>`, `axe_head/<id>`, `shovel_head/<id>`, `hoe_head/<id>`, or `sword_blade/<id>` items. Hammer heads and hammers are still registered, and the normal tool part recipes target TConstruct's part items instead.
-
-CraftTweaker can also register item-backed extended parts:
-
-```zenscript
-mods.TinkersForging.Materials.addItemMaterial(<minecraft:diamond>);
-mods.TinkersForging.Materials.addItemMaterial("diamond", <minecraft:diamond>, 3, 800, 1400);
-```
-
-Those CraftTweaker calls generate the extended hammer head anvil recipe and the extended hammer crafting recipe automatically. Put the crafted hammer head above a stick to craft the matching extended hammer.
 
 ![Splash Image](https://github.com/alcatrazEscapee/tinkers-forging/blob/1.12/src/main/resources/assets/splash.png?raw=true)

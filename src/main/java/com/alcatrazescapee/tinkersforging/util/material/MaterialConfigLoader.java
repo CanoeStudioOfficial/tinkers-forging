@@ -197,7 +197,7 @@ public final class MaterialConfigLoader
         comments.put("comment", "Human-readable note. This field is ignored by Tinkers Forging.");
         comments.put("comments", "Human-readable field guide. This whole object is ignored by Tinkers Forging.");
         comments.put("load", "Set true to load this entry. Set false to keep it as a disabled example/template.");
-        comments.put("id", "Material id used internally and in generated registry names. Example: id diamond creates tinkersforging:tinkers_anvil/diamond when anvil is true, plus material hammer/hammer-head items where applicable. Use lowercase letters, numbers, underscores, hyphens, or dots.");
+        comments.put("id", "Material id used internally and in generated registry names. Example: id diamond creates generated material content such as tinkersforging:tinkers_anvil/diamond, hammer/diamond, hammer_head/diamond, and normal tool parts when those features are enabled. Use lowercase letters, numbers, underscores, hyphens, or dots.");
         comments.put("ore", "Ore dictionary input used for normal material recipes and heat checks. If omitted, Tinkers Forging guesses ingot + material id, for example ingotCopper.");
         comments.put("color", "Fallback tint color used when no custom material texture is found. Accepts #RRGGBB, 0xRRGGBB, or decimal integer.");
         comments.put("tier", "Tool/anvil tier from 0 to 5. Higher tier anvils can work higher tier parts when Respect Tiers is enabled.");
@@ -210,8 +210,8 @@ public final class MaterialConfigLoader
         comments.put("tinkersConstruct", "If true and Tinkers Construct is installed/enabled in config, this material can generate Tinkers Construct part recipes. When Tinkers Construct compat is enabled, Tinkers Forging's own pickaxe_head/axe_head/shovel_head/hoe_head/sword_blade items are intentionally not registered; use the tconstruct part item ids instead.");
         comments.put("adventurersToolbox", "If true and Adventurer's Toolbox is installed, this material can generate Adventurer's Toolbox part recipes.");
         comments.put("requiredMod", "Optional mod id gate. If set, this material entry only loads when that mod is installed, for example tconstruct or toolbox.");
-        comments.put("sourceItem", "Optional item registry name used only as the texture source for this JSON material's normal parts, hammer, and anvil. Example: minecraft:diamond reads that item's model/texture so diamond parts render like the resource pack's diamond. This does not create NBT extended parts; use CraftTweaker addItemMaterial for that.");
-        comments.put("sourceMeta", "Metadata/damage value for sourceItem. Usually 0; use another value for old 1.12 metadata items with different sub-item textures.");
+        comments.put("sourceItem", "Optional item registry name used as the render texture source for this JSON material's generated parts, hammer, and anvil. Example: minecraft:diamond reads that item's model/texture so resource packs and modded item textures can drive the generated material look.");
+        comments.put("sourceMeta", "Metadata/damage value for sourceItem. Usually 0; use another value for 1.12 metadata items with different sub-item textures.");
         return comments;
     }
 
