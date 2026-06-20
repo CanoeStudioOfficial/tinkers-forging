@@ -103,6 +103,12 @@ public class MaterialType implements IHeatRegistry
         return translationKey;
     }
 
+    @Nonnull
+    public String getOreName()
+    {
+        return oreName;
+    }
+
     public boolean isEnabled()
     {
         if (enabled)

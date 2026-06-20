@@ -57,9 +57,9 @@ public final class ModRecipes
                 if (material.isEnabled() && ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD, material))
                 {
                     ItemStack output = ItemToolHead.get(ItemType.HAMMER_HEAD, material, 1);
-                    String inputOre = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
+                    String inputOre = material.getOreName();
 
-                    if (!output.isEmpty() && inputOre != null && OreDictionary.doesOreNameExist(inputOre))
+                    if (!output.isEmpty())
                         ANVIL.add(new AnvilRecipe(output, inputOre, ItemType.HAMMER_HEAD.getAmount(), material.getTier(), ItemType.HAMMER_HEAD.getRules()));
                 }
             }
@@ -77,8 +77,7 @@ public final class ModRecipes
                     if (material.isEnabled() && ModConfig.isBuiltInToolPartEnabled(type, material))
                     {
                         // This will always register the default tools anvil recipes, even though the actual tools for modded materials might not exist.
-                        final String metalIngotName = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
-                        if (metalIngotName == null) continue;
+                        final String metalIngotName = material.getOreName();
                         ItemStack output = ItemToolHead.get(type, material, 1);
                         ANVIL.add(new AnvilRecipe(output.copy(), metalIngotName, type.getAmount(), material.getTier(), type.getRules()));
                     }
@@ -96,9 +95,9 @@ public final class ModRecipes
                     if (!MaterialRegistry.isTinkersMaterial(material) || !material.isEnabled()) continue;
                     ItemStack output = getTinkersPartFor(type, material);
 
-                    String inputOre = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
+                    String inputOre = material.getOreName();
 
-                    if (!output.isEmpty() && inputOre != null && OreDictionary.doesOreNameExist(inputOre))
+                    if (!output.isEmpty())
                         ANVIL.add(new AnvilRecipe(output, inputOre, type.getAmount(), material.getTier(), type.getRules()));
                 }
             }
@@ -116,9 +115,9 @@ public final class ModRecipes
 
                     ItemStack output = getConstructsArmorFor(type, material);
 
-                    String inputOre = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
+                    String inputOre = material.getOreName();
 
-                    if (!output.isEmpty() && inputOre != null && OreDictionary.doesOreNameExist(inputOre))
+                    if (!output.isEmpty())
                         ANVIL.add(new AnvilRecipe(output, inputOre, type.getAmount(), material.getTier(), type.getRules()));
                 }
             }
@@ -153,9 +152,9 @@ public final class ModRecipes
             if (material.isEnabled())
             {
                 // Setup
-                final String metalIngotName = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
+                final String metalIngotName = material.getOreName();
                 final String metalBlockName = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("BLOCK_" + material.getName());
-                if (metalIngotName == null || metalBlockName == null) continue;
+                if (metalBlockName == null) continue;
 
                 final NonNullList<ItemStack> ingots = OreDictionary.getOres(metalIngotName, false);
                 // this is meant to stop things from not registering if the compat exists via other means

@@ -13,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.oredict.OreDictionary;
 
 import api.materials.HeadMaterial;
 import api.materials.Materials;
@@ -25,8 +24,6 @@ import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader.Mat
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 import toolbox.common.items.parts.ItemToolHead;
-
-import static com.alcatrazescapee.alcatrazcore.util.OreDictionaryHelper.UPPER_UNDERSCORE_TO_LOWER_CAMEL;
 
 public final class AdvToolboxIntegration
 {
@@ -66,9 +63,9 @@ public final class AdvToolboxIntegration
                     if (meta == null) continue;
                     ItemStack output = new ItemStack(toolPart, 1, meta);
 
-                    String inputOre = UPPER_UNDERSCORE_TO_LOWER_CAMEL.convert("INGOT_" + material.getName());
+                    String inputOre = material.getOreName();
 
-                    if (!output.isEmpty() && inputOre != null && OreDictionary.doesOreNameExist(inputOre))
+                    if (!output.isEmpty())
                         ModRecipes.ANVIL.add(new AnvilRecipe(output, inputOre, type.getAmount(), material.getTier(), type.getRules()));
                 }
             }
