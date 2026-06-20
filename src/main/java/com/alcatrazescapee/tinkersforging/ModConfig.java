@@ -7,6 +7,7 @@
 package com.alcatrazescapee.tinkersforging;
 
 import net.minecraftforge.common.config.Config;
+import net.minecraftforge.fml.common.Loader;
 
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
@@ -19,6 +20,16 @@ public final class ModConfig
 {
     public static final GeneralConfig GENERAL = new GeneralConfig();
     public static final BalanceConfig BALANCE = new BalanceConfig();
+
+    public static boolean shouldRegisterBuiltInToolParts()
+    {
+        return !Loader.isModLoaded("tconstruct") || GENERAL.tinkersConstructCompatMode == TinkersConstructCompatMode.BOTH;
+    }
+
+    public static boolean shouldRegisterTinkersConstructParts()
+    {
+        return Loader.isModLoaded("tconstruct");
+    }
 
     public static boolean isBuiltInToolPartEnabled(ItemType type)
     {
@@ -65,12 +76,13 @@ public final class ModConfig
 
     public static class GeneralConfig
     {
-        @Config.Name("Tinker's Construct Compat")
+        @Config.Name("Tinker's Construct Compat Mode")
         @Config.RequiresMcRestart
-        @Config.Comment({"Should this mod default to using Tinker's Construct tool parts, if it is enabled?",
-                "If true and Tinker's Construct is found, no new tool parts will be registered, and all tool part recipes will use Tinker's parts",
-                "If false, or if Tinker's Construct is not found, Tinker's Forging will use its own tool parts for recipes."})
-        public boolean useTinkersConstruct = true;
+        @Config.Comment({"Controls how Tinker's Forging handles tool parts when Tinker's Construct is installed.",
+                "BOTH: register Tinker's Forging's own normal tool parts and Tinker's Construct part recipes.",
+                "TINKERS_ONLY: skip Tinker's Forging's own normal tool parts and only use Tinker's Construct part recipes.",
+                "If Tinker's Construct is not installed, Tinker's Forging always uses its own tool parts."})
+        public TinkersConstructCompatMode tinkersConstructCompatMode = TinkersConstructCompatMode.BOTH;
 
         @Config.Name("Construct's Armory Compat")
         @Config.RequiresMcRestart
@@ -126,6 +138,12 @@ public final class ModConfig
         public String[] disabledBuiltInToolPartMaterialPairs = {};
 
         private GeneralConfig() {}
+    }
+
+    public enum TinkersConstructCompatMode
+    {
+        BOTH,
+        TINKERS_ONLY
     }
 
     public static class BalanceConfig

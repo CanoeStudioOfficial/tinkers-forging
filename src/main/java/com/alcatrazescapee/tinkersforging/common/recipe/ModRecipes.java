@@ -66,7 +66,7 @@ public final class ModRecipes
         }
 
         // Other tool part recipes
-        if (!ModConfig.GENERAL.useTinkersConstruct || !Loader.isModLoaded("tconstruct"))
+        if (ModConfig.shouldRegisterBuiltInToolParts())
         {
             for (ItemType type : ItemType.tools())
             {
@@ -86,7 +86,7 @@ public final class ModRecipes
         }
 
         // Tinker's Construct Tool Parts
-        if (Loader.isModLoaded("tconstruct") && ModConfig.GENERAL.useTinkersConstruct)
+        if (ModConfig.shouldRegisterTinkersConstructParts())
         {
             for (ItemType type : ItemType.tinkersParts())
             {
@@ -178,7 +178,7 @@ public final class ModRecipes
                 }
 
                 // Vanilla Tools
-                if (!ModConfig.GENERAL.useTinkersConstruct || !Loader.isModLoaded("tconstruct"))
+                if (ModConfig.shouldRegisterBuiltInToolParts())
                 {
                     for (ItemType type : ItemType.tools())
                     {

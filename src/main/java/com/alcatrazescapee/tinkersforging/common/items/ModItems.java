@@ -46,7 +46,7 @@ public final class ModItems
                 r.registerItem(new ItemToolHead(ItemType.HAMMER_HEAD, material), ItemType.HAMMER_HEAD.name() + "/" + material.getName());
             }
 
-            if (!Loader.isModLoaded("tconstruct") || !ModConfig.GENERAL.useTinkersConstruct)
+            if (ModConfig.shouldRegisterBuiltInToolParts())
             {
                 for (ItemType type : ItemType.tools())
                 {

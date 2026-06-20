@@ -13,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.oredict.ShapelessOreRecipe;
 
@@ -43,7 +42,7 @@ public final class PatchouliIntegration
                         '0', getAPI().anyMatcher())).setSymmetrical(true);
 
         // Set config flags
-        getAPI().setConfigFlag(MOD_ID + ":tool_parts", !Loader.isModLoaded("tconstruct") || !ModConfig.GENERAL.useTinkersConstruct);
+        getAPI().setConfigFlag(MOD_ID + ":tool_parts", ModConfig.shouldRegisterBuiltInToolParts());
         getAPI().setConfigFlag(MOD_ID + ":tooltip_advanced", ModConfig.BALANCE.enableAdvancedTemperatureTooltips);
     }
 
