@@ -293,19 +293,19 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             return true;
         }
 
-        if (!world.isRemote)
+        if (player.isSneaking())
         {
             if (isFlux(held))
             {
-                return insertHeldStack(player, hand, SLOT_CATALYST);
+                return world.isRemote ? canInsertHeldStack(player, hand, SLOT_CATALYST) : insertHeldStack(player, hand, SLOT_CATALYST);
             }
             if (held.hasCapability(CapabilityForgeItem.CAPABILITY, null))
             {
                 if (inventory.getStackInSlot(SLOT_INPUT_MAIN).isEmpty())
                 {
-                    return insertHeldStack(player, hand, SLOT_INPUT_MAIN);
+                    return world.isRemote ? canInsertHeldStack(player, hand, SLOT_INPUT_MAIN) : insertHeldStack(player, hand, SLOT_INPUT_MAIN);
                 }
-                return insertHeldStack(player, hand, SLOT_INPUT_SECOND);
+                return world.isRemote ? canInsertHeldStack(player, hand, SLOT_INPUT_SECOND) : insertHeldStack(player, hand, SLOT_INPUT_SECOND);
             }
         }
         return false;
@@ -886,7 +886,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     {
         ItemStack held = player.getHeldItem(hand);
         ItemStack inSlot = inventory.getStackInSlot(slot);
-        if (!isItemValid(slot, held))
+        if (!canInsertHeldStack(player, hand, slot))
             return false;
 
         if (inSlot.isEmpty())
@@ -913,6 +913,23 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         setAndUpdateSlots(slot);
         markDirectDirty();
         return true;
+    }
+
+    private boolean canInsertHeldStack(EntityPlayer player, EnumHand hand, int slot)
+    {
+        ItemStack held = player.getHeldItem(hand);
+        ItemStack inSlot = inventory.getStackInSlot(slot);
+        if (!isItemValid(slot, held))
+            return false;
+
+        if (inSlot.isEmpty())
+            return true;
+
+        if (!ItemHandlerHelper.canItemStacksStack(inSlot, held))
+            return false;
+
+        int limit = Math.min(inSlot.getMaxStackSize(), inventory.getSlotLimit(slot));
+        return inSlot.getCount() < limit;
     }
 
     private void extractDirect(EntityPlayer player, boolean secondaryFirst)

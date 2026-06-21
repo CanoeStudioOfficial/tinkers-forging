@@ -5,7 +5,7 @@
     "pages": [
         {
             "type": "text",
-            "text": "Tinker's Anvil no longer uses the old button GUI. Place the required heated input stack in the anvil and right-click the anvil with a hammer. The anvil will progress the selected CraftTweaker recipe directly."
+            "text": "Tinker's Anvil no longer uses the old button GUI. Sneak-right-click the required heated input stack into the anvil, then right-click the anvil with a hammer. The anvil will progress the selected CraftTweaker recipe directly."
         },
         {
             "type": "text",

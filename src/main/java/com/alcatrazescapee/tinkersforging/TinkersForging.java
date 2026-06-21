@@ -52,7 +52,7 @@ public final class TinkersForging
     private static final String FORGE_MIN = "14.23.5.2847";
     private static final String FORGE_MAX = "15.0.0.0";
 
-    public static final String DEPENDENCIES = "required-after:forge@[" + FORGE_MIN + "," + FORGE_MAX + ");" + "required-after:alcatrazcore@[" + ALC_MIN + "," + ALC_MAX + ");required-after:pyrotech;required-after:theoneprobe;" + "after:tconstruct;after:alcatrazcore;after:toolbox;after:twilightforest";
+    public static final String DEPENDENCIES = "required-after:forge@[" + FORGE_MIN + "," + FORGE_MAX + ");" + "required-after:alcatrazcore@[" + ALC_MIN + "," + ALC_MAX + ");required-after:pyrotech;" + "after:theoneprobe;after:tconstruct;after:alcatrazcore;after:toolbox;after:twilightforest";
 
     @Mod.Instance
     private static TinkersForging instance;
@@ -98,7 +98,10 @@ public final class TinkersForging
         network.registerMessage(new PacketAnvilRecipeUpdate.Handler(), PacketAnvilRecipeUpdate.class, ++id, Side.CLIENT);
         network.registerMessage(new PacketUpdateForgeItem.Handler(), PacketUpdateForgeItem.class, ++id, Side.CLIENT);
 
-        FMLInterModComms.sendFunctionMessage("theoneprobe", "getTheOneProbe", "com.alcatrazescapee.tinkersforging.integration.top.TOPIntegration$Callback");
+        if (Loader.isModLoaded("theoneprobe"))
+        {
+            FMLInterModComms.sendFunctionMessage("theoneprobe", "getTheOneProbe", "com.alcatrazescapee.tinkersforging.integration.top.TOPIntegration$Callback");
+        }
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new ModGuiHandler());
         proxy.preInit(event);
 

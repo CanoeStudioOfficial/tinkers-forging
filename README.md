@@ -6,7 +6,7 @@ A mod that adds TFC Style Forging to 1.12+
 
 Author: AlcatrazEscapee
 
-This mod adds basic forging to the game. You must first acquire a Tinker's Anvil and Hammer - the basic tools of the trade. Then you will need to master heating items - either in a large open Charcoal Forge or a more conservative Brick Forge. When you heat inputs to the right temperature, they become Workable. Place the required input stack in an anvil and hit the anvil with a hammer to forge directly. Anvil and welding recipes are pack-defined through CraftTweaker; JEI shows only recipes that scripts add.
+This mod adds basic forging to the game. You must first acquire a Tinker's Anvil and Hammer - the basic tools of the trade. Then you will need to master heating items - either in a large open Charcoal Forge or a more conservative Brick Forge. When you heat inputs to the right temperature, they become Workable. Sneak-right-click the required input stack into an anvil and hit the anvil with a hammer to forge directly. Anvil and welding recipes are pack-defined through CraftTweaker; JEI shows only recipes that scripts add.
 
 This mod has a Guide Book which is provided by Patchouli. It has explicit compatibility with Tinker's Construct, Construct's Armory, JEI, and Craft Tweaker for all your modpack making shenanigans.
 
@@ -73,7 +73,7 @@ When Tinkers Construct is installed, `Tinker's Construct Compat Mode` controls w
 
 ### CraftTweaker Anvil Examples
 
-Tinker's Anvil has no default anvil recipes. Add direct forging recipes with CraftTweaker. The input count controls how many items must be placed in the anvil before hammering.
+Tinker's Anvil has no default anvil recipes. Add direct forging recipes with CraftTweaker. The input count controls how many items must be sneak-right-clicked into the anvil before hammering.
 
 ```zenscript
 // Three iron ingots directly forge into an iron pickaxe on tier 2+ anvils.

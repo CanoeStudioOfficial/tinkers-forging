@@ -12,7 +12,7 @@
             "images": [
                 "tinkersforging:textures/guide/tinkers_anvil.png"
             ],
-            "text": "将加热后的输入物品放入工匠砧，然后手持锤子右键工匠砧即可直接锻造。"
+            "text": "潜行右键将加热后的输入物品放入工匠砧，然后手持锤子右键工匠砧即可直接锻造。"
         },
         {
             "type": "text",

@@ -12,7 +12,7 @@
             "images": [
                 "tinkersforging:textures/guide/tinkers_anvil.png"
             ],
-            "text": "Place the heated input stack in the anvil, then hit the anvil with a hammer to forge directly."
+            "text": "Sneak-right-click the heated input stack into the anvil, then hit the anvil with a hammer to forge directly."
         },
         {
             "type": "text",

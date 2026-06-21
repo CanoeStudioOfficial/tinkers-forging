@@ -82,8 +82,10 @@ dependencies {
 
     // compile against Patchouli but do not include it at runtime
     deobfProvided "vazkii.patchouli:Patchouli:${patchouli_version}"
+
+    // compile against The One Probe when present, but keep it optional at runtime
     deobfProvided 'curse.maven:the-one-probe-245211:2667280'
-    runtime 'curse.maven:the-one-probe-245211:2667280'
+	runtime 'curse.maven:the-one-probe-245211:2667280'
     implementation 'curse.maven:alcatrazcore-304493:2666560'
     implementation 'curse.maven:adventurers-toolbox-269680:2672649'
     implementation "curse.maven:pyrotech-306676:6253355"
