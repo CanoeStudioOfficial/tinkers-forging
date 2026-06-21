@@ -26,6 +26,7 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.registries.IForgeRegistryModifiable;
 
 import com.alcatrazescapee.alcatrazcore.inventory.crafting.InventoryCraftingEmpty;
+import com.alcatrazescapee.alcatrazcore.inventory.ingredient.IRecipeIngredient;
 import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.alcatrazcore.util.collections.ImmutablePair;
 import com.alcatrazescapee.tinkersforging.ModConfig;
@@ -46,6 +47,7 @@ import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
 public final class ModRecipes
 {
     public static final AnvilRecipeManager ANVIL = new AnvilRecipeManager();
+    public static final WeldingRecipeManager WELDING = new WeldingRecipeManager();
     private static final List<Runnable> CT_ACTIONS = new ArrayList<>();
 
     public static void init()
@@ -128,6 +130,16 @@ public final class ModRecipes
         if (Loader.isModLoaded("toolbox"))
         {
             AdvToolboxIntegration.addRecipes();
+        }
+
+        // TFC-style welding recipes. These replace the old unrestricted same-NBT merge path.
+        for (MaterialType material : MaterialRegistry.getAllMaterials())
+        {
+            if (material.isEnabled())
+            {
+                IRecipeIngredient input = IRecipeIngredient.of(material.getOreName());
+                WELDING.add(new WeldingRecipe(input, input, material.getTier()));
+            }
         }
     }
 

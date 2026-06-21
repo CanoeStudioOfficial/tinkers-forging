@@ -41,6 +41,7 @@ import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilRecipeUpdate
 import com.alcatrazescapee.tinkersforging.common.network.PacketUpdateForgeItem;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
+import com.alcatrazescapee.tinkersforging.common.recipe.WeldingRecipe;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeStep;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeSteps;
@@ -136,7 +137,8 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         if ((mainHeat != null && !mainHeat.isWeldable()) || (secondHeat != null && !secondHeat.isWeldable()))
             return false;
 
-        return CoreHelpers.canMergeStacksUseNBT(main.copy(), secondary.copy()) && main.getCount() < main.getMaxStackSize();
+        WeldingRecipe recipe = ModRecipes.WELDING.get(main, secondary, getTier());
+        return recipe != null && recipe.getOutput(main, secondary).getCount() > main.getCount();
     }
 
     public void setRecipe(@Nullable AnvilRecipe recipe)
@@ -408,27 +410,28 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             sendProblem(player, "too_cold");
             return false;
         }
-        if (!CoreHelpers.canMergeStacksUseNBT(main.copy(), secondary.copy()))
+        WeldingRecipe recipe = ModRecipes.WELDING.get(main, secondary, getTier());
+        if (recipe == null)
         {
             sendProblem(player, "weld_mismatch");
             return false;
         }
 
-        int max = main.getMaxStackSize();
-        int moved = Math.min(secondary.getCount(), max - main.getCount());
-        if (moved <= 0)
+        ItemStack result = recipe.getOutput(main, secondary);
+        if (result.isEmpty() || result.getCount() <= main.getCount())
         {
             sendProblem(player, "weld_full");
             return false;
         }
 
-        main.grow(moved);
-        secondary.shrink(moved);
+        float weldTemperature = Math.max(getForgeTemperature(main), getForgeTemperature(secondary));
+        resetForgeData(result);
+        preserveForgeTemperature(result, weldTemperature);
         flux.shrink(1);
         damageHammer(hammer, player);
 
-        inventory.setStackInSlot(SLOT_INPUT_MAIN, main);
-        inventory.setStackInSlot(SLOT_INPUT_SECOND, secondary.isEmpty() ? ItemStack.EMPTY : secondary);
+        inventory.setStackInSlot(SLOT_INPUT_MAIN, result);
+        inventory.setStackInSlot(SLOT_INPUT_SECOND, ItemStack.EMPTY);
         inventory.setStackInSlot(SLOT_CATALYST, flux.isEmpty() ? ItemStack.EMPTY : flux);
         world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
         setAndUpdateSlots(SLOT_INPUT_MAIN);
