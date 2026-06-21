@@ -78,6 +78,9 @@ tinkersforging.jei.category.welding=焊接
 # Items
 
 item.tinkersforging:flux.name=助焊剂
+item.tinkersforging:double_ingot.name=双锭
+item.tinkersforging:sheet.name=板
+item.tinkersforging:double_sheet.name=双板
 item.tinkersforging:hammer.wood.name=木制工匠锤
 item.tinkersforging:hammer.stone.name=石制工匠锤
 

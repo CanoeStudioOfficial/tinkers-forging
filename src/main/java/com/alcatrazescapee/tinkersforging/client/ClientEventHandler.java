@@ -32,6 +32,7 @@ import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
+import com.alcatrazescapee.tinkersforging.common.items.ItemMetalForm;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.common.tile.TileCharcoalForge;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
@@ -88,6 +89,19 @@ public final class ClientEventHandler
         BlockColors blockColors = event.getBlockColors();
 
         // Tool Heads
+        itemColors.registerItemColorHandler((stack, tintIndex) -> {
+            if (ForgingMaterialTextureManager.hasCustomTexture(stack))
+            {
+                return 0xffffff;
+            }
+            if (stack.getItem() instanceof ItemMetalForm)
+            {
+                MaterialType material = ((ItemMetalForm) stack.getItem()).getMaterial();
+                return ForgingMaterialTextureManager.getColor(stack, material.getColor());
+            }
+            return 0xffffff;
+        }, ItemMetalForm.getAll().toArray(new ItemMetalForm[0]));
+
         itemColors.registerItemColorHandler((stack, tintIndex) -> {
             if (ForgingMaterialTextureManager.hasCustomTexture(stack))
             {

@@ -32,11 +32,14 @@ import com.alcatrazescapee.alcatrazcore.util.collections.ImmutablePair;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
+import com.alcatrazescapee.tinkersforging.common.items.ItemMetalForm;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.integration.AdvToolboxIntegration;
 import com.alcatrazescapee.tinkersforging.integration.ModLoaderCompat;
 import com.alcatrazescapee.tinkersforging.integration.PatchouliIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
+import com.alcatrazescapee.tinkersforging.util.MetalForm;
+import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -137,6 +140,8 @@ public final class ModRecipes
         {
             if (material.isEnabled())
             {
+                addTfcMetalFormRecipes(material);
+
                 IRecipeIngredient input = IRecipeIngredient.of(material.getOreName());
                 ItemStack output = getDefaultWeldingOutput(material);
                 WELDING.add(output.isEmpty() ? new WeldingRecipe(input, input, material.getTier()) : new WeldingRecipe(input, input, output, material.getTier()));
@@ -152,6 +157,24 @@ public final class ModRecipes
     public static void addRecipeAction(Runnable action)
     {
         CT_ACTIONS.add(action);
+    }
+
+    private static void addTfcMetalFormRecipes(MaterialType material)
+    {
+        ItemStack sheet = ItemMetalForm.get(MetalForm.SHEET, material, 1);
+        String doubleIngotOre = MetalForm.DOUBLE_INGOT.getOreName(material);
+        if (!sheet.isEmpty() && doubleIngotOre != null)
+        {
+            ANVIL.add(new AnvilRecipe(sheet, doubleIngotOre, 1, material.getTier(), ForgeRule.HIT_THIRD_LAST, ForgeRule.HIT_SECOND_LAST, ForgeRule.HIT_LAST));
+        }
+
+        ItemStack doubleSheet = ItemMetalForm.get(MetalForm.DOUBLE_SHEET, material, 1);
+        String sheetOre = MetalForm.SHEET.getOreName(material);
+        if (!doubleSheet.isEmpty() && sheetOre != null)
+        {
+            IRecipeIngredient sheetInput = IRecipeIngredient.of(sheetOre);
+            WELDING.add(new WeldingRecipe(sheetInput, sheetInput, doubleSheet, material.getTier()));
+        }
     }
 
     public static void registerRecipes(RegistryEvent.Register<IRecipe> event)

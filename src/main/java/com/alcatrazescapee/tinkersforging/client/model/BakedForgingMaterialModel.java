@@ -31,6 +31,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
+import com.alcatrazescapee.tinkersforging.common.items.ItemMetalForm;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
@@ -135,6 +136,10 @@ public final class BakedForgingMaterialModel implements IBakedModel
             {
                 MaterialType material = ((ItemHammer) stack.getItem()).getMaterial();
                 return material == null ? null : "material:" + material.getName();
+            }
+            if (stack.getItem() instanceof ItemMetalForm)
+            {
+                return "material:" + ((ItemMetalForm) stack.getItem()).getMaterial().getName();
             }
             return null;
         }

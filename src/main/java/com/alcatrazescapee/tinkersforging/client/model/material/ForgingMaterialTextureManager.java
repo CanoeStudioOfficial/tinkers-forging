@@ -32,6 +32,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
+import com.alcatrazescapee.tinkersforging.common.items.ItemMetalForm;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.integration.TinkersClientIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
@@ -252,6 +253,10 @@ public enum ForgingMaterialTextureManager
         {
             return getMaterialTexture(((ItemToolHead) stack.getItem()).getType());
         }
+        if (stack.getItem() instanceof ItemMetalForm)
+        {
+            return ANVIL_BASE_TEXTURE;
+        }
         if (stack.getItem() instanceof ItemExtendedToolHead)
         {
             return getMaterialTexture(((ItemExtendedToolHead) stack.getItem()).getType());
@@ -295,6 +300,10 @@ public enum ForgingMaterialTextureManager
         if (stack.getItem() instanceof ItemHammer)
         {
             return ((ItemHammer) stack.getItem()).getMaterial();
+        }
+        if (stack.getItem() instanceof ItemMetalForm)
+        {
+            return ((ItemMetalForm) stack.getItem()).getMaterial();
         }
         return null;
     }

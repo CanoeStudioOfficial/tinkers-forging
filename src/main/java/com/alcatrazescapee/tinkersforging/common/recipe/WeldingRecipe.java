@@ -44,7 +44,12 @@ public class WeldingRecipe
 
     public boolean test(ItemStack first, ItemStack second, int tier)
     {
-        return tier >= minTier && ((firstInput.test(first) && secondInput.test(second)) || (firstInput.test(second) && secondInput.test(first)));
+        return tier >= minTier && matchesInputs(first, second);
+    }
+
+    public boolean matchesInputs(ItemStack first, ItemStack second)
+    {
+        return (firstInput.test(first) && secondInput.test(second)) || (firstInput.test(second) && secondInput.test(first));
     }
 
     @Nonnull

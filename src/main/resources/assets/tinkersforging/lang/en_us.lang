@@ -105,6 +105,9 @@ material.aluminium.name=Aluminium
 # Items
 
 item.tinkersforging:flux.name=Flux
+item.tinkersforging:double_ingot.name=Double Ingot
+item.tinkersforging:sheet.name=Sheet
+item.tinkersforging:double_sheet.name=Double Sheet
 item.tinkersforging:hammer.name=Tinker's Hammer
 item.tinkersforging:hammer.wood.name=Wooden Tinker's Hammer
 item.tinkersforging:hammer.stone.name=Stone Tinker's Hammer

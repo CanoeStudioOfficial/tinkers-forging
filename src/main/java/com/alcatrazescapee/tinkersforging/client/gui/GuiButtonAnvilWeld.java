@@ -17,8 +17,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 
-import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
-
 @SideOnly(Side.CLIENT)
 class GuiButtonAnvilWeld extends GuiButton
 {
@@ -46,6 +44,6 @@ class GuiButtonAnvilWeld extends GuiButton
 
     String getTooltip()
     {
-        return MOD_ID + ".tooltip.anvil_weld";
+        return tile.getWeldStatus(Minecraft.getMinecraft().player).getTranslationKey();
     }
 }

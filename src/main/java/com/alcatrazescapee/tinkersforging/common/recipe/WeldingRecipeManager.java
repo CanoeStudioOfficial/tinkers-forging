@@ -46,4 +46,10 @@ public class WeldingRecipeManager
     {
         return recipes.stream().filter(recipe -> recipe.test(first, second, tier)).findFirst().orElse(null);
     }
+
+    @Nullable
+    public WeldingRecipe getForInputs(ItemStack first, ItemStack second)
+    {
+        return recipes.stream().filter(recipe -> recipe.matchesInputs(first, second)).findFirst().orElse(null);
+    }
 }

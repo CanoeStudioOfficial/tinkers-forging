@@ -13,10 +13,13 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.OreDictionary;
 
+import com.alcatrazescapee.alcatrazcore.inventory.ingredient.IRecipeIngredient;
 import com.alcatrazescapee.alcatrazcore.util.RegistryHelper;
 import com.alcatrazescapee.tinkersforging.ModConfig;
+import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.integration.ModLoaderCompat;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
+import com.alcatrazescapee.tinkersforging.util.MetalForm;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -37,6 +40,11 @@ public final class ModItems
         for (MaterialType material : MaterialRegistry.getAllMaterials())
         {
             Item.ToolMaterial toolMaterial = material.getToolMaterial();
+
+            for (MetalForm form : MetalForm.values())
+            {
+                r.registerItem(new ItemMetalForm(form, material), form.getRegistryName() + "/" + material.getName());
+            }
 
             if (!hasBuiltInHammer(material))
             {
@@ -112,6 +120,23 @@ public final class ModItems
         }
 
         // Add tool part creative tabs
+        for (ItemMetalForm item : ItemMetalForm.getAll())
+        {
+            MaterialType material = item.getMaterial();
+            if (material.isEnabled())
+            {
+                item.setCreativeTab(TAB_ITEMS);
+                item.setTranslationKey(MOD_ID + ":" + item.getForm().getTranslationKey());
+
+                String oreName = item.getForm().getOreName(material);
+                if (oreName != null)
+                {
+                    OreDictionary.registerOre(oreName, new ItemStack(item));
+                    CapabilityForgeItem.registerStackCapability(IRecipeIngredient.of(oreName), material.getWorkTemp(), material.getMeltTemp());
+                }
+            }
+        }
+
         for (ItemToolHead item : ItemToolHead.getAll())
         {
             if (item.getMaterial().isEnabled())

@@ -12,6 +12,7 @@ import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
+import com.alcatrazescapee.tinkersforging.common.items.ItemMetalForm;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
@@ -78,6 +79,12 @@ public final class JEIIntegration implements IModPlugin
         for (ItemToolHead item : ItemToolHead.getAll())
         {
             if (!item.getMaterial().isEnabled() || !ModConfig.isBuiltInToolPartEnabled(item.getType(), item.getMaterial()))
+                blacklist.addIngredientToBlacklist(new ItemStack(item));
+        }
+
+        for (ItemMetalForm item : ItemMetalForm.getAll())
+        {
+            if (!item.getMaterial().isEnabled())
                 blacklist.addIngredientToBlacklist(new ItemStack(item));
         }
 

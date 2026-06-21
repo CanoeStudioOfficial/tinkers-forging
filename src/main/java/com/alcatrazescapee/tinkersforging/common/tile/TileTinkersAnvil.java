@@ -115,30 +115,46 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     public boolean canWeldNow()
     {
-        return canWeldNow(null);
+        return getWeldStatus() == WeldStatus.WELDABLE;
     }
 
     public boolean canWeldNow(@Nullable EntityPlayer player)
+    {
+        return getWeldStatus(player) == WeldStatus.WELDABLE;
+    }
+
+    public WeldStatus getWeldStatus()
+    {
+        return getWeldStatus(null);
+    }
+
+    public WeldStatus getWeldStatus(@Nullable EntityPlayer player)
     {
         ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
         ItemStack secondary = inventory.getStackInSlot(SLOT_INPUT_SECOND);
         ItemStack hammer = getHammer(player).stack;
         ItemStack flux = inventory.getStackInSlot(SLOT_CATALYST);
 
-        if (main.isEmpty() || secondary.isEmpty() || hammer.isEmpty() || flux.isEmpty())
-            return false;
-        if (!isHammer(hammer))
-            return false;
-        if (!isFlux(flux))
-            return false;
+        if (main.isEmpty() || secondary.isEmpty())
+            return WeldStatus.PROBLEM_INPUTS;
+
+        WeldingRecipe recipe = ModRecipes.WELDING.getForInputs(main, secondary);
+        if (recipe == null)
+            return WeldStatus.PROBLEM_RECIPE;
+        if (getTier() < recipe.getTier())
+            return WeldStatus.PROBLEM_TIER;
 
         IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
         IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
         if (mainHeat == null || secondHeat == null || !mainHeat.isWeldable() || !secondHeat.isWeldable())
-            return false;
+            return WeldStatus.PROBLEM_HEAT;
 
-        WeldingRecipe recipe = ModRecipes.WELDING.get(main, secondary, getTier());
-        return recipe != null && !recipe.getOutput(main, secondary).isEmpty();
+        if (flux.isEmpty() || !isFlux(flux))
+            return WeldStatus.PROBLEM_FLUX;
+        if (hammer.isEmpty() || !isHammer(hammer))
+            return WeldStatus.PROBLEM_HAMMER;
+
+        return recipe.getOutput(main, secondary).isEmpty() ? WeldStatus.PROBLEM_RECIPE : WeldStatus.WELDABLE;
     }
 
     public void setRecipe(@Nullable AnvilRecipe recipe)
@@ -382,46 +398,19 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         ItemStack flux = inventory.getStackInSlot(SLOT_CATALYST);
         HammerStack hammer = getHammer(player);
 
-        if (main.isEmpty() || secondary.isEmpty())
+        WeldStatus status = getWeldStatus(player);
+        if (status != WeldStatus.WELDABLE)
         {
-            sendProblem(player, "weld_no_inputs");
-            return false;
-        }
-        if (hammer.stack.isEmpty())
-        {
-            sendProblem(player, "no_hammer");
-            return false;
-        }
-        if (flux.isEmpty())
-        {
-            sendProblem(player, "no_flux");
-            return false;
-        }
-        if (!isFlux(flux))
-        {
-            sendProblem(player, "no_flux");
+            sendProblem(player, status.tooltip);
             return false;
         }
 
-        IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
-        IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
-        if (mainHeat == null || secondHeat == null)
-        {
-            sendProblem(player, "weld_mismatch");
-            return false;
-        }
-        if (!mainHeat.isWeldable() || !secondHeat.isWeldable())
-        {
-            sendProblem(player, "too_cold");
-            return false;
-        }
         WeldingRecipe recipe = ModRecipes.WELDING.get(main, secondary, getTier());
         if (recipe == null)
         {
             sendProblem(player, "weld_mismatch");
             return false;
         }
-
         ItemStack result = recipe.getOutput(main, secondary);
         if (result.isEmpty())
         {
@@ -771,6 +760,29 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             {
                 player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + message)));
             }
+        }
+    }
+
+    public enum WeldStatus
+    {
+        PROBLEM_TIER("tier_too_low"),
+        PROBLEM_HEAT("too_cold"),
+        PROBLEM_FLUX("no_flux"),
+        PROBLEM_HAMMER("no_hammer"),
+        PROBLEM_INPUTS("weld_no_inputs"),
+        PROBLEM_RECIPE("weld_mismatch"),
+        WELDABLE("anvil_weld");
+
+        private final String tooltip;
+
+        WeldStatus(String tooltip)
+        {
+            this.tooltip = tooltip;
+        }
+
+        public String getTranslationKey()
+        {
+            return MOD_ID + ".tooltip." + tooltip;
         }
     }
 
