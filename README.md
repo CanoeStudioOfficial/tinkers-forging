@@ -1,10 +1,14 @@
 ![Tinker's Forging Banner Image](https://github.com/alcatrazEscapee/tinkers-forging/blob/1.12/src/main/resources/assets/banner.png?raw=true)
 
-A mod that adds TFC Style Forging to 1.12+
+A mod that adds TFC-style forging to Minecraft 1.12.2.
 
-**This mod has been discontinued. It will not be receiving updates or support!**
+This repository is the CanoeStudio-maintained 1.12.2 branch. The original upstream project was discontinued, but this branch continues development for modpack use and compatibility fixes.
 
-Author: AlcatrazEscapee
+Original Author: AlcatrazEscapee
+
+Branch Maintainer: Lonelyxiya
+
+Branch Development: CanoeStudio
 
 This mod adds basic forging to the game. You must first acquire a Tinker's Anvil and Hammer - the basic tools of the trade. Then you will need to master heating items - either in a large open Charcoal Forge or a more conservative Brick Forge. When you heat inputs to the right temperature, they become Workable. Sneak-right-click the required input stack into an anvil and hit the anvil with a hammer to forge directly. Anvil and welding recipes are pack-defined through CraftTweaker; JEI shows only recipes that scripts add.
 
