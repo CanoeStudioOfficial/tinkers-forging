@@ -120,12 +120,7 @@ public class AnvilRecipe extends RecipeCore
     public int getWorkingTarget(long seed)
     {
         RANDOM.setSeed(seed + workingSeed);
-        int target = 32 + RANDOM.nextInt(IForgeItem.MAX_WORK - 64);
-        if (target == IForgeItem.DEFAULT_WORK)
-        {
-            target += 20 * (RANDOM.nextBoolean() ? -1 : 1);
-        }
-        return target;
+        return 40 + RANDOM.nextInt(IForgeItem.MAX_WORK + 4 - 2 * 40);
     }
 
     public boolean stepsMatch(ForgeSteps steps)

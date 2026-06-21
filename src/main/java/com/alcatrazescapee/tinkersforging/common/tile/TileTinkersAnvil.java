@@ -328,7 +328,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         damageHammer(hammer, player);
         if (isOverworked(cap.getWork()))
         {
-            overworkInput(recipe, input);
+            overworkInput();
             setAndUpdateSlots(SLOT_INPUT_MAIN);
             syncWorkingState(player);
             return;
@@ -636,14 +636,10 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         inventory.setStackInSlot(SLOT_DISPLAY, ItemStack.EMPTY);
     }
 
-    private void overworkInput(AnvilRecipe recipe, ItemStack input)
+    private void overworkInput()
     {
-        float inputTemperature = getForgeTemperature(input);
-        ItemStack remainingInput = recipe.consumeInput(input);
-        resetForgeData(remainingInput);
-        preserveForgeTemperature(remainingInput, inputTemperature);
-        inventory.setStackInSlot(SLOT_INPUT_MAIN, remainingInput);
-        world.playSound(null, pos, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        inventory.setStackInSlot(SLOT_INPUT_MAIN, ItemStack.EMPTY);
+        world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_DESTROY, SoundCategory.PLAYERS, 0.4f, 1.0f);
         resetFields();
     }
 
