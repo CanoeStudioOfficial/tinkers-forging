@@ -24,18 +24,25 @@ public final class GeneratedMaterialTexture extends TextureAtlasSprite
 {
     private final ResourceLocation materialTextureLocation;
     private final ResourceLocation baseTextureLocation;
+    private final boolean colorFromRepresentativePixel;
 
     private TextureAtlasSprite materialTexture;
     private int[] materialTextureData;
     private int materialTextureWidth;
     private int materialTextureHeight;
-    private int materialFallbackColor;
+    private int materialRepresentativeColor;
 
     GeneratedMaterialTexture(ResourceLocation materialTextureLocation, ResourceLocation baseTextureLocation, String spriteName)
+    {
+        this(materialTextureLocation, baseTextureLocation, spriteName, false);
+    }
+
+    public GeneratedMaterialTexture(ResourceLocation materialTextureLocation, ResourceLocation baseTextureLocation, String spriteName, boolean colorFromRepresentativePixel)
     {
         super(spriteName);
         this.materialTextureLocation = materialTextureLocation;
         this.baseTextureLocation = baseTextureLocation;
+        this.colorFromRepresentativePixel = colorFromRepresentativePixel;
     }
 
     @Override
@@ -80,7 +87,7 @@ public final class GeneratedMaterialTexture extends TextureAtlasSprite
         materialTextureData = materialTexture.getFrameTextureData(0)[0];
         materialTextureWidth = materialTexture.getIconWidth();
         materialTextureHeight = materialTexture.getIconHeight();
-        materialFallbackColor = getAverageOpaqueColor(materialTextureData);
+        materialRepresentativeColor = getRepresentativeColor(materialTextureData);
 
         for (int pxCoord = 0; pxCoord < data.length; pxCoord++)
         {
@@ -99,14 +106,19 @@ public final class GeneratedMaterialTexture extends TextureAtlasSprite
             return pixel;
         }
 
-        int x = (pxCoord % width) % materialTextureWidth;
-        int y = (pxCoord / width) % materialTextureHeight;
-        int texturePixel = normalizeMaterialPixel(materialTextureData[y * materialTextureWidth + x]);
+        int texturePixel = colorFromRepresentativePixel ? materialRepresentativeColor : getMaterialPixel(pxCoord);
 
         int r = multiply(multiply(red(texturePixel), red(pixel)), red(pixel));
         int g = multiply(multiply(green(texturePixel), green(pixel)), green(pixel));
         int b = multiply(multiply(blue(texturePixel), blue(pixel)), blue(pixel));
         return compose(r, g, b, alpha);
+    }
+
+    private int getMaterialPixel(int pxCoord)
+    {
+        int x = (pxCoord % width) % materialTextureWidth;
+        int y = (pxCoord / width) % materialTextureHeight;
+        return normalizeMaterialPixel(materialTextureData[y * materialTextureWidth + x]);
     }
 
     private int normalizeMaterialPixel(int pixel)
@@ -118,38 +130,46 @@ public final class GeneratedMaterialTexture extends TextureAtlasSprite
         }
         if (materialAlpha <= 0)
         {
-            return materialFallbackColor;
+            return materialRepresentativeColor;
         }
 
         int inverse = 255 - materialAlpha;
-        int r = (red(pixel) * materialAlpha + red(materialFallbackColor) * inverse) / 255;
-        int g = (green(pixel) * materialAlpha + green(materialFallbackColor) * inverse) / 255;
-        int b = (blue(pixel) * materialAlpha + blue(materialFallbackColor) * inverse) / 255;
+        int r = (red(pixel) * materialAlpha + red(materialRepresentativeColor) * inverse) / 255;
+        int g = (green(pixel) * materialAlpha + green(materialRepresentativeColor) * inverse) / 255;
+        int b = (blue(pixel) * materialAlpha + blue(materialRepresentativeColor) * inverse) / 255;
         return compose(r, g, b, 255);
     }
 
-    private static int getAverageOpaqueColor(int[] data)
+    private static int getRepresentativeColor(int[] data)
     {
-        long totalAlpha = 0;
-        long r = 0;
-        long g = 0;
-        long b = 0;
+        double totalWeight = 0;
+        double r = 0;
+        double g = 0;
+        double b = 0;
         for (int pixel : data)
         {
             int alpha = alpha(pixel);
             if (alpha > 0)
             {
-                totalAlpha += alpha;
-                r += red(pixel) * alpha;
-                g += green(pixel) * alpha;
-                b += blue(pixel) * alpha;
+                int pr = red(pixel);
+                int pg = green(pixel);
+                int pb = blue(pixel);
+                float max = Math.max(pr, Math.max(pg, pb)) / 255f;
+                float min = Math.min(pr, Math.min(pg, pb)) / 255f;
+                float saturation = max <= 0f ? 0f : (max - min) / max;
+                float brightness = (pr + pg + pb) / (255f * 3f);
+                double weight = alpha * (0.35d + saturation) * (1.35d - brightness * 0.35d);
+                totalWeight += weight;
+                r += pr * weight;
+                g += pg * weight;
+                b += pb * weight;
             }
         }
-        if (totalAlpha == 0)
+        if (totalWeight <= 0)
         {
             return 0xffffffff;
         }
-        return compose((int) (r / totalAlpha), (int) (g / totalAlpha), (int) (b / totalAlpha), 255);
+        return compose((int) (r / totalWeight), (int) (g / totalWeight), (int) (b / totalWeight), 255);
     }
 
     private static int multiply(int c1, int c2)

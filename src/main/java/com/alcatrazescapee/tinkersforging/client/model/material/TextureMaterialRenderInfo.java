@@ -24,6 +24,12 @@ public final class TextureMaterialRenderInfo implements ForgingMaterialRenderInf
     @Override
     public TextureAtlasSprite getTexture(ResourceLocation baseTexture, String location)
     {
-        return new GeneratedMaterialTexture(texture, baseTexture, location);
+        return new GeneratedMaterialTexture(texture, baseTexture, location, isItemTexture(texture));
+    }
+
+    private static boolean isItemTexture(ResourceLocation texture)
+    {
+        String path = texture.getPath();
+        return path.startsWith("items/") || path.startsWith("item/");
     }
 }

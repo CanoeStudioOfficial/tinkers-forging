@@ -58,7 +58,7 @@ public final class ItemStackMaterialRenderInfo implements ForgingMaterialRenderI
     @Override
     public TextureAtlasSprite getTexture(ResourceLocation baseTexture, String location)
     {
-        return new GeneratedMaterialTexture(texture, baseTexture, location);
+        return new GeneratedMaterialTexture(texture, baseTexture, location, true);
     }
 
     @Nullable
@@ -264,8 +264,8 @@ public final class ItemStackMaterialRenderInfo implements ForgingMaterialRenderI
         List<String> suffixes = new ArrayList<>();
         try
         {
-            String baseName = stack.getItem().getUnlocalizedName();
-            String stackName = stack.getItem().getUnlocalizedName(stack);
+            String baseName = stack.getItem().getTranslationKey();
+            String stackName = stack.getTranslationKey();
             String suffix = null;
             if (baseName != null && stackName != null && stackName.startsWith(baseName + "."))
             {

@@ -7,6 +7,7 @@
 package com.alcatrazescapee.tinkersforging.integration;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -22,6 +23,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.io.IOUtils;
 
+import com.alcatrazescapee.tinkersforging.client.model.material.GeneratedMaterialTexture;
 import com.alcatrazescapee.tinkersforging.client.model.material.ForgingMaterialRenderInfo;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 import slimeknights.tconstruct.library.TinkerRegistry;
@@ -101,6 +103,8 @@ public final class TinkersClientIntegration
 
     private static final class Adapter implements ForgingMaterialRenderInfo
     {
+        private static final Field BLOCK_TEXTURE_PATH = getBlockTexturePathField();
+
         private final MaterialRenderInfo renderInfo;
 
         private Adapter(MaterialRenderInfo renderInfo)
@@ -111,6 +115,11 @@ public final class TinkersClientIntegration
         @Override
         public TextureAtlasSprite getTexture(ResourceLocation baseTexture, String location)
         {
+            ResourceLocation itemTexture = getItemTexture(renderInfo);
+            if (itemTexture != null)
+            {
+                return new GeneratedMaterialTexture(itemTexture, baseTexture, location, true);
+            }
             return renderInfo.getTexture(baseTexture, location);
         }
 
@@ -130,6 +139,47 @@ public final class TinkersClientIntegration
         public int getVertexColor()
         {
             return renderInfo.getVertexColor();
+        }
+
+        @Nullable
+        private static ResourceLocation getItemTexture(MaterialRenderInfo renderInfo)
+        {
+            if (BLOCK_TEXTURE_PATH != null && renderInfo instanceof MaterialRenderInfo.BlockTexture)
+            {
+                try
+                {
+                    Object value = BLOCK_TEXTURE_PATH.get(renderInfo);
+                    if (value instanceof ResourceLocation)
+                    {
+                        ResourceLocation texture = (ResourceLocation) value;
+                        String path = texture.getPath();
+                        if (path.startsWith("items/") || path.startsWith("item/"))
+                        {
+                            return texture;
+                        }
+                    }
+                }
+                catch (IllegalAccessException e)
+                {
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        @Nullable
+        private static Field getBlockTexturePathField()
+        {
+            try
+            {
+                Field field = MaterialRenderInfo.BlockTexture.class.getDeclaredField("texturePath");
+                field.setAccessible(true);
+                return field;
+            }
+            catch (NoSuchFieldException e)
+            {
+                return null;
+            }
         }
     }
 }
