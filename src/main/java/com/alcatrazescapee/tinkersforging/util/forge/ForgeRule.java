@@ -60,6 +60,69 @@ public enum ForgeRule
         return id < 0 || id >= values.length ? null : values[id];
     }
 
+    public static boolean isConsistent(ForgeRule... rules)
+    {
+        if (rules == null || rules.length == 0 || rules.length > 3)
+        {
+            return false;
+        }
+
+        ForgeRule last = null;
+        ForgeRule secondLast = null;
+        ForgeRule thirdLast = null;
+        ForgeRule notLast1 = null;
+        ForgeRule notLast2 = null;
+        for (ForgeRule rule : rules)
+        {
+            if (rule == null || rule == last || rule == secondLast || rule == thirdLast || rule == notLast1 || rule == notLast2)
+            {
+                continue;
+            }
+            switch (rule.order)
+            {
+                case THIRD_LAST:
+                    if (thirdLast != null)
+                    {
+                        return false;
+                    }
+                    thirdLast = rule;
+                    break;
+                case SECOND_LAST:
+                    if (secondLast != null)
+                    {
+                        return false;
+                    }
+                    secondLast = rule;
+                    break;
+                case LAST:
+                    if (last != null)
+                    {
+                        return false;
+                    }
+                    last = rule;
+                    break;
+                case NOT_LAST:
+                    if (notLast2 != null)
+                    {
+                        return false;
+                    }
+                    notLast2 = notLast1;
+                    notLast1 = rule;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return conflict3(notLast1, secondLast, thirdLast)
+            && conflict3(secondLast, notLast1, notLast2)
+            && conflict3(thirdLast, notLast1, notLast2);
+    }
+
+    private static boolean conflict3(@Nullable ForgeRule rule1, @Nullable ForgeRule rule2, @Nullable ForgeRule rule3)
+    {
+        return rule1 == null || rule2 == null || rule3 == null || rule1.type == rule2.type || rule1.type == rule3.type;
+    }
+
     private final int iconU;
     private final int iconV;
 

@@ -71,6 +71,18 @@ JSON material configs are still the supported way to extend Tinker's Forging mat
 
 When Tinkers Construct is installed, `Tinker's Construct Compat Mode` controls how part recipes are generated. `BOTH` registers Tinkers Forging's own normal parts and TConstruct part recipes together, so the anvil plan selector can show both sets. `TINKERS_ONLY` skips Tinkers Forging's own normal `pickaxe_head/<id>`, `axe_head/<id>`, `shovel_head/<id>`, `hoe_head/<id>`, and `sword_blade/<id>` items, while hammer heads and hammers are still registered and normal tool part recipes target TConstruct's part items instead.
 
+### CraftTweaker Welding Examples
+
+Welding follows the TerraFirmaCraft-style shape: two inputs, one output, and a minimum anvil tier. The anvil still requires flux and weldable heat in-game.
+
+```zenscript
+mods.TinkersForging.Welding.addRecipe(<ore:ingotCopper>, <ore:ingotCopper>, <modid:double_ingot_copper>, 1);
+mods.TinkersForging.Welding.addRecipe(<minecraft:iron_ingot>, <minecraft:iron_ingot>, <modid:double_ingot_iron>, 2);
+mods.TinkersForging.Welding.removeRecipe(<modid:double_ingot_copper>);
+```
+
+Built-in material welding first tries to use the ore dictionary name `doubleIngotX` for an `ingotX` material, matching TFC's `ingot + ingot -> double ingot` behavior. If no matching double ingot exists, Tinker's Forging keeps a legacy fallback so older packs do not lose all welding behavior.
+
 ### Anvil Formula Helper
 
 The helper script at `scripts/anvil_formula.py` can calculate a valid forging sequence for players or pack authors.

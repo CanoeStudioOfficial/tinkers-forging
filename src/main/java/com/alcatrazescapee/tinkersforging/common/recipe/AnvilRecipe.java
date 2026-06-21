@@ -43,6 +43,11 @@ public class AnvilRecipe extends RecipeCore
             TinkersForging.getLog().warn("Rules are invalid length!");
             return false;
         }
+        if (!ForgeRule.isConsistent(recipe.rules))
+        {
+            TinkersForging.getLog().warn("Rules cannot be satisfied for recipe {}", recipe.recipeName);
+            return false;
+        }
         return true;
     }
 

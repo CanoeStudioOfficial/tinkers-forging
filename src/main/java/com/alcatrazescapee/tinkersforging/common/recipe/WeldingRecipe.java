@@ -6,6 +6,7 @@
 
 package com.alcatrazescapee.tinkersforging.common.recipe;
 
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -76,6 +77,26 @@ public class WeldingRecipe
     public ItemStack getOutput()
     {
         return outputStack.copy();
+    }
+
+    @Nonnull
+    public ItemStack getDisplayOutput()
+    {
+        if (!outputStack.isEmpty())
+        {
+            return outputStack.copy();
+        }
+        if (mergeInputs)
+        {
+            List<ItemStack> stacks = firstInput.getStacks();
+            if (!stacks.isEmpty())
+            {
+                ItemStack output = stacks.get(0).copy();
+                output.setCount(Math.min(output.getMaxStackSize(), 2));
+                return output;
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     public int getTier()

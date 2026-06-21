@@ -15,6 +15,7 @@ import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
+import com.alcatrazescapee.tinkersforging.common.recipe.WeldingRecipe;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 import mezz.jei.api.IGuiHelper;
@@ -32,6 +33,7 @@ import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
 public final class JEIIntegration implements IModPlugin
 {
     static final String ANVIL_UID = MOD_ID + ".anvil";
+    static final String WELDING_UID = MOD_ID + ".welding";
     static IGuiHelper guiHelper = null;
     private static Boolean isEnabled = null;
 
@@ -49,7 +51,8 @@ public final class JEIIntegration implements IModPlugin
     {
         guiHelper = registry.getJeiHelpers().getGuiHelper();
         registry.addRecipeCategories(
-                new AnvilRecipeCategory(registry.getJeiHelpers().getGuiHelper())
+                new AnvilRecipeCategory(registry.getJeiHelpers().getGuiHelper()),
+                new WeldingRecipeCategory(registry.getJeiHelpers().getGuiHelper())
         );
     }
 
@@ -62,9 +65,14 @@ public final class JEIIntegration implements IModPlugin
         for (BlockTinkersAnvil block : BlockTinkersAnvil.getAll())
         {
             if (block.getMaterial().isEnabled())
+            {
                 registry.addRecipeCatalyst(new ItemStack(block), ANVIL_UID);
+                registry.addRecipeCatalyst(new ItemStack(block), WELDING_UID);
+            }
             else
+            {
                 blacklist.addIngredientToBlacklist(new ItemStack(block));
+            }
         }
 
         for (ItemToolHead item : ItemToolHead.getAll())
@@ -94,6 +102,9 @@ public final class JEIIntegration implements IModPlugin
         // Anvil Recipes
         registry.handleRecipes(AnvilRecipe.class, AnvilRecipeCategory.Wrapper::new, ANVIL_UID);
         registry.addRecipes(ModRecipes.ANVIL.getAll(), ANVIL_UID);
+        registry.handleRecipes(WeldingRecipe.class, WeldingRecipeCategory.Wrapper::new, WELDING_UID);
+        registry.addRecipes(ModRecipes.WELDING.getAll(), WELDING_UID);
         registry.addRecipeClickArea(GuiTinkersAnvil.class, 141, 40, 9, 14, ANVIL_UID);
+        registry.addRecipeClickArea(GuiTinkersAnvil.class, 141, 40, 9, 14, WELDING_UID);
     }
 }

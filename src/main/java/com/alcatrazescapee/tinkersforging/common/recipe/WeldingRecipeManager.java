@@ -7,11 +7,14 @@
 package com.alcatrazescapee.tinkersforging.common.recipe;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.item.ItemStack;
+
+import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 
 @ParametersAreNonnullByDefault
 public class WeldingRecipeManager
@@ -26,6 +29,16 @@ public class WeldingRecipeManager
     public void add(WeldingRecipe recipe)
     {
         recipes.add(recipe);
+    }
+
+    public void remove(ItemStack output)
+    {
+        recipes.removeIf(recipe -> CoreHelpers.doStacksMatch(recipe.getDisplayOutput(), output));
+    }
+
+    public List<WeldingRecipe> getAll()
+    {
+        return Collections.unmodifiableList(recipes);
     }
 
     @Nullable
