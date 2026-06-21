@@ -29,6 +29,7 @@ public final class GeneratedMaterialTexture extends TextureAtlasSprite
     private int[] materialTextureData;
     private int materialTextureWidth;
     private int materialTextureHeight;
+    private int materialFallbackColor;
 
     GeneratedMaterialTexture(ResourceLocation materialTextureLocation, ResourceLocation baseTextureLocation, String spriteName)
     {
@@ -79,6 +80,7 @@ public final class GeneratedMaterialTexture extends TextureAtlasSprite
         materialTextureData = materialTexture.getFrameTextureData(0)[0];
         materialTextureWidth = materialTexture.getIconWidth();
         materialTextureHeight = materialTexture.getIconHeight();
+        materialFallbackColor = getAverageOpaqueColor(materialTextureData);
 
         for (int pxCoord = 0; pxCoord < data.length; pxCoord++)
         {
@@ -99,12 +101,55 @@ public final class GeneratedMaterialTexture extends TextureAtlasSprite
 
         int x = (pxCoord % width) % materialTextureWidth;
         int y = (pxCoord / width) % materialTextureHeight;
-        int texturePixel = materialTextureData[y * materialTextureWidth + x];
+        int texturePixel = normalizeMaterialPixel(materialTextureData[y * materialTextureWidth + x]);
 
         int r = multiply(multiply(red(texturePixel), red(pixel)), red(pixel));
         int g = multiply(multiply(green(texturePixel), green(pixel)), green(pixel));
         int b = multiply(multiply(blue(texturePixel), blue(pixel)), blue(pixel));
         return compose(r, g, b, alpha);
+    }
+
+    private int normalizeMaterialPixel(int pixel)
+    {
+        int materialAlpha = alpha(pixel);
+        if (materialAlpha >= 255)
+        {
+            return pixel;
+        }
+        if (materialAlpha <= 0)
+        {
+            return materialFallbackColor;
+        }
+
+        int inverse = 255 - materialAlpha;
+        int r = (red(pixel) * materialAlpha + red(materialFallbackColor) * inverse) / 255;
+        int g = (green(pixel) * materialAlpha + green(materialFallbackColor) * inverse) / 255;
+        int b = (blue(pixel) * materialAlpha + blue(materialFallbackColor) * inverse) / 255;
+        return compose(r, g, b, 255);
+    }
+
+    private static int getAverageOpaqueColor(int[] data)
+    {
+        long totalAlpha = 0;
+        long r = 0;
+        long g = 0;
+        long b = 0;
+        for (int pixel : data)
+        {
+            int alpha = alpha(pixel);
+            if (alpha > 0)
+            {
+                totalAlpha += alpha;
+                r += red(pixel) * alpha;
+                g += green(pixel) * alpha;
+                b += blue(pixel) * alpha;
+            }
+        }
+        if (totalAlpha == 0)
+        {
+            return 0xffffffff;
+        }
+        return compose((int) (r / totalAlpha), (int) (g / totalAlpha), (int) (b / totalAlpha), 255);
     }
 
     private static int multiply(int c1, int c2)
