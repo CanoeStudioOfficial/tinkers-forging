@@ -66,9 +66,16 @@ public class PacketAnvilButton implements IMessage
             EntityPlayer player = AlcatrazCore.getProxy().getPlayer(ctx);
             AlcatrazCore.getProxy().getThreadListener(ctx).addScheduledTask(() -> {
                 Container container = player.openContainer;
-                if (container instanceof ContainerTinkersAnvilPlan && message.recipeName != null)
+                if (message.recipeName != null)
                 {
-                    ((ContainerTinkersAnvilPlan) container).onSelectRecipe(message.recipeName);
+                    if (container instanceof ContainerTinkersAnvilPlan)
+                    {
+                        ((ContainerTinkersAnvilPlan) container).onSelectRecipe(message.recipeName);
+                    }
+                    else if (container instanceof ContainerTinkersAnvil)
+                    {
+                        ((ContainerTinkersAnvil) container).onSelectRecipe(message.recipeName);
+                    }
                 }
                 else if (container instanceof ContainerTinkersAnvil)
                 {

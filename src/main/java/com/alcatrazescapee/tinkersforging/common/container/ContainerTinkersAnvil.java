@@ -47,17 +47,17 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
             tile.tryWeld(player);
             return;
         }
-        if (actionId >= ACTION_PLAN_SELECT_BASE && actionId <= ACTION_PLAN_SELECT_MAX)
-        {
-            tile.selectPlan(actionId - ACTION_PLAN_SELECT_BASE);
-            return;
-        }
         if (actionId >= 0 && actionId < ForgeStep.values().length)
         {
             ForgeStep step = ForgeStep.valueOf(actionId);
             if (step != null)
                 tile.work(player, step);
         }
+    }
+
+    public void onSelectRecipe(String recipeName)
+    {
+        tile.selectPlan(recipeName);
     }
 
     @Nonnull
