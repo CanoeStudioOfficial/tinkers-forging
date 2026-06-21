@@ -93,6 +93,12 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return inventory.getStackInSlot(SLOT_INPUT_MAIN);
     }
 
+    @Nullable
+    private IForgeItem getInputForgeItem()
+    {
+        return getInputStack().getCapability(CapabilityForgeItem.CAPABILITY, null);
+    }
+
     public ItemStack getSelectedPlanOutput()
     {
         return inventory.getStackInSlot(SLOT_DISPLAY);
@@ -464,9 +470,15 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         switch (ID)
         {
             case FIELD_PROGRESS:
-                return workingProgress;
+            {
+                IForgeItem cap = getInputForgeItem();
+                return cap == null ? workingProgress : cap.getWork();
+            }
             case FIELD_TARGET:
-                return workingTarget;
+            {
+                IForgeItem cap = getInputForgeItem();
+                return cap == null || cap.getTarget() < 0 ? workingTarget : cap.getTarget();
+            }
             case FIELD_LAST_STEP:
             case FIELD_SECOND_STEP:
             case FIELD_THIRD_STEP:
