@@ -18,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -116,7 +117,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         if (main.isEmpty() || secondary.isEmpty() || hammer.isEmpty() || flux.isEmpty())
             return false;
-        if (!CoreHelpers.doesStackMatchOre(hammer, "hammer"))
+        if (!isHammer(hammer))
             return false;
         if (!isFlux(flux))
             return false;
@@ -194,7 +195,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             case SLOT_INPUT_SECOND:
                 return stack.hasCapability(CapabilityForgeItem.CAPABILITY, null);
             case SLOT_HAMMER:
-                return CoreHelpers.doesStackMatchOre(stack, "hammer");
+                return isHammer(stack);
             case SLOT_CATALYST:
                 return isFlux(stack);
             default:
@@ -316,7 +317,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         applyRecipeState(input, cap, recipe);
         applyForgeStep(cap, step);
         damageHammer(hammer, player);
-        if (isOverworked(workingProgress))
+        if (isOverworked(cap.getWork()))
         {
             overworkInput(recipe, input);
             setAndUpdateSlots(SLOT_INPUT_MAIN);
@@ -324,7 +325,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         }
 
         createForgingEffects();
-        if (isRecipeComplete(recipe))
+        if (isRecipeComplete(recipe, cap))
         {
             completeRecipe(recipe, input, player);
             setAndUpdateSlots(SLOT_INPUT_MAIN);
@@ -538,6 +539,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private void applyRecipeState(ItemStack stack, IForgeItem cap, AnvilRecipe recipe)
     {
+        boolean forgeRecipeChanged = !recipe.getName().equals(cap.getRecipeName());
         if (!isSameRecipe(cachedAnvilRecipe, recipe))
         {
             updateRecipe(recipe);
@@ -554,9 +556,13 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             cap.setWork(IForgeItem.DEFAULT_WORK);
             workingProgress = IForgeItem.DEFAULT_WORK;
         }
-        workingTarget = recipe.getWorkingTarget(world.getSeed());
+        if (forgeRecipeChanged || cap.getTarget() < 0)
+        {
+            cap.setRecipe(recipe);
+            cap.setTarget(recipe.getWorkingTarget(world.getSeed()));
+        }
+        workingTarget = cap.getTarget();
         rules = recipe.getRules();
-        cap.setRecipe(recipe);
         inventory.setStackInSlot(SLOT_DISPLAY, recipe.getOutput().copy());
     }
 
@@ -567,10 +573,10 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return first != null && second != null && first.getName().equals(second.getName());
     }
 
-    private boolean isRecipeComplete(AnvilRecipe recipe)
+    private boolean isRecipeComplete(AnvilRecipe recipe, IForgeItem cap)
     {
         int targetRange = ModConfig.BALANCE.forgeTargetRange + (5 - recipe.getTier()) * ModConfig.BALANCE.forgeTierRangeMod;
-        return Math.abs(workingProgress - workingTarget) <= targetRange && recipe.stepsMatch(steps);
+        return Math.abs(cap.getWork() - cap.getTarget()) <= targetRange && recipe.stepsMatch(cap.getSteps());
     }
 
     private boolean isInitialNegativeStep(IForgeItem cap, ForgeStep step)
@@ -737,10 +743,27 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return CoreHelpers.doesStackMatchOre(stack, "flux") || CoreHelpers.doesStackMatchOre(stack, "dustFlux") || CoreHelpers.doesStackMatchOre(stack, "gemBorax");
     }
 
+    private boolean isHammer(ItemStack stack)
+    {
+        if (stack.isEmpty())
+            return false;
+        if (CoreHelpers.doesStackMatchOre(stack, "hammer"))
+            return true;
+        if (stack.getItem().getToolClasses(stack).contains("hammer"))
+            return true;
+
+        ResourceLocation name = stack.getItem().getRegistryName();
+        if (name == null)
+            return false;
+
+        String path = name.getPath();
+        return "hammer".equals(path) || path.startsWith("hammer/") || path.endsWith("/hammer") || path.endsWith("_hammer");
+    }
+
     private HammerStack getHammer(@Nullable EntityPlayer player)
     {
         ItemStack anvilHammer = inventory.getStackInSlot(SLOT_HAMMER);
-        if (!anvilHammer.isEmpty() && CoreHelpers.doesStackMatchOre(anvilHammer, "hammer"))
+        if (isHammer(anvilHammer))
         {
             return new HammerStack(anvilHammer, true, null);
         }
@@ -748,13 +771,13 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         if (player != null)
         {
             ItemStack mainHand = player.getHeldItemMainhand();
-            if (!mainHand.isEmpty() && CoreHelpers.doesStackMatchOre(mainHand, "hammer"))
+            if (isHammer(mainHand))
             {
                 return new HammerStack(mainHand, false, EnumHand.MAIN_HAND);
             }
 
             ItemStack offHand = player.getHeldItemOffhand();
-            if (!offHand.isEmpty() && CoreHelpers.doesStackMatchOre(offHand, "hammer"))
+            if (isHammer(offHand))
             {
                 return new HammerStack(offHand, false, EnumHand.OFF_HAND);
             }

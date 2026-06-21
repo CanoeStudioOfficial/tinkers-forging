@@ -37,6 +37,10 @@ public interface IForgeItem extends INBTSerializable<NBTTagCompound>
 
     void setWork(int work);
 
+    int getTarget();
+
+    void setTarget(int target);
+
     @Nullable
     String getRecipeName();
 

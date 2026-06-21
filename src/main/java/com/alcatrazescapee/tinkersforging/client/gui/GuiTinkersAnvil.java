@@ -7,6 +7,7 @@
 package com.alcatrazescapee.tinkersforging.client.gui;
 
 import java.io.IOException;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.client.gui.GuiButton;
@@ -122,11 +123,12 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         AnvilRecipe recipe = tile.getRecipe();
         if (recipe != null)
         {
+            IForgeItem forge = getDisplayedForge();
             // Progress + Target
-            int progress = tile.getField(TileTinkersAnvil.FIELD_PROGRESS);
+            int progress = forge == null ? tile.getField(TileTinkersAnvil.FIELD_PROGRESS) : forge.getWork();
             drawTexturedModalRect(guiLeft + WORK_BAR_X + clampWork(progress), guiTop + 104, 176, 0, 5, 5);
 
-            int target = tile.getField(TileTinkersAnvil.FIELD_TARGET);
+            int target = forge == null || forge.getTarget() < 0 ? tile.getField(TileTinkersAnvil.FIELD_TARGET) : forge.getTarget();
             int range = ModConfig.BALANCE.forgeTargetRange + (5 - recipe.getTier()) * ModConfig.BALANCE.forgeTierRangeMod;
             drawTarget(target, range);
         }
@@ -173,9 +175,15 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
 
     private ForgeSteps getDisplayedSteps()
     {
-        ItemStack input = tile.getInputStack();
-        IForgeItem cap = input.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        IForgeItem cap = getDisplayedForge();
         return cap == null ? tile.getSteps() : cap.getSteps();
+    }
+
+    @Nullable
+    private IForgeItem getDisplayedForge()
+    {
+        ItemStack input = tile.getInputStack();
+        return input.getCapability(CapabilityForgeItem.CAPABILITY, null);
     }
 
     private void drawTarget(int target, int range)

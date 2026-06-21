@@ -29,6 +29,7 @@ public class ForgeItem implements IForgeItem, ICapabilitySerializable<NBTTagComp
     private final float meltingTemperature;
     private final float workingTemperature;
     private int work;
+    private int target;
     private String recipeName;
     // These are the values from last point of update. They are updated when read from NBT, or when the temperature is set manually.
     private float temperature;
@@ -38,6 +39,7 @@ public class ForgeItem implements IForgeItem, ICapabilitySerializable<NBTTagComp
     {
         this.steps = new ForgeSteps();
         this.work = DEFAULT_WORK;
+        this.target = -1;
         this.meltingTemperature = meltingTemperature;
         this.workingTemperature = workingTemperature;
 
@@ -67,6 +69,18 @@ public class ForgeItem implements IForgeItem, ICapabilitySerializable<NBTTagComp
     }
 
     @Override
+    public int getTarget()
+    {
+        return target;
+    }
+
+    @Override
+    public void setTarget(int target)
+    {
+        this.target = target;
+    }
+
+    @Override
     @Nullable
     public String getRecipeName()
     {
@@ -77,6 +91,10 @@ public class ForgeItem implements IForgeItem, ICapabilitySerializable<NBTTagComp
     public void setRecipe(@Nullable AnvilRecipe recipe)
     {
         recipeName = (recipe == null ? null : recipe.getName());
+        if (recipe == null)
+        {
+            target = -1;
+        }
     }
 
     @Override
@@ -100,6 +118,7 @@ public class ForgeItem implements IForgeItem, ICapabilitySerializable<NBTTagComp
         steps.reset();
         recipeName = null;
         work = DEFAULT_WORK;
+        target = -1;
     }
 
     @Override
@@ -155,6 +174,7 @@ public class ForgeItem implements IForgeItem, ICapabilitySerializable<NBTTagComp
         NBTTagCompound nbt = new NBTTagCompound();
 
         nbt.setInteger("work", work);
+        nbt.setInteger("target", target);
         nbt.setTag("steps", steps.serializeNBT());
         if (recipeName != null)
         {
@@ -181,6 +201,7 @@ public class ForgeItem implements IForgeItem, ICapabilitySerializable<NBTTagComp
         if (nbt != null)
         {
             work = nbt.getInteger("work");
+            target = nbt.hasKey("target") ? nbt.getInteger("target") : -1;
             recipeName = nbt.hasKey("recipe") ? nbt.getString("recipe") : null; // stops defaulting to empty string
             steps.deserializeNBT(nbt.getCompoundTag("steps"));
 
