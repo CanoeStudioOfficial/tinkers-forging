@@ -71,4 +71,35 @@ JSON material configs are still the supported way to extend Tinker's Forging mat
 
 When Tinkers Construct is installed, `Tinker's Construct Compat Mode` controls how part recipes are generated. `BOTH` registers Tinkers Forging's own normal parts and TConstruct part recipes together, so the anvil plan selector can show both sets. `TINKERS_ONLY` skips Tinkers Forging's own normal `pickaxe_head/<id>`, `axe_head/<id>`, `shovel_head/<id>`, `hoe_head/<id>`, and `sword_blade/<id>` items, while hammer heads and hammers are still registered and normal tool part recipes target TConstruct's part items instead.
 
+### Anvil Formula Helper
+
+The helper script at `scripts/anvil_formula.py` can calculate a valid forging sequence for players or pack authors.
+
+The success formula is:
+
+```text
+target - range <= current + sum(step amounts) <= target + range
+```
+
+and the last three steps must match all recipe rules.
+
+Step amounts:
+
+```text
+HIT_LIGHT -3, HIT_MEDIUM -6, HIT_HARD -9, DRAW -15,
+PUNCH +2, BEND +7, UPSET +13, SHRINK +16
+```
+
+Example:
+
+```bash
+python scripts/anvil_formula.py --current 0 --target 72 --range 5 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
+```
+
+Rules can also be passed as a comma-separated list:
+
+```bash
+python scripts/anvil_formula.py --target 72 --rules PUNCH_LAST,HIT_SECOND_LAST,UPSET_THIRD_LAST
+```
+
 ![Splash Image](https://github.com/alcatrazEscapee/tinkers-forging/blob/1.12/src/main/resources/assets/splash.png?raw=true)
