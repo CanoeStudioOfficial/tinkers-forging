@@ -6,7 +6,7 @@ A mod that adds TFC Style Forging to 1.12+
 
 Author: AlcatrazEscapee
 
-This mod adds basic forging to the game. You must first acquire a Tinker's Anvil and Hammer - the basic tools of the trade. Then you will need to master heating items - either in a large open Charcoal Forge or a more conservative Brick Forge. When you heat ingots to the right temperature, they become Workable. Place them in an anvil and start hitting them to try and work them into shape. For detail about how forging works, see TerraFirmaCraft 1.7.10 forging rules.
+This mod adds basic forging to the game. You must first acquire a Tinker's Anvil and Hammer - the basic tools of the trade. Then you will need to master heating items - either in a large open Charcoal Forge or a more conservative Brick Forge. When you heat inputs to the right temperature, they become Workable. Place the required input stack in an anvil and hit the anvil with a hammer to forge directly. Anvil and welding recipes are pack-defined through CraftTweaker; JEI shows only recipes that scripts add.
 
 This mod has a Guide Book which is provided by Patchouli. It has explicit compatibility with Tinker's Construct, Construct's Armory, JEI, and Craft Tweaker for all your modpack making shenanigans.
 
@@ -17,7 +17,7 @@ This mod has a Guide Book which is provided by Patchouli. It has explicit compat
 * Charcoal Piles + Forge or a Brick Forge for heating up items
 * In game guide book provided by [Patchouli](https://minecraft.curseforge.com/projects/patchouli)
 * Explicit mod integration with Tinker's Construct and Construct's Armor
-* JEI and Craft Tweaker integration.
+* JEI and CraftTweaker integration.
 
 ### Modpack Material Examples
 
@@ -31,17 +31,17 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
     "comments": "Human-readable field guide. Ignored by Tinkers Forging.",
     "load": "Set true to load this entry. Set false to keep it as a disabled template.",
     "id": "Material id and registry-name suffix. id diamond creates generated material content such as tinkersforging:tinkers_anvil/diamond, hammer/diamond, hammer_head/diamond, and normal tool parts when those features are enabled.",
-    "ore": "Ore dictionary input used by normal material recipes and heat checks. Example: gemDiamond or ingotCopper.",
+    "ore": "Ore dictionary name associated with this material, used for material detection and heat checks. Example: gemDiamond or ingotCopper. It does not create anvil recipes by itself.",
     "color": "Fallback tint color when no custom material texture is found. Accepts #RRGGBB, 0xRRGGBB, or decimal.",
     "tier": "Tool/anvil tier from 0 to 5.",
     "workTemperature": "Temperature where this material becomes workable.",
     "meltingTemperature": "Temperature where this material melts or becomes too hot.",
     "replaceExisting": "true replaces an existing material with the same id. false only adds compatibility flags/sourceItem to it.",
     "anvil": "true registers tinkersforging:tinkers_anvil/<id>.",
-    "enabled": "true forces the material to be usable even if the ore dictionary precondition is not found.",
-    "noTreePunching": "true enables No Tree Punching compat recipes when that compat is enabled.",
-    "tinkersConstruct": "true enables Tinkers Construct part recipes when TConstruct compat is enabled.",
-    "adventurersToolbox": "true enables Adventurer's Toolbox part recipes when that mod is installed.",
+    "enabled": "true forces the material's generated content to appear even if the ore dictionary precondition is not found.",
+    "noTreePunching": "true enables No Tree Punching generated material content when that compat is enabled. Anvil recipes still require CraftTweaker.",
+    "tinkersConstruct": "true enables Tinkers Construct-compatible generated material content when TConstruct compat is enabled. Anvil recipes still require CraftTweaker.",
+    "adventurersToolbox": "true enables Adventurer's Toolbox generated material content when that mod is installed. Anvil recipes still require CraftTweaker.",
     "requiredMod": "Optional mod id gate. The entry only loads when that mod is installed.",
     "sourceItem": "Optional item registry name used as the render texture source for this JSON material's generated parts, hammer, and anvil. Resource packs that replace this item's model/texture are followed.",
     "sourceMeta": "Metadata/damage value for sourceItem. Usually 0; use another value for 1.12 metadata items with different textures."
@@ -65,73 +65,42 @@ Tinker's Forging writes material config files to `config/tinkersforging/material
 }
 ```
 
-JSON material configs are still the supported way to extend Tinker's Forging materials. A loaded JSON entry adds the material id to the material registry, then generated content such as hammer heads, hammers, normal tool parts, recipes, and Tinker's Anvil blocks are created from that material according to the enabled fields and compat config. `anvil=true` creates a matching Tinker's Anvil block. `replaceExisting=false` lets a compat JSON only add flags such as `adventurersToolbox=true` or a `sourceItem` texture source to an existing material id.
+JSON material configs are still the supported way to extend Tinker's Forging materials. A loaded JSON entry adds the material id to the material registry, then generated content such as hammer heads, hammers, normal tool parts, and Tinker's Anvil blocks are created from that material according to the enabled fields and compat config. `anvil=true` creates a matching Tinker's Anvil block. JSON does not add anvil or welding recipes; use CraftTweaker for gameplay recipes. `replaceExisting=false` lets a compat JSON only add flags such as `adventurersToolbox=true` or a `sourceItem` texture source to an existing material id.
 
 `sourceItem` does not remove the JSON material system. It makes the generated material content render from an existing item model/texture, for example `minecraft:diamond`, so resource packs and modded item textures can drive the look of the generated parts, hammer, and anvil. CraftTweaker material registration was removed; use JSON files under `config/tinkersforging/materials` for this material/texture-backed extension path.
 
-When Tinkers Construct is installed, `Tinker's Construct Compat Mode` controls how part recipes are generated. `BOTH` registers Tinkers Forging's own normal parts and TConstruct part recipes together, so the anvil plan selector can show both sets. `TINKERS_ONLY` skips Tinkers Forging's own normal `pickaxe_head/<id>`, `axe_head/<id>`, `shovel_head/<id>`, `hoe_head/<id>`, and `sword_blade/<id>` items, while hammer heads and hammers are still registered and normal tool part recipes target TConstruct's part items instead.
+When Tinkers Construct is installed, `Tinker's Construct Compat Mode` controls which generated part items/content exist. `BOTH` registers Tinkers Forging's own normal parts and TConstruct-compatible part content together. `TINKERS_ONLY` skips Tinkers Forging's own normal `pickaxe_head/<id>`, `axe_head/<id>`, `shovel_head/<id>`, `hoe_head/<id>`, and `sword_blade/<id>` items, while hammer heads and hammers are still registered. Anvil recipes for either mode still need CraftTweaker.
+
+### CraftTweaker Anvil Examples
+
+Tinker's Anvil has no default anvil recipes. Add direct forging recipes with CraftTweaker. The input count controls how many items must be placed in the anvil before hammering.
+
+```zenscript
+// Three iron ingots directly forge into an iron pickaxe on tier 2+ anvils.
+mods.TinkersForging.Anvil.addRecipe(<minecraft:iron_ingot> * 3, <minecraft:iron_pickaxe>, 2);
+
+// Ore dictionary inputs also support stack counts.
+mods.TinkersForging.Anvil.addRecipe(<ore:ingotIron> * 5, <tinkersforging:hammer_head/iron>, 2);
+
+// JSON material/sourceItem content can be targeted by its generated registry name.
+mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 3, <tinkersforging:pickaxe_head/diamond>, 3);
+
+// Old rule arguments are still accepted for compatibility, but direct forging does not require them.
+mods.TinkersForging.Anvil.addRecipe(<ore:ingotGold> * 2, <tinkersforging:sword_blade/gold>, 1, "HIT_LAST");
+
+mods.TinkersForging.Anvil.removeRecipe(<minecraft:iron_pickaxe>);
+```
+
+Use `mods.TinkersForging.Anvil.addItemHeat(input, workTemperature, meltingTemperature);` when the input item does not already receive forge heat data from JSON material config or another integration.
 
 ### CraftTweaker Welding Examples
 
-Welding follows the TerraFirmaCraft-style shape: two inputs, one output, and a minimum anvil tier. The anvil still requires flux and weldable heat in-game.
+Tinker's Anvil has no default welding recipes. Welding follows the TerraFirmaCraft-style shape: two inputs, one output, and a minimum anvil tier. The anvil still requires flux and weldable heat in-game.
 
 ```zenscript
 mods.TinkersForging.Welding.addRecipe(<ore:ingotCopper>, <ore:ingotCopper>, <modid:double_ingot_copper>, 1);
 mods.TinkersForging.Welding.addRecipe(<minecraft:iron_ingot>, <minecraft:iron_ingot>, <modid:double_ingot_iron>, 2);
 mods.TinkersForging.Welding.removeRecipe(<modid:double_ingot_copper>);
 ```
-
-Built-in material welding first tries to use the ore dictionary name `doubleIngotX` for an `ingotX` material, matching TFC's `ingot + ingot -> double ingot` behavior. If no matching double ingot exists, Tinker's Forging keeps a legacy fallback so older packs do not lose all welding behavior.
-
-### Anvil Formula Helper
-
-The helper script at `scripts/anvil_formula.py` can calculate a valid forging sequence for players or pack authors.
-
-The success formula is:
-
-```text
-target - range <= current + sum(step amounts) <= target + range
-```
-
-and the last three steps must match all recipe rules. In-game, `range` is calculated from the balance config:
-
-```text
-range = Forge Target Range + (5 - tier) * Forge Target Range Tier Modifier
-```
-
-The default config values are both `0`, so the default formula must land exactly on the red target marker.
-
-Step amounts:
-
-```text
-HIT_LIGHT -3, HIT_MEDIUM -6, HIT_HARD -9, DRAW -15,
-PUNCH +2, BEND +7, UPSET +13, SHRINK +16
-```
-
-Example:
-
-```bash
-python scripts/anvil_formula.py --current 0 --target 72 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
-```
-
-If a pack changes the target range config, either pass the final range directly:
-
-```bash
-python scripts/anvil_formula.py --current 0 --target 72 --range 5 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
-```
-
-or pass the config values and tier:
-
-```bash
-python scripts/anvil_formula.py --current 0 --target 72 --tier 3 --base-range 1 --tier-range-mod 2 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
-```
-
-Rules can also be passed as a comma-separated list:
-
-```bash
-python scripts/anvil_formula.py --target 72 --rules PUNCH_LAST,HIT_SECOND_LAST,UPSET_THIRD_LAST
-```
-
-When continuing from an already-worked item, pass the current green marker value with `--current`. If you also copy the recent step icons from the GUI, use `--gui-steps` in the same left-to-right order shown on screen. The GUI shows newest on the left and oldest on the right; `--last-steps` is still available when you already know the chronological oldest-to-newest order.
 
 ![Splash Image](https://github.com/alcatrazEscapee/tinkers-forging/blob/1.12/src/main/resources/assets/splash.png?raw=true)

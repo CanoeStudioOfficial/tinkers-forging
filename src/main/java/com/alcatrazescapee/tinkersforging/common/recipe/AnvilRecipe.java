@@ -38,12 +38,12 @@ public class AnvilRecipe extends RecipeCore
             TinkersForging.getLog().warn("Output is empty!");
             return false;
         }
-        if (recipe.rules.length == 0 || recipe.rules.length > 3)
+        if (recipe.rules.length > 3)
         {
             TinkersForging.getLog().warn("Rules are invalid length!");
             return false;
         }
-        if (!ForgeRule.isConsistent(recipe.rules))
+        if (recipe.rules.length > 0 && !ForgeRule.isConsistent(recipe.rules))
         {
             TinkersForging.getLog().warn("Rules cannot be satisfied for recipe {}", recipe.recipeName);
             return false;
@@ -81,7 +81,7 @@ public class AnvilRecipe extends RecipeCore
         super(outputStack, inputOre, inputAmount);
 
         this.rules = rules;
-        this.minTier = minTier;
+        this.minTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
         this.recipeName = outputStack.serializeNBT().toString();
     }
 

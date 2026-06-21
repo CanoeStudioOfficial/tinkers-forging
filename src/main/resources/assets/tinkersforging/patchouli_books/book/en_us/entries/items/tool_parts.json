@@ -5,42 +5,37 @@
     "pages": [
         {
             "type": "text",
-            "text": "Tinker's Forging adds various tool parts which can be forged with an anvil, and then later crafted into tools. These include the Hammer Head, Pickaxe Head, Shovel Head, Axe Head, Sword Blade, and Hoe Head. Each tool head comes in a variety of different metal components, and can be crafted with a stick to make the respective tool."
+            "text": "Tinker's Forging adds various tool parts which can be enabled by material JSON and then crafted into tools. These include the Hammer Head, Pickaxe Head, Shovel Head, Axe Head, Sword Blade, and Hoe Head. Anvil recipes for these parts are pack-defined with CraftTweaker."
         },
         {
             "type": "spotlight",
             "item": "tinkersforging:hammer_head/iron",
-            "text": "The hammer head can be used to craft the Tinker's Hammer. It takes five ingots to forge. The default rules for forging it are: Punch Last, and Shrink Not Last.",
-            "link_recipe": true
+            "text": "The hammer head can be used to craft the Tinker's Hammer. A pack can add its forging recipe with CraftTweaker, for example five ingots into one hammer head."
         },
         {
             "type": "spotlight",
             "item": "tinkersforging:pickaxe_head/iron",
-            "text": "The pickaxe head can be used to craft a pickaxe. It takes three ingots to forge. The default rules for forging it are: Punch Last, Bend Not Last, and Draw Not Last.",
-            "link_recipe": true
+            "text": "The pickaxe head can be used to craft a pickaxe. A pack can add its forging recipe with CraftTweaker, for example three ingots into one pickaxe head."
         },
         {
             "type": "spotlight",
             "item": "tinkersforging:shovel_head/iron",
-            "text": "The shovel head can be used to craft a shovel. It takes one ingot to forge. The default rules for forging it are: Punch Not Last and Hit Not Last",
-            "link_recipe": true
+            "text": "The shovel head can be used to craft a shovel. A pack can add its forging recipe with CraftTweaker, for example one ingot into one shovel head."
         },
         {
             "type": "spotlight",
             "item": "tinkersforging:axe_head/iron",
-            "text": "The axe head can be used to craft an axe. It takes three ingots to forge. The default rules for forging it are: Punch Last, Hit Not Last, and Bend Not Last.",
-            "link_recipe": true
+            "text": "The axe head can be used to craft an axe. A pack can add its forging recipe with CraftTweaker, for example three ingots into one axe head."
         },
         {
             "type": "spotlight",
             "item": "tinkersforging:sword_blade/iron",
-            "text": "the sword blade can be used to craft a sword. It takes two ingots to forge. The default rules for forging it are: Hit Last, Bend Second Last, and Bend Third Last.",
-            "link_recipe": true
+            "text": "The sword blade can be used to craft a sword. A pack can add its forging recipe with CraftTweaker, for example two ingots into one sword blade."
         },
         {
             "type": "spotlight",
             "item": "tinkersforging:hoe_head/iron",
-            "text": "The hoe head can be used to craft a hoe. It takes two ingots to forge. The default rules for forging it are: Punch Last, Hit Not Last, and Bend Not Last."
+            "text": "The hoe head can be used to craft a hoe. A pack can add its forging recipe with CraftTweaker, for example two ingots into one hoe head."
         }
     ],
     "flag": "tinkersforgingtool_parts"

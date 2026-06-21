@@ -16,7 +16,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
@@ -32,14 +31,10 @@ import com.alcatrazescapee.alcatrazcore.util.collections.ImmutablePair;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.items.ItemHammer;
-import com.alcatrazescapee.tinkersforging.common.items.ItemMetalForm;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
-import com.alcatrazescapee.tinkersforging.integration.AdvToolboxIntegration;
 import com.alcatrazescapee.tinkersforging.integration.ModLoaderCompat;
 import com.alcatrazescapee.tinkersforging.integration.PatchouliIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
-import com.alcatrazescapee.tinkersforging.util.MetalForm;
-import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -52,128 +47,29 @@ public final class ModRecipes
     public static final AnvilRecipeManager ANVIL = new AnvilRecipeManager();
     public static final WeldingRecipeManager WELDING = new WeldingRecipeManager();
     private static final List<Runnable> CT_ACTIONS = new ArrayList<>();
+    private static boolean recipeActionsReady = false;
 
     public static void init()
     {
-        // Hammer Head Recipes
-        if (ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD))
-        {
-            for (MaterialType material : MaterialRegistry.getAllMaterials())
-            {
-                if (material.isEnabled() && ModConfig.isBuiltInToolPartEnabled(ItemType.HAMMER_HEAD, material))
-                {
-                    ItemStack output = ItemToolHead.get(ItemType.HAMMER_HEAD, material, 1);
-                    String inputOre = material.getOreName();
-
-                    if (!output.isEmpty())
-                        ANVIL.add(new AnvilRecipe(output, inputOre, ItemType.HAMMER_HEAD.getAmount(), material.getTier(), ItemType.HAMMER_HEAD.getRules()));
-                }
-            }
-        }
-
-        // Other tool part recipes
-        if (ModLoaderCompat.shouldRegisterBuiltInToolParts())
-        {
-            for (ItemType type : ItemType.tools())
-            {
-                if (!ModConfig.isBuiltInToolPartEnabled(type)) continue;
-
-                for (MaterialType material : MaterialRegistry.getAllMaterials())
-                {
-                    if (material.isEnabled() && ModConfig.isBuiltInToolPartEnabled(type, material))
-                    {
-                        // This will always register the default tools anvil recipes, even though the actual tools for modded materials might not exist.
-                        final String metalIngotName = material.getOreName();
-                        ItemStack output = ItemToolHead.get(type, material, 1);
-                        ANVIL.add(new AnvilRecipe(output.copy(), metalIngotName, type.getAmount(), material.getTier(), type.getRules()));
-                    }
-                }
-            }
-        }
-
-        // Tinker's Construct Tool Parts
-        if (ModLoaderCompat.shouldRegisterTinkersConstructParts())
-        {
-            for (ItemType type : ItemType.tinkersParts())
-            {
-                for (MaterialType material : MaterialRegistry.getAllMaterials())
-                {
-                    if (!MaterialRegistry.isTinkersMaterial(material) || !material.isEnabled()) continue;
-                    ItemStack output = getTinkersPartFor(type, material);
-
-                    String inputOre = material.getOreName();
-
-                    if (!output.isEmpty())
-                        ANVIL.add(new AnvilRecipe(output, inputOre, type.getAmount(), material.getTier(), type.getRules()));
-                }
-            }
-        }
-
-        // Construct Armory's Armor Parts
-        if (Loader.isModLoaded("conarm") && ModConfig.GENERAL.useConstructsArmory)
-        {
-            for (ItemType type : ItemType.constructArmors())
-            {
-                for (MaterialType material : MaterialRegistry.getAllMaterials())
-                {
-                    if (!MaterialRegistry.isTinkersMaterial(material) || !material.isEnabled())
-                        continue;
-
-                    ItemStack output = getConstructsArmorFor(type, material);
-
-                    String inputOre = material.getOreName();
-
-                    if (!output.isEmpty())
-                        ANVIL.add(new AnvilRecipe(output, inputOre, type.getAmount(), material.getTier(), type.getRules()));
-                }
-            }
-        }
-
-        // Adventurer's Toolbox Tool Parts
-        if (Loader.isModLoaded("toolbox"))
-        {
-            AdvToolboxIntegration.addRecipes();
-        }
-
-        // TFC-style welding recipes. These replace the old unrestricted same-NBT merge path.
-        for (MaterialType material : MaterialRegistry.getAllMaterials())
-        {
-            if (material.isEnabled())
-            {
-                addTfcMetalFormRecipes(material);
-
-                IRecipeIngredient input = IRecipeIngredient.of(material.getOreName());
-                ItemStack output = getDefaultWeldingOutput(material);
-                WELDING.add(output.isEmpty() ? new WeldingRecipe(input, input, material.getTier()) : new WeldingRecipe(input, input, output, material.getTier()));
-            }
-        }
+        // Intentionally empty: anvil and welding recipes are pack-defined through CraftTweaker.
     }
 
     public static void postInit()
     {
         CT_ACTIONS.forEach(Runnable::run);
+        CT_ACTIONS.clear();
+        recipeActionsReady = true;
     }
 
     public static void addRecipeAction(Runnable action)
     {
-        CT_ACTIONS.add(action);
-    }
-
-    private static void addTfcMetalFormRecipes(MaterialType material)
-    {
-        ItemStack sheet = ItemMetalForm.get(MetalForm.SHEET, material, 1);
-        String doubleIngotOre = MetalForm.DOUBLE_INGOT.getOreName(material);
-        if (!sheet.isEmpty() && doubleIngotOre != null)
+        if (recipeActionsReady)
         {
-            ANVIL.add(new AnvilRecipe(sheet, doubleIngotOre, 1, material.getTier(), ForgeRule.HIT_THIRD_LAST, ForgeRule.HIT_SECOND_LAST, ForgeRule.HIT_LAST));
+            action.run();
         }
-
-        ItemStack doubleSheet = ItemMetalForm.get(MetalForm.DOUBLE_SHEET, material, 1);
-        String sheetOre = MetalForm.SHEET.getOreName(material);
-        if (!doubleSheet.isEmpty() && sheetOre != null)
+        else
         {
-            IRecipeIngredient sheetInput = IRecipeIngredient.of(sheetOre);
-            WELDING.add(new WeldingRecipe(sheetInput, sheetInput, doubleSheet, material.getTier()));
+            CT_ACTIONS.add(action);
         }
     }
 
@@ -203,11 +99,6 @@ public final class ModRecipes
                     ImmutablePair<IRecipe, ItemStack> result = getToolRecipeFor(recipes, type, false, ingots);
                     if (result != null)
                     {
-                        ItemStack output = result.getValue();
-
-                        // register the anvil recipe
-                        ANVIL.add(new AnvilRecipe(output.copy(), metalIngotName, type.getAmount(), material.getTier(), type.getRules()));
-
                         // un-register the old recipe
                         if (ModConfig.GENERAL.removeCraftingRecipes)
                             r.remove(result.getKey().getRegistryName());
@@ -263,9 +154,7 @@ public final class ModRecipes
                         if (!ModConfig.isBuiltInToolPartEnabled(type)) continue;
                         if (!ModConfig.isBuiltInToolPartEnabled(type, material)) continue;
 
-                        // Anvil Recipe
                         ItemStack result = ItemToolHead.get(type, material, 1);
-                        ANVIL.add(new AnvilRecipe(result, metalIngotName, type.getAmount(), material.getTier(), type.getRules()));
 
                         // Crafting Recipe
                         ItemStack tool = getNTPToolFor(type, material);
@@ -306,62 +195,6 @@ public final class ModRecipes
             }
         }
         return null;
-    }
-
-    @Nonnull
-    private static ItemStack getDefaultWeldingOutput(MaterialType material)
-    {
-        String doubleIngot = getDoubleIngotOreName(material.getOreName());
-        if (doubleIngot == null)
-        {
-            return ItemStack.EMPTY;
-        }
-
-        NonNullList<ItemStack> outputs = OreDictionary.getOres(doubleIngot, false);
-        if (outputs.isEmpty())
-        {
-            return ItemStack.EMPTY;
-        }
-
-        ItemStack output = outputs.get(0).copy();
-        output.setCount(1);
-        return output;
-    }
-
-    @Nullable
-    private static String getDoubleIngotOreName(String oreName)
-    {
-        return oreName.startsWith("ingot") && oreName.length() > "ingot".length() ? "doubleIngot" + oreName.substring("ingot".length()) : null;
-    }
-
-    @Nonnull
-    private static ItemStack getTinkersPartFor(ItemType type, MaterialType material)
-    {
-        final String toolName = type.name().toLowerCase().substring(3);
-
-        final ItemStack stack = CoreHelpers.getStackByRegistryName("tconstruct:" + toolName);
-        if (!stack.isEmpty())
-        {
-            final NBTTagCompound nbt = new NBTTagCompound();
-            nbt.setString("Material", material.getName());
-            stack.setTagCompound(nbt);
-        }
-        return stack;
-    }
-
-    @Nonnull
-    private static ItemStack getConstructsArmorFor(ItemType type, MaterialType material)
-    {
-        final String armorName = type.name().toLowerCase().substring(3);
-
-        final ItemStack stack = CoreHelpers.getStackByRegistryName("conarm:" + armorName);
-        if (!stack.isEmpty())
-        {
-            final NBTTagCompound nbt = new NBTTagCompound();
-            nbt.setString("Material", material.getName());
-            stack.setTagCompound(nbt);
-        }
-        return stack;
     }
 
     private static ItemStack getNTPToolFor(ItemType type, MaterialType material)

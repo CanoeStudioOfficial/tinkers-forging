@@ -32,25 +32,46 @@ import stanhebben.zenscript.annotations.ZenMethod;
 public final class CraftTweakerIntegration
 {
     @ZenMethod
+    public static void addRecipe(final IIngredient input, final IItemStack output, final int tier)
+    {
+        addRecipeInternal(input, output, tier);
+    }
+
+    @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final String... ruleNames)
+    {
+        addRecipeInternal(input, output, tier, ruleNames);
+    }
+
+    private static void addRecipeInternal(final IIngredient input, final IItemStack output, final int tier, final String... ruleNames)
     {
         final AnvilRecipe recipe;
         final ItemStack outputStack = toStack(output);
-        final List<ForgeRule> rules = new ArrayList<>(ruleNames.length);
-        for (String ruleName : ruleNames)
+        if (outputStack.isEmpty())
         {
-            try
+            TinkersForging.getLog().warn("Invalid CraftTweaker anvil recipe. Output must be an item stack.");
+            return;
+        }
+
+        final int ruleCount = ruleNames == null ? 0 : ruleNames.length;
+        final List<ForgeRule> rules = new ArrayList<>(ruleCount);
+        if (ruleNames != null)
+        {
+            for (String ruleName : ruleNames)
             {
-                final ForgeRule rule = ForgeRule.valueOf(ruleName.toUpperCase());
-                rules.add(rule);
-            }
-            catch (IllegalArgumentException e)
-            {
-                TinkersForging.getLog().warn("Illegal rule name {} specified in craft tweaker recipe!", ruleName);
-                return;
+                try
+                {
+                    final ForgeRule rule = ForgeRule.valueOf(ruleName.toUpperCase());
+                    rules.add(rule);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    TinkersForging.getLog().warn("Illegal rule name {} specified in craft tweaker recipe!", ruleName);
+                    return;
+                }
             }
         }
-        if (rules.size() <= 0 || rules.size() > 3)
+        if (rules.size() > 3)
         {
             TinkersForging.getLog().warn("Illegal number of rules {} specified in craft tweaker recipe!", rules.size());
             return;
@@ -62,7 +83,13 @@ public final class CraftTweakerIntegration
         }
         else
         {
-            recipe = new AnvilRecipe(outputStack, toStack(input), tier, rules.toArray(new ForgeRule[0]));
+            ItemStack inputStack = toStack(input);
+            if (inputStack.isEmpty())
+            {
+                TinkersForging.getLog().warn("Invalid CraftTweaker anvil recipe. Input must be an item stack or ore dictionary entry.");
+                return;
+            }
+            recipe = new AnvilRecipe(outputStack, inputStack, tier, rules.toArray(new ForgeRule[0]));
         }
         CraftTweakerAPI.apply(new IAction()
         {
@@ -135,6 +162,6 @@ public final class CraftTweakerIntegration
         if (!(ingredient instanceof IItemStack))
             return ItemStack.EMPTY;
         final Object obj = ingredient.getInternal();
-        return obj instanceof ItemStack ? (ItemStack) obj : ItemStack.EMPTY;
+        return obj instanceof ItemStack ? ((ItemStack) obj).copy() : ItemStack.EMPTY;
     }
 }

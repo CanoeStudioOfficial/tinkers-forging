@@ -5,25 +5,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
-import javax.annotation.Nullable;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Optional;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import api.materials.HeadMaterial;
 import api.materials.Materials;
-import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
-import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
-import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader.MaterialDefinition;
-import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
-import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
-import toolbox.common.items.parts.ItemToolHead;
 
 public final class AdvToolboxIntegration
 {
@@ -47,42 +35,7 @@ public final class AdvToolboxIntegration
     @Optional.Method(modid = "toolbox")
     public static void addRecipes()
     {
-        for (MaterialType material : MaterialRegistry.getAllMaterials())
-        {
-            if (!MaterialRegistry.isToolboxMaterial(material))
-            {
-                continue;
-            }
-            for (ItemType type : ItemType.advToolbox())
-            {
-                Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation("toolbox", type.name().substring(4).toLowerCase()));
-                if (item instanceof ItemToolHead)
-                {
-                    ItemToolHead toolPart = (ItemToolHead) item;
-                    Integer meta = getMetaFromBadlyDesignedMap(toolPart.meta_map, m -> m.getName().equals(material.getName()));
-                    if (meta == null) continue;
-                    ItemStack output = new ItemStack(toolPart, 1, meta);
-
-                    String inputOre = material.getOreName();
-
-                    if (!output.isEmpty())
-                        ModRecipes.ANVIL.add(new AnvilRecipe(output, inputOre, type.getAmount(), material.getTier(), type.getRules()));
-                }
-            }
-        }
-    }
-
-    @Nullable
-    private static <K, V> K getMetaFromBadlyDesignedMap(Map<K, V> map, Predicate<V> valueTest)
-    {
-        for (Map.Entry<K, V> entry : map.entrySet())
-        {
-            if (valueTest.test(entry.getValue()))
-            {
-                return entry.getKey();
-            }
-        }
-        return null;
+        // Anvil recipes are intentionally pack-defined through CraftTweaker.
     }
 
     private static float getWorkTemperature(int tier)

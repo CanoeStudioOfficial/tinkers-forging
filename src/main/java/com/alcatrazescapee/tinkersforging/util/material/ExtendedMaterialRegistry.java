@@ -19,16 +19,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.common.Loader;
 
 import com.alcatrazescapee.alcatrazcore.inventory.ingredient.IRecipeIngredient;
-import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
-import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
-import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
-import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
-import com.alcatrazescapee.tinkersforging.util.ItemType;
 
 @ParametersAreNonnullByDefault
 public final class ExtendedMaterialRegistry
@@ -67,7 +61,6 @@ public final class ExtendedMaterialRegistry
         if (material != null)
         {
             CapabilityForgeItem.registerStackCapability(IRecipeIngredient.of(material.getSourceStack()), material.getWorkTemp(), material.getMeltTemp());
-            ModRecipes.addRecipeAction(() -> addExtendedMaterialRecipes(material));
             TinkersForging.getProxy().onExtendedMaterialsChanged();
         }
     }
@@ -149,32 +142,6 @@ public final class ExtendedMaterialRegistry
             }
         }
         return builder.toString();
-    }
-
-    private static void addExtendedMaterialRecipes(Definition material)
-    {
-        addExtendedMaterialRecipe(ItemType.HAMMER_HEAD, material);
-        for (ItemType type : ItemType.tools())
-        {
-            addExtendedMaterialRecipe(type, material);
-        }
-        if (Loader.isModLoaded("notreepunching") && ModConfig.GENERAL.enableNoTreePunchingCompat)
-        {
-            for (ItemType type : ItemType.ntpTools())
-            {
-                addExtendedMaterialRecipe(type, material);
-            }
-        }
-    }
-
-    private static void addExtendedMaterialRecipe(ItemType type, Definition material)
-    {
-        ItemStack output = ItemExtendedToolHead.get(type, material, 1);
-        ItemStack input = material.getSourceStack(type.getAmount());
-        if (!output.isEmpty() && !input.isEmpty())
-        {
-            ModRecipes.ANVIL.add(new AnvilRecipe(output, input, material.getTier(), type.getRules()));
-        }
     }
 
     @ParametersAreNonnullByDefault

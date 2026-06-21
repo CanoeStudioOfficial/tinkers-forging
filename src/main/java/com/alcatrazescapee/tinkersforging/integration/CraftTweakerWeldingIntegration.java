@@ -99,6 +99,6 @@ public final class CraftTweakerWeldingIntegration
         if (!(ingredient instanceof IItemStack))
             return ItemStack.EMPTY;
         final Object obj = ingredient.getInternal();
-        return obj instanceof ItemStack ? (ItemStack) obj : ItemStack.EMPTY;
+        return obj instanceof ItemStack ? ((ItemStack) obj).copy() : ItemStack.EMPTY;
     }
 }

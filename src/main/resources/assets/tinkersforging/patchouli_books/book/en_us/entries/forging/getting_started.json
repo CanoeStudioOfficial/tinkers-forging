@@ -5,14 +5,14 @@
     "pages": [
         {
             "type": "text",
-            "text": "To get started forging, you will need to acquire several items. The first being a $(l:forging/tinkers_anvil)Tinker's Anvil$(), along with a $(l:items/tinkers_hammer)Hammer$(). Make sure that the tier of your anvil is at least as high as the tier of the item you want to create. Then you will need a method to heat up your items, some ingots to forge, and you can begin!"
+            "text": "To get started forging, you will need a $(l:forging/tinkers_anvil)Tinker's Anvil$(), a $(l:items/tinkers_hammer)Hammer$(), and a method to heat your inputs. Make sure that the tier of your anvil is at least as high as the recipe you want to create. Anvil recipes are added by modpack scripts through CraftTweaker."
         },
         {
             "type": "image",
             "images": [
                 "tinkersforging:textures/guide/tinkers_anvil.png"
             ],
-            "text": "\"What in tarnation do all these buttons do!\" - Old Man McGucket"
+            "text": "Place the heated input stack in the anvil, then hit the anvil with a hammer to forge directly."
         },
         {
             "type": "text",
