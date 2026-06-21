@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
@@ -22,6 +23,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import com.alcatrazescapee.alcatrazcore.client.gui.GuiContainerTileCore;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
+import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
 import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilButton;
@@ -129,18 +131,18 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
             drawTarget(target, range);
         }
 
+        ForgeSteps steps = getDisplayedSteps();
+
         // Last Three Steps
-        for (int i = FIELD_LAST_STEP; i <= FIELD_THIRD_STEP; i++)
+        for (int i = 0; i < 3; i++)
         {
-            ForgeStep step = ForgeStep.valueOf(tile.getField(i));
+            ForgeStep step = steps.getDisplayStep(i);
             if (step != null)
             {
-                int xOffset = 19 * (i - FIELD_LAST_STEP);
+                int xOffset = 19 * i;
                 drawTexturedModalRect(guiLeft + 99 - xOffset, guiTop + 34, step.getTexU(), step.getTexV(), 16, 16);
             }
         }
-
-        ForgeSteps steps = tile.getSteps();
 
         // Rules
         if (recipe != null)
@@ -167,6 +169,13 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
             }
         }
 
+    }
+
+    private ForgeSteps getDisplayedSteps()
+    {
+        ItemStack input = tile.getInputStack();
+        IForgeItem cap = input.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        return cap == null ? tile.getSteps() : cap.getSteps();
     }
 
     private void drawTarget(int target, int range)

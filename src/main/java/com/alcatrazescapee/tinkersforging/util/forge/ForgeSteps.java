@@ -149,6 +149,12 @@ public class ForgeSteps implements INBTSerializable<NBTTagCompound>
     }
 
     @Nullable
+    public ForgeStep getDisplayStep(int idx)
+    {
+        return getStep(idx);
+    }
+
+    @Nullable
     ForgeStep getLastStep()
     {
         return getStepFromEnd(0);
