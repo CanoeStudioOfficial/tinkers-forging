@@ -80,15 +80,15 @@ public enum ForgeRule
         switch (this.order)
         {
             case ANY:
-                return matchesStep(steps.getStep(2)) || matchesStep(steps.getStep(1)) || matchesStep(steps.getStep(0));
+                return matchesStep(steps.getLastStep()) || matchesStep(steps.getSecondLastStep()) || matchesStep(steps.getThirdLastStep());
             case NOT_LAST:
-                return matchesStep(steps.getStep(1)) || matchesStep(steps.getStep(0));
+                return matchesStep(steps.getSecondLastStep()) || matchesStep(steps.getThirdLastStep());
             case LAST:
-                return matchesStep(steps.getStep(2));
+                return matchesStep(steps.getLastStep());
             case SECOND_LAST:
-                return matchesStep(steps.getStep(1));
+                return matchesStep(steps.getSecondLastStep());
             case THIRD_LAST:
-                return matchesStep(steps.getStep(0));
+                return matchesStep(steps.getThirdLastStep());
             default:
                 return false;
         }

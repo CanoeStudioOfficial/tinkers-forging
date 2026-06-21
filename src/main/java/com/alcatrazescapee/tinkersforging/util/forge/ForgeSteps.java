@@ -6,7 +6,8 @@
 
 package com.alcatrazescapee.tinkersforging.util.forge;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,31 +20,47 @@ import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.*;
 @ParametersAreNonnullByDefault
 public class ForgeSteps implements INBTSerializable<NBTTagCompound>
 {
-    private final LinkedList<ForgeStep> steps;
+    private final List<ForgeStep> steps;
+    private int total;
 
     public ForgeSteps()
     {
-        steps = new LinkedList<>();
+        steps = new ArrayList<>(3);
         reset();
     }
 
     public void reset()
     {
-        for (int i = 0; i < 3; i++) addStep(null);
+        steps.clear();
+        total = 0;
     }
 
     public boolean isEmpty()
     {
-        return steps.get(0) == null && steps.get(1) == null && steps.get(2) == null;
+        return !isWorked();
+    }
+
+    public boolean isWorked()
+    {
+        return total > 0;
+    }
+
+    public int getTotal()
+    {
+        return total;
     }
 
     public void addStep(@Nullable ForgeStep step)
     {
-        steps.add(step);
-        while (steps.size() > 3)
+        if (step == null)
+            return;
+
+        if (steps.size() == 3)
         {
-            steps.remove();
+            steps.remove(0);
         }
+        steps.add(step);
+        total++;
     }
 
     public int getStepByID(int id)
@@ -63,17 +80,40 @@ public class ForgeSteps implements INBTSerializable<NBTTagCompound>
 
     public void setStep(int position, int step)
     {
+        int index;
         switch (position)
         {
             case FIELD_LAST_STEP:
-                steps.set(0, ForgeStep.valueOf(step));
+                index = 0;
                 break;
             case FIELD_SECOND_STEP:
-                steps.set(1, ForgeStep.valueOf(step));
+                index = 1;
                 break;
             case FIELD_THIRD_STEP:
-                steps.set(2, ForgeStep.valueOf(step));
+                index = 2;
                 break;
+            default:
+                return;
+        }
+
+        ForgeStep value = ForgeStep.valueOf(step);
+        if (value == null)
+        {
+            while (steps.size() > index)
+            {
+                steps.remove(steps.size() - 1);
+            }
+            total = steps.isEmpty() ? 0 : Math.max(total, steps.size());
+        }
+        else if (index < steps.size())
+        {
+            steps.set(index, value);
+            total = Math.max(total, steps.size());
+        }
+        else if (index == steps.size())
+        {
+            steps.add(value);
+            total = Math.max(total, steps.size());
         }
     }
 
@@ -85,6 +125,7 @@ public class ForgeSteps implements INBTSerializable<NBTTagCompound>
         nbt.setInteger("last", getStepInt(0));
         nbt.setInteger("second", getStepInt(1));
         nbt.setInteger("third", getStepInt(2));
+        nbt.setInteger("total", total);
         return nbt;
     }
 
@@ -92,31 +133,77 @@ public class ForgeSteps implements INBTSerializable<NBTTagCompound>
     public void deserializeNBT(@Nullable NBTTagCompound nbt)
     {
         reset();
-        if (nbt != null && (nbt.hasKey("last") || nbt.hasKey("second") || nbt.hasKey("third")))
+        if (nbt != null && (nbt.hasKey("last") || nbt.hasKey("second") || nbt.hasKey("third") || nbt.hasKey("total")))
         {
-            setStep(FIELD_LAST_STEP, nbt.hasKey("last") ? nbt.getInteger("last") : -1);
-            setStep(FIELD_SECOND_STEP, nbt.hasKey("second") ? nbt.getInteger("second") : -1);
-            setStep(FIELD_THIRD_STEP, nbt.hasKey("third") ? nbt.getInteger("third") : -1);
+            addDeserializedStep(nbt, "last");
+            addDeserializedStep(nbt, "second");
+            addDeserializedStep(nbt, "third");
+            total = nbt.hasKey("total") ? Math.max(nbt.getInteger("total"), steps.size()) : steps.size();
         }
     }
 
     @Nullable
     ForgeStep getStep(int idx)
     {
-        return steps.get(idx);
+        return idx < 0 || idx >= steps.size() ? null : steps.get(idx);
+    }
+
+    @Nullable
+    ForgeStep getLastStep()
+    {
+        return getStepFromEnd(0);
+    }
+
+    @Nullable
+    ForgeStep getSecondLastStep()
+    {
+        return getStepFromEnd(1);
+    }
+
+    @Nullable
+    ForgeStep getThirdLastStep()
+    {
+        return getStepFromEnd(2);
+    }
+
+    private void addDeserializedStep(NBTTagCompound nbt, String key)
+    {
+        if (!nbt.hasKey(key))
+            return;
+
+        ForgeStep step = ForgeStep.valueOf(nbt.getInteger(key));
+        if (step != null)
+        {
+            addStepWithoutCounting(step);
+        }
+    }
+
+    private void addStepWithoutCounting(ForgeStep step)
+    {
+        if (steps.size() == 3)
+        {
+            steps.remove(0);
+        }
+        steps.add(step);
+    }
+
+    @Nullable
+    private ForgeStep getStepFromEnd(int offset)
+    {
+        return getStep(steps.size() - 1 - offset);
     }
 
     private int getStepInt(int idx)
     {
-        ForgeStep step = steps.get(idx);
+        ForgeStep step = getStep(idx);
         return step == null ? -1 : step.ordinal();
     }
 
     public ForgeSteps copy()
     {
         ForgeSteps newSteps = new ForgeSteps();
-        for (ForgeStep step : this.steps)
-            newSteps.addStep(step);
+        newSteps.steps.addAll(this.steps);
+        newSteps.total = this.total;
         return newSteps;
     }
 }

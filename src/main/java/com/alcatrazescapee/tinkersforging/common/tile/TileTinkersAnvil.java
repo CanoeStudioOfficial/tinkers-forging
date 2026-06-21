@@ -549,7 +549,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         workingProgress = cap.getWork();
         steps = cap.getSteps().copy();
-        if (steps.isEmpty() && workingProgress == IForgeItem.MAX_WORK / 2)
+        if (!steps.isWorked() && workingProgress == IForgeItem.MAX_WORK / 2)
         {
             cap.setWork(IForgeItem.DEFAULT_WORK);
             workingProgress = IForgeItem.DEFAULT_WORK;
@@ -575,7 +575,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private boolean isInitialNegativeStep(IForgeItem cap, ForgeStep step)
     {
-        return cap.getSteps().isEmpty() && cap.getWork() <= IForgeItem.MIN_WORK && step.getStepAmount() < 0;
+        return !cap.getSteps().isWorked() && cap.getWork() <= IForgeItem.MIN_WORK && step.getStepAmount() < 0;
     }
 
     private void applyForgeStep(IForgeItem cap, ForgeStep step)
@@ -587,7 +587,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private boolean isOverworked(int work)
     {
-        return work < IForgeItem.MIN_WORK || work >= IForgeItem.MAX_WORK;
+        return work < IForgeItem.MIN_WORK || work > IForgeItem.MAX_WORK;
     }
 
     private void completeRecipe(AnvilRecipe recipe, ItemStack input, EntityPlayer player)

@@ -65,7 +65,7 @@ public final class CapabilityForgeItem
         IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
         if (cap != null)
         {
-            if (cap.getSteps().isEmpty())
+            if (!cap.getSteps().isWorked())
             {
                 cap.reset();
             }
