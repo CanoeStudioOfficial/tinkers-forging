@@ -49,7 +49,7 @@ public final class TinkersForging
     // Versioning
     private static final String ALC_MIN = "1.0.2";
     private static final String ALC_MAX = "2.0.0";
-    private static final String FORGE_MIN = "14.23.4.2705";
+    private static final String FORGE_MIN = "14.23.5.2847";
     private static final String FORGE_MAX = "15.0.0.0";
 
     public static final String DEPENDENCIES = "required-after:forge@[" + FORGE_MIN + "," + FORGE_MAX + ");" + "required-after:alcatrazcore@[" + ALC_MIN + "," + ALC_MAX + ");required-after:pyrotech;required-after:theoneprobe;" + "after:tconstruct;after:alcatrazcore;after:toolbox;after:twilightforest";
