@@ -264,42 +264,66 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             return;
         }
 
-        AnvilRecipe recipe = getSelectedRecipe(input, cap, true);
+        AnvilRecipe recipe = getRecipeForWork(input, cap);
         if (recipe == null)
             return;
 
-        if (isInitialNegativeStep(cap, step))
+        WorkFailure failure = validateWork(cap, recipe, step);
+        if (failure != null)
         {
-            sendLiteralProblem(player, "The work cursor cannot move lower.");
+            failure.send(player);
             return;
         }
+
+        performWork(player, input, cap, recipe, hammer, step);
+    }
+
+    @Nullable
+    private AnvilRecipe getRecipeForWork(ItemStack input, IForgeItem cap)
+    {
+        AnvilRecipe recipe = getSelectedRecipe(input, cap, true);
+        if (recipe == null)
+            return null;
+
         if (!recipe.test(input))
         {
             setAndUpdateSlots(SLOT_INPUT_MAIN);
-            return;
+            return null;
         }
+        return recipe;
+    }
+
+    @Nullable
+    private WorkFailure validateWork(IForgeItem cap, AnvilRecipe recipe, ForgeStep step)
+    {
         if (getTier() < recipe.getTier())
         {
-            sendProblem(player, "tier_too_low");
-            return;
+            return WorkFailure.TIER_TOO_LOW;
         }
         if (!cap.isWorkable())
         {
-            sendProblem(player, "too_cold");
-            return;
+            return WorkFailure.TOO_COLD;
         }
+        if (isInitialNegativeStep(cap, step))
+        {
+            return WorkFailure.CANNOT_MOVE_LOWER;
+        }
+        return null;
+    }
 
+    private void performWork(EntityPlayer player, ItemStack input, IForgeItem cap, AnvilRecipe recipe, HammerStack hammer, ForgeStep step)
+    {
         applyRecipeState(input, cap, recipe);
         applyForgeStep(cap, step);
         damageHammer(hammer, player);
-        createForgingEffects();
-
         if (isOverworked(workingProgress))
         {
             overworkInput(recipe, input);
             setAndUpdateSlots(SLOT_INPUT_MAIN);
             return;
         }
+
+        createForgingEffects();
         if (isRecipeComplete(recipe))
         {
             completeRecipe(recipe, input, player);
@@ -680,9 +704,32 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + translationKey)));
     }
 
-    private void sendLiteralProblem(EntityPlayer player, String message)
+    private enum WorkFailure
     {
-        player.sendMessage(new TextComponentString("" + TextFormatting.RED + message));
+        TIER_TOO_LOW("tier_too_low", false),
+        TOO_COLD("too_cold", false),
+        CANNOT_MOVE_LOWER("The work cursor cannot move lower.", true);
+
+        private final String message;
+        private final boolean literal;
+
+        WorkFailure(String message, boolean literal)
+        {
+            this.message = message;
+            this.literal = literal;
+        }
+
+        private void send(EntityPlayer player)
+        {
+            if (literal)
+            {
+                player.sendMessage(new TextComponentString("" + TextFormatting.RED + message));
+            }
+            else
+            {
+                player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + message)));
+            }
+        }
     }
 
     private boolean isFlux(ItemStack stack)
