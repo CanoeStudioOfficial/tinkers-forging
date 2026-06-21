@@ -25,7 +25,6 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 import net.minecraftforge.registries.IForgeRegistryModifiable;
 
 import com.alcatrazescapee.alcatrazcore.inventory.crafting.InventoryCraftingEmpty;
-import com.alcatrazescapee.alcatrazcore.inventory.ingredient.IRecipeIngredient;
 import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.alcatrazcore.util.collections.ImmutablePair;
 import com.alcatrazescapee.tinkersforging.ModConfig;
@@ -138,7 +137,7 @@ public final class ModRecipes
                     r.register(new ShapedOreRecipe(loc, hammer, "H", "S", 'S', "stickWood", 'H', hammerHead).setRegistryName(loc));
                 }
 
-                // Anvil recipes
+                // Anvil block crafting recipes
                 final ItemStack anvil = BlockTinkersAnvil.get(material, 1);
                 if (!anvil.isEmpty())
                 {

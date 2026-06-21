@@ -5,14 +5,14 @@
     "pages": [
         {
             "type": "text",
-            "text": "若想要开始锻造，你需要获取如下几个物品。第一个为$(l:forging/tinkers_anvil)工匠砧$()，配合一个$(l:items/tinkers_hammer)锤子$()。确保砧的等级要大于等于想要锻造的物品等级。接下来你需要想些办法加热物品，或者一些锭来进行锻造，然后开启你的篇章吧！"
+            "text": "若想要开始锻造，你需要$(l:forging/tinkers_anvil)工匠砧$()、$(l:items/tinkers_hammer)锤子$()，以及加热输入物品的方法。确保砧的等级要大于等于想要锻造的配方等级。锻造配方由整合包通过 CraftTweaker 添加。"
         },
         {
             "type": "image",
             "images": [
                 "tinkersforging:textures/guide/tinkers_anvil.png"
             ],
-            "text": "\"What in tarnation do all these buttons do!\" - Old Man McGucket"
+            "text": "将加热后的输入物品放入工匠砧，然后手持锤子右键工匠砧即可直接锻造。"
         },
         {
             "type": "text",

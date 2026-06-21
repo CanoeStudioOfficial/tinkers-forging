@@ -68,19 +68,20 @@ public final class ModConfig
         @Config.Name("Tinker's Construct Compat Mode")
         @Config.RequiresMcRestart
         @Config.Comment({"Controls how Tinker's Forging handles tool parts when Tinker's Construct is installed.",
-                "BOTH: register Tinker's Forging's own normal tool parts and Tinker's Construct part recipes.",
-                "TINKERS_ONLY: skip Tinker's Forging's own normal tool parts and only use Tinker's Construct part recipes.",
+                "BOTH: register Tinker's Forging's own normal tool parts and Tinker's Construct-compatible part content.",
+                "TINKERS_ONLY: skip Tinker's Forging's own normal tool parts and only use Tinker's Construct-compatible part content.",
+                "Actual anvil recipes are pack-defined through CraftTweaker.",
                 "If Tinker's Construct is not installed, Tinker's Forging always uses its own tool parts."})
         public TinkersConstructCompatMode tinkersConstructCompatMode = TinkersConstructCompatMode.BOTH;
 
         @Config.Name("Construct's Armory Compat")
         @Config.RequiresMcRestart
-        @Config.Comment("Should this mod add recipes for Construct's Armory's armor parts, if it is enabled?")
+        @Config.Comment("Should this mod enable Construct's Armory material content, if it is enabled? Actual anvil recipes are pack-defined through CraftTweaker.")
         public boolean useConstructsArmory = true;
 
 
         @Config.Name("No Tree Punching Compat")
-        @Config.Comment("Should this mod add tool parts and recipes for No Tree Punching's tools, if it is enabled?")
+        @Config.Comment("Should this mod add tool parts/content for No Tree Punching's tools, if it is enabled? Actual anvil recipes are pack-defined through CraftTweaker.")
         @Config.RequiresMcRestart
         public boolean enableNoTreePunchingCompat = true;
 
@@ -91,12 +92,12 @@ public final class ModConfig
 
         @Config.Name("Remove Crafting Recipes")
         @Config.RequiresMcRestart
-        @Config.Comment("If this is true, any recipes that are added to the anvil that have a crafting equivalent (i.e. a shovel) will have their normal crafting recipes removed")
+        @Config.Comment("If this is true, matching normal crafting recipes can be removed when Tinker's Forging replaces their tool assembly path.")
         public boolean removeCraftingRecipes = true;
 
         @Config.Name("Enable Built-In Tool Part Blacklist")
         @Config.RequiresMcRestart
-        @Config.Comment("If this is true, the built-in Tinker's Forging tool parts listed below will not be registered and their recipes will not be added. This does not affect Tinker's Construct parts.")
+        @Config.Comment("If this is true, the built-in Tinker's Forging tool parts listed below will not be registered. This does not affect Tinker's Construct parts.")
         public boolean enableBuiltInToolPartBlacklist = false;
 
         @Config.Name("Disabled Built-In Tool Parts")

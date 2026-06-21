@@ -5,31 +5,31 @@
     "pages": [
         {
             "type": "text",
-            "text": "工匠砧也可用来锻造护甲。支持大部分材料，这意味着你能够通过很多模组的材料来制作头盔、胸甲、护腿和靴子。"
+            "text": "当整合包通过 CraftTweaker 添加配方时，工匠砧也可用来锻造护甲。JSON 材料可以提供材料内容，实际锻造配方由脚本决定。"
         },
         {
             "type": "spotlight",
             "item": "minecraft:iron_helmet",
             "title": "头盔",
-            "text": "任意头盔都需要五个锭锻造得到。默认的锻造规则为：弯曲，末尾；弯曲，倒数第二；击打，倒数第三。"
+            "text": "整合包可以用 CraftTweaker 添加头盔锻造配方，常见写法是五个锭锻造成一个头盔。"
         },
         {
             "type": "spotlight",
             "item": "minecraft:iron_chestplate",
             "title": "胸甲",
-            "text": "任意胸甲都需要八个锭锻造得到。默认的锻造规则为：击打，末尾；弯曲，任意；镦锻，任意。"
+            "text": "整合包可以用 CraftTweaker 添加胸甲锻造配方，常见写法是八个锭锻造成一个胸甲。"
         },
         {
             "type": "spotlight",
             "item": "minecraft:iron_leggings",
             "title": "护腿",
-            "text": "任意护腿都需要七个锭锻造得到。默认的锻造规则为：击打，任意；弯曲，任意；牵拉，任意。"
+            "text": "整合包可以用 CraftTweaker 添加护腿锻造配方，常见写法是七个锭锻造成一件护腿。"
         },
         {
             "type": "spotlight",
             "item": "minecraft:iron_boots",
             "title": "靴子",
-            "text": "任意靴子都需要四个锭锻造得到。默认的锻造规则为：弯曲，末尾；弯曲，倒数第二；收缩，倒数第三。"
+            "text": "整合包可以用 CraftTweaker 添加靴子锻造配方，常见写法是四个锭锻造成一双靴子。"
         }
     ]
 }
