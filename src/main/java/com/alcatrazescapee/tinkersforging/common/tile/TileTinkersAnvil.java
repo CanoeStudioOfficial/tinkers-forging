@@ -268,8 +268,9 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         if (recipe == null)
             return;
 
-        if (cap.getSteps().isEmpty() && cap.getWork() == IForgeItem.MIN_WORK && step.getStepAmount() < 0)
+        if (isInitialNegativeStep(cap, step))
         {
+            sendLiteralProblem(player, "The work cursor cannot move lower.");
             return;
         }
         if (!recipe.test(input))
@@ -289,13 +290,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         }
 
         applyRecipeState(input, cap, recipe);
-        cap.addStep(step);
-        steps = cap.getSteps().copy();
-        workingProgress = cap.getWork();
+        applyForgeStep(cap, step);
         damageHammer(hammer, player);
         createForgingEffects();
 
-        if (workingProgress < IForgeItem.MIN_WORK || workingProgress >= IForgeItem.MAX_WORK)
+        if (isOverworked(workingProgress))
         {
             overworkInput(recipe, input);
             setAndUpdateSlots(SLOT_INPUT_MAIN);
@@ -550,6 +549,23 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return Math.abs(workingProgress - workingTarget) <= targetRange && recipe.stepsMatch(steps);
     }
 
+    private boolean isInitialNegativeStep(IForgeItem cap, ForgeStep step)
+    {
+        return cap.getSteps().isEmpty() && cap.getWork() <= IForgeItem.MIN_WORK && step.getStepAmount() < 0;
+    }
+
+    private void applyForgeStep(IForgeItem cap, ForgeStep step)
+    {
+        cap.addStep(step);
+        steps = cap.getSteps().copy();
+        workingProgress = cap.getWork();
+    }
+
+    private boolean isOverworked(int work)
+    {
+        return work < IForgeItem.MIN_WORK || work >= IForgeItem.MAX_WORK;
+    }
+
     private void completeRecipe(AnvilRecipe recipe, ItemStack input, EntityPlayer player)
     {
         float inputTemperature = getForgeTemperature(input);
@@ -662,6 +678,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     private void sendProblem(EntityPlayer player, String translationKey)
     {
         player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + translationKey)));
+    }
+
+    private void sendLiteralProblem(EntityPlayer player, String message)
+    {
+        player.sendMessage(new TextComponentString("" + TextFormatting.RED + message));
     }
 
     private boolean isFlux(ItemStack stack)

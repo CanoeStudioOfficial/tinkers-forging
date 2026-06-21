@@ -66,7 +66,7 @@ public interface IForgeItem extends INBTSerializable<NBTTagCompound>
 
     default boolean isWorkable()
     {
-        return getWorkableTemperature() < getTemperature() && !isMolten();
+        return getTemperature() >= getWorkableTemperature() && !isMolten();
     }
 
     @SideOnly(Side.CLIENT)
