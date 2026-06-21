@@ -13,6 +13,7 @@ import java.util.List;
 
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -35,7 +36,9 @@ import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
+import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilRecipeUpdate;
+import com.alcatrazescapee.tinkersforging.common.network.PacketUpdateForgeItem;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeRule;
@@ -327,6 +330,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         {
             overworkInput(recipe, input);
             setAndUpdateSlots(SLOT_INPUT_MAIN);
+            syncWorkingState(player);
             return;
         }
 
@@ -335,10 +339,12 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         {
             completeRecipe(recipe, input, player);
             setAndUpdateSlots(SLOT_INPUT_MAIN);
+            syncWorkingState(player);
             return;
         }
 
         setAndUpdateSlots(SLOT_INPUT_MAIN);
+        syncWorkingState(player);
     }
 
     public void openPlanGui(EntityPlayer player)
@@ -704,6 +710,20 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         // Called on server
         setRecipe(recipe);
         TinkersForging.getNetwork().sendToDimension(new PacketAnvilRecipeUpdate(this), world.provider.getDimension());
+    }
+
+    private void syncWorkingState(EntityPlayer player)
+    {
+        if (!(player instanceof EntityPlayerMP) || !(player.openContainer instanceof ContainerTinkersAnvil))
+            return;
+
+        player.openContainer.detectAndSendChanges();
+
+        IForgeItem cap = getInputForgeItem();
+        if (cap != null)
+        {
+            TinkersForging.getNetwork().sendTo(new PacketUpdateForgeItem(player.openContainer.windowId, SLOT_INPUT_MAIN, cap), (EntityPlayerMP) player);
+        }
     }
 
     private void resetFields()
