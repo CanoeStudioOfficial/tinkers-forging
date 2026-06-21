@@ -144,7 +144,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
                 cap.setRecipe(cachedAnvilRecipe);
             }
 
-            inventory.setStackInSlot(SLOT_DISPLAY, cachedAnvilRecipe.getOutput());
+            inventory.setStackInSlot(SLOT_DISPLAY, cachedAnvilRecipe.getOutput().copy());
         }
         else
         {
@@ -534,7 +534,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         workingTarget = recipe.getWorkingTarget(world.getSeed());
         rules = recipe.getRules();
         cap.setRecipe(recipe);
-        inventory.setStackInSlot(SLOT_DISPLAY, recipe.getOutput());
+        inventory.setStackInSlot(SLOT_DISPLAY, recipe.getOutput().copy());
     }
 
     private boolean isSameRecipe(@Nullable AnvilRecipe first, @Nullable AnvilRecipe second)
@@ -552,14 +552,18 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private void completeRecipe(AnvilRecipe recipe, ItemStack input, EntityPlayer player)
     {
+        float inputTemperature = getForgeTemperature(input);
         ItemStack remainingInput = recipe.consumeInput(input);
         resetForgeData(remainingInput);
+        preserveForgeTemperature(remainingInput, inputTemperature);
         if (!remainingInput.isEmpty())
         {
             CoreHelpers.dropItemInWorld(world, pos, remainingInput);
         }
 
-        inventory.setStackInSlot(SLOT_INPUT_MAIN, recipe.getOutput());
+        ItemStack output = recipe.getOutput().copy();
+        preserveForgeTemperature(output, inputTemperature);
+        inventory.setStackInSlot(SLOT_INPUT_MAIN, output);
         world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
         grantForgeExperience(recipe, player);
 
@@ -570,11 +574,31 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private void overworkInput(AnvilRecipe recipe, ItemStack input)
     {
+        float inputTemperature = getForgeTemperature(input);
         ItemStack remainingInput = recipe.consumeInput(input);
         resetForgeData(remainingInput);
+        preserveForgeTemperature(remainingInput, inputTemperature);
         inventory.setStackInSlot(SLOT_INPUT_MAIN, remainingInput);
         world.playSound(null, pos, SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 1.0f, 1.0f);
         resetFields();
+    }
+
+    private float getForgeTemperature(ItemStack stack)
+    {
+        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        return cap == null ? 0f : cap.getTemperature();
+    }
+
+    private void preserveForgeTemperature(ItemStack stack, float temperature)
+    {
+        if (stack.isEmpty() || temperature <= 0f)
+            return;
+
+        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        if (cap != null && temperature > cap.getTemperature())
+        {
+            cap.setTemperature(Math.min(temperature, cap.getMeltingTemperature() - 1f));
+        }
     }
 
     private void resetForgeData(ItemStack stack)
