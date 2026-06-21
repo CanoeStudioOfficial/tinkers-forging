@@ -6,7 +6,6 @@
 
 package com.alcatrazescapee.tinkersforging.integration.jei;
 
-import com.alcatrazescapee.tinkersforging.client.gui.GuiTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.ModConfig;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
@@ -111,7 +110,5 @@ public final class JEIIntegration implements IModPlugin
         registry.addRecipes(ModRecipes.ANVIL.getAll(), ANVIL_UID);
         registry.handleRecipes(WeldingRecipe.class, WeldingRecipeCategory.Wrapper::new, WELDING_UID);
         registry.addRecipes(ModRecipes.WELDING.getAll(), WELDING_UID);
-        registry.addRecipeClickArea(GuiTinkersAnvil.class, 141, 40, 9, 14, ANVIL_UID);
-        registry.addRecipeClickArea(GuiTinkersAnvil.class, 141, 40, 9, 14, WELDING_UID);
     }
 }

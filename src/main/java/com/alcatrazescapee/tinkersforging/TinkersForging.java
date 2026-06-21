@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.ICrashCallable;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -24,7 +25,6 @@ import com.alcatrazescapee.tinkersforging.common.blocks.ModBlocks;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler;
 import com.alcatrazescapee.tinkersforging.common.items.ModItems;
-import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilButton;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilRecipeUpdate;
 import com.alcatrazescapee.tinkersforging.common.network.PacketUpdateForgeItem;
 import com.alcatrazescapee.tinkersforging.common.proxy.CommonProxy;
@@ -52,7 +52,7 @@ public final class TinkersForging
     private static final String FORGE_MIN = "14.23.4.2705";
     private static final String FORGE_MAX = "15.0.0.0";
 
-    public static final String DEPENDENCIES = "required-after:forge@[" + FORGE_MIN + "," + FORGE_MAX + ");" + "required-after:alcatrazcore@[" + ALC_MIN + "," + ALC_MAX + ");" + "after:tconstruct;after:alcatrazcore;after:toolbox;after:twilightforest";
+    public static final String DEPENDENCIES = "required-after:forge@[" + FORGE_MIN + "," + FORGE_MAX + ");" + "required-after:alcatrazcore@[" + ALC_MIN + "," + ALC_MAX + ");required-after:pyrotech;required-after:theoneprobe;" + "after:tconstruct;after:alcatrazcore;after:toolbox;after:twilightforest";
 
     @Mod.Instance
     private static TinkersForging instance;
@@ -95,10 +95,10 @@ public final class TinkersForging
 
         int id = -1;
         network = NetworkRegistry.INSTANCE.newSimpleChannel(MOD_ID);
-        network.registerMessage(new PacketAnvilButton.Handler(), PacketAnvilButton.class, ++id, Side.SERVER);
         network.registerMessage(new PacketAnvilRecipeUpdate.Handler(), PacketAnvilRecipeUpdate.class, ++id, Side.CLIENT);
         network.registerMessage(new PacketUpdateForgeItem.Handler(), PacketUpdateForgeItem.class, ++id, Side.CLIENT);
 
+        FMLInterModComms.sendFunctionMessage("theoneprobe", "getTheOneProbe", "com.alcatrazescapee.tinkersforging.integration.top.TOPIntegration$Callback");
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new ModGuiHandler());
         proxy.preInit(event);
 

@@ -13,7 +13,6 @@ import java.util.List;
 
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,6 +24,7 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -36,9 +36,7 @@ import com.alcatrazescapee.tinkersforging.TinkersForging;
 import com.alcatrazescapee.tinkersforging.common.blocks.BlockTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
 import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
-import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilRecipeUpdate;
-import com.alcatrazescapee.tinkersforging.common.network.PacketUpdateForgeItem;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
 import com.alcatrazescapee.tinkersforging.common.recipe.WeldingRecipe;
@@ -70,6 +68,10 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     @Deprecated
     public static final int SLOT_INPUT = SLOT_INPUT_MAIN;
 
+    private static final int DIRECT_BASE_HITS = 8;
+    private static final int DIRECT_HITS_PER_TIER = 4;
+    private static final int DIRECT_HITS_PER_RULE = 2;
+
     private AnvilRecipe cachedAnvilRecipe = null;
     private String lastRecipeName = null;
     private EntityPlayer currentPlayer = null;
@@ -77,6 +79,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     private ForgeRule[] rules;
     private int workingProgress = 0; // Min = 0, Max = 150. If it goes over / under you lose the input
     private int workingTarget = 0;
+    private int directProgress = 0;
 
     public TileTinkersAnvil()
     {
@@ -97,6 +100,16 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return inventory.getStackInSlot(SLOT_INPUT_MAIN);
     }
 
+    public ItemStack getSecondaryInputStack()
+    {
+        return inventory.getStackInSlot(SLOT_INPUT_SECOND);
+    }
+
+    public ItemStack getFluxStack()
+    {
+        return inventory.getStackInSlot(SLOT_CATALYST);
+    }
+
     @Nullable
     private IForgeItem getInputForgeItem()
     {
@@ -111,6 +124,33 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     public boolean hasSelectablePlan()
     {
         return !ModRecipes.ANVIL.getAllMatching(inventory.getStackInSlot(SLOT_INPUT_MAIN), getTier()).isEmpty();
+    }
+
+    @Nullable
+    public AnvilRecipe getDirectRecipeForDisplay()
+    {
+        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        if (cap == null)
+            return null;
+
+        AnvilRecipe recipe = getSelectedRecipe(stack, cap, true);
+        if (recipe != null)
+            return recipe;
+
+        List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatching(stack, getTier());
+        return matches.isEmpty() ? null : matches.get(0);
+    }
+
+    public int getDirectProgress()
+    {
+        return directProgress;
+    }
+
+    public int getDirectMaxProgress()
+    {
+        AnvilRecipe recipe = getDirectRecipeForDisplay();
+        return recipe == null ? 1 : getRequiredDirectHits(recipe);
     }
 
     public boolean canWeldNow()
@@ -188,6 +228,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         if (world.isRemote)
             return;
 
+        if (slot == SLOT_INPUT_MAIN)
+        {
+            directProgress = 0;
+        }
+
         ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
         IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
 
@@ -211,6 +256,59 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         }
 
         applyRecipeState(stack, cap, recipe);
+    }
+
+    public boolean handleDirectInteraction(EntityPlayer player, EnumHand hand, float hitX, float hitY, float hitZ)
+    {
+        if (world == null)
+            return false;
+
+        ItemStack held = player.getHeldItem(hand);
+        if (held.isEmpty())
+        {
+            if (!world.isRemote)
+            {
+                extractDirect(player, player.isSneaking());
+            }
+            return true;
+        }
+
+        if (isHammer(held))
+        {
+            if (!world.isRemote)
+            {
+                if (player.isSneaking())
+                {
+                    cycleDirectRecipe(player);
+                }
+                else if (canWeldNow(player))
+                {
+                    tryWeld(player);
+                }
+                else
+                {
+                    directWork(player);
+                }
+            }
+            return true;
+        }
+
+        if (!world.isRemote)
+        {
+            if (isFlux(held))
+            {
+                return insertHeldStack(player, hand, SLOT_CATALYST);
+            }
+            if (held.hasCapability(CapabilityForgeItem.CAPABILITY, null))
+            {
+                if (inventory.getStackInSlot(SLOT_INPUT_MAIN).isEmpty())
+                {
+                    return insertHeldStack(player, hand, SLOT_INPUT_MAIN);
+                }
+                return insertHeldStack(player, hand, SLOT_INPUT_SECOND);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -257,22 +355,6 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     public int getTier()
     {
         return ((BlockTinkersAnvil) world.getBlockState(pos).getBlock()).getTier();
-    }
-
-    public void cycleForgeRecipe(boolean isForwards)
-    {
-        // This is only called server side
-        if (cachedAnvilRecipe != null)
-        {
-            ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
-            AnvilRecipe recipe = isForwards ? ModRecipes.ANVIL.getNext(cachedAnvilRecipe, stack) : ModRecipes.ANVIL.getPrevious(cachedAnvilRecipe, stack);
-            if (recipe != null)
-            {
-                lastRecipeName = recipe.getName();
-                updateRecipe(recipe);
-                setAndUpdateSlots(SLOT_INPUT_MAIN);
-            }
-        }
     }
 
     public void work(EntityPlayer player, ForgeStep step)
@@ -365,27 +447,80 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         syncWorkingState(player);
     }
 
-    public void openPlanGui(EntityPlayer player)
-    {
-        if (world != null && !world.isRemote && hasSelectablePlan())
-        {
-            player.openGui(TinkersForging.getInstance(), com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler.TINKERS_ANVIL_PLAN, world, pos.getX(), pos.getY(), pos.getZ());
-        }
-    }
-
-    public void selectPlan(String recipeName)
+    public void directWork(EntityPlayer player)
     {
         if (world == null || world.isRemote)
             return;
 
-        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
-        AnvilRecipe recipe = ModRecipes.ANVIL.getByName(recipeName);
-        if (recipe != null && recipe.getTier() <= getTier() && recipe.test(stack))
+        ItemStack input = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        IForgeItem cap = input.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        if (cap == null)
+            return;
+
+        HammerStack hammer = getHammer(player);
+        if (hammer.stack.isEmpty())
         {
-            lastRecipeName = recipe.getName();
-            updateRecipe(recipe);
-            setAndUpdateSlots(SLOT_INPUT_MAIN);
+            sendProblem(player, "no_hammer");
+            return;
         }
+
+        AnvilRecipe recipe = getDirectRecipe(input, cap);
+        if (recipe == null)
+        {
+            sendProblem(player, "weld_mismatch");
+            return;
+        }
+
+        WorkFailure failure = validateDirectWork(cap, recipe);
+        if (failure != null)
+        {
+            failure.send(player);
+            return;
+        }
+
+        damageHammer(hammer, player);
+        directProgress++;
+        createForgingEffects();
+
+        if (directProgress >= getRequiredDirectHits(recipe))
+        {
+            completeRecipe(recipe, input, player);
+        }
+        else
+        {
+            markDirectDirty();
+        }
+    }
+
+    @Nullable
+    private AnvilRecipe getDirectRecipe(ItemStack input, IForgeItem cap)
+    {
+        AnvilRecipe recipe = getDirectRecipeForDisplay();
+        if (recipe == null || !recipe.test(input))
+            return null;
+
+        boolean recipeChanged = !recipe.getName().equals(cap.getRecipeName());
+        if (recipeChanged)
+        {
+            directProgress = 0;
+        }
+        lastRecipeName = recipe.getName();
+        applyRecipeState(input, cap, recipe);
+        return recipe;
+    }
+
+    @Nullable
+    private WorkFailure validateDirectWork(IForgeItem cap, AnvilRecipe recipe)
+    {
+        if (getTier() < recipe.getTier())
+        {
+            return WorkFailure.TIER_TOO_LOW;
+        }
+        if (!cap.isWorkable())
+        {
+            return WorkFailure.TOO_COLD;
+        }
+        return null;
     }
 
     public boolean tryWeld(EntityPlayer player)
@@ -428,6 +563,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         inventory.setStackInSlot(SLOT_INPUT_SECOND, ItemStack.EMPTY);
         inventory.setStackInSlot(SLOT_CATALYST, flux.isEmpty() ? ItemStack.EMPTY : flux);
         world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 1.0f, 1.0f);
+        directProgress = 0;
         setAndUpdateSlots(SLOT_INPUT_MAIN);
         return true;
     }
@@ -442,6 +578,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     public void readFromNBT(NBTTagCompound nbt)
     {
         lastRecipeName = nbt.hasKey("lastRecipe") ? nbt.getString("lastRecipe") : null;
+        directProgress = nbt.getInteger("directProgress");
         super.readFromNBT(nbt);
     }
 
@@ -452,6 +589,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         {
             nbt.setString("lastRecipe", lastRecipeName);
         }
+        nbt.setInteger("directProgress", directProgress);
         return super.writeToNBT(nbt);
     }
 
@@ -629,6 +767,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         grantForgeExperience(recipe, player);
 
         resetFields();
+        directProgress = 0;
         updateRecipe(null);
         inventory.setStackInSlot(SLOT_DISPLAY, ItemStack.EMPTY);
     }
@@ -637,6 +776,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     {
         inventory.setStackInSlot(SLOT_INPUT_MAIN, ItemStack.EMPTY);
         world.playSound(null, pos, SoundEvents.BLOCK_ANVIL_DESTROY, SoundCategory.PLAYERS, 0.4f, 1.0f);
+        directProgress = 0;
         resetFields();
     }
 
@@ -707,16 +847,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private void syncWorkingState(EntityPlayer player)
     {
-        if (!(player instanceof EntityPlayerMP) || !(player.openContainer instanceof ContainerTinkersAnvil))
-            return;
-
-        player.openContainer.detectAndSendChanges();
-
-        IForgeItem cap = getInputForgeItem();
-        if (cap != null)
-        {
-            TinkersForging.getNetwork().sendTo(new PacketUpdateForgeItem(player.openContainer.windowId, SLOT_INPUT_MAIN, cap), (EntityPlayerMP) player);
-        }
+        markDirectDirty();
     }
 
     private void resetFields()
@@ -728,6 +859,94 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             steps.reset();
             rules = new ForgeRule[3];
         }
+    }
+
+    private void cycleDirectRecipe(EntityPlayer player)
+    {
+        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        if (cap == null)
+            return;
+
+        List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatching(stack, getTier());
+        if (matches.isEmpty())
+            return;
+
+        AnvilRecipe current = getDirectRecipeForDisplay();
+        int index = current == null ? -1 : matches.indexOf(current);
+        AnvilRecipe next = matches.get(index < 0 || index + 1 >= matches.size() ? 0 : index + 1);
+        lastRecipeName = next.getName();
+        directProgress = 0;
+        applyRecipeState(stack, cap, next);
+        markDirectDirty();
+        player.sendMessage(new TextComponentString("" + TextFormatting.GREEN).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip.anvil_selected", next.getOutput().getDisplayName())));
+    }
+
+    private boolean insertHeldStack(EntityPlayer player, EnumHand hand, int slot)
+    {
+        ItemStack held = player.getHeldItem(hand);
+        ItemStack inSlot = inventory.getStackInSlot(slot);
+        if (!isItemValid(slot, held))
+            return false;
+
+        if (inSlot.isEmpty())
+        {
+            inventory.setStackInSlot(slot, held.copy());
+            player.setHeldItem(hand, ItemStack.EMPTY);
+            setAndUpdateSlots(slot);
+            markDirectDirty();
+            return true;
+        }
+
+        if (!ItemHandlerHelper.canItemStacksStack(inSlot, held))
+            return false;
+
+        int limit = Math.min(inSlot.getMaxStackSize(), inventory.getSlotLimit(slot));
+        int move = Math.min(held.getCount(), limit - inSlot.getCount());
+        if (move <= 0)
+            return false;
+
+        inSlot.grow(move);
+        held.shrink(move);
+        inventory.setStackInSlot(slot, inSlot);
+        player.setHeldItem(hand, held.isEmpty() ? ItemStack.EMPTY : held);
+        setAndUpdateSlots(slot);
+        markDirectDirty();
+        return true;
+    }
+
+    private void extractDirect(EntityPlayer player, boolean secondaryFirst)
+    {
+        int[] order = secondaryFirst ? new int[] {SLOT_INPUT_SECOND, SLOT_CATALYST, SLOT_INPUT_MAIN, SLOT_HAMMER} : new int[] {SLOT_INPUT_MAIN, SLOT_INPUT_SECOND, SLOT_CATALYST, SLOT_HAMMER};
+        for (int slot : order)
+        {
+            ItemStack stack = inventory.getStackInSlot(slot);
+            if (!stack.isEmpty())
+            {
+                inventory.setStackInSlot(slot, ItemStack.EMPTY);
+                if (!player.inventory.addItemStackToInventory(stack))
+                {
+                    CoreHelpers.dropItemInWorld(world, pos, stack);
+                }
+                setAndUpdateSlots(slot);
+                markDirectDirty();
+                return;
+            }
+        }
+    }
+
+    private int getRequiredDirectHits(AnvilRecipe recipe)
+    {
+        return Math.max(1, DIRECT_BASE_HITS + DIRECT_HITS_PER_TIER * Math.max(0, recipe.getTier()) + DIRECT_HITS_PER_RULE * recipe.getRules().length);
+    }
+
+    private void markDirectDirty()
+    {
+        if (world == null || world.isRemote)
+            return;
+
+        markDirty();
+        world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
     }
 
     private void sendProblem(EntityPlayer player, String translationKey)

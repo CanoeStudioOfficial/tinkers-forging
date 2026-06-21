@@ -40,8 +40,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.block.BlockTileCore;
-import com.alcatrazescapee.tinkersforging.TinkersForging;
-import com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler;
+import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -180,14 +179,8 @@ public class BlockTinkersAnvil extends BlockTileCore
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
-        if (!worldIn.isRemote)
-        {
-            if (!playerIn.isSneaking())
-            {
-                playerIn.openGui(TinkersForging.getInstance(), ModGuiHandler.TINKERS_ANVIL, worldIn, pos.getX(), pos.getY(), pos.getZ());
-            }
-        }
-        return true;
+        TileTinkersAnvil tile = CoreHelpers.getTE(worldIn, pos, TileTinkersAnvil.class);
+        return tile != null && tile.handleDirectInteraction(playerIn, hand, hitX, hitY, hitZ);
     }
 
     @Override

@@ -14,6 +14,7 @@ tinkersforging.tooltip.no_flux=There is no flux in the anvil!
 tinkersforging.tooltip.weld_no_inputs=Place two matching inputs first.
 tinkersforging.tooltip.weld_mismatch=Those two inputs cannot be welded together.
 tinkersforging.tooltip.weld_full=The main input is already full.
+tinkersforging.tooltip.anvil_selected=Selected: %s
 tinkersforging.tooltip.anvil_plan_title=Anvil Plan
 tinkersforging.tooltip.flux=Flux
 tinkersforging.tooltip.anvil_tier=Tier: %d

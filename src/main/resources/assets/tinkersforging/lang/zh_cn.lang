@@ -8,6 +8,7 @@ tinkersforging.tooltip.has_been_worked=这个物品正在被处理。
 tinkersforging.tooltip.too_cold=这个物品不够热，无法处理！
 tinkersforging.tooltip.tier_too_low=这个砧等级过低，无法处理这个物品！
 tinkersforging.tooltip.no_hammer=砧中没有锤子！
+tinkersforging.tooltip.anvil_selected=已选择：%s
 
 tinkersforging.tooltip.temperature_advanced=%d °C
 tinkersforging.tooltip.temperature_works_at_advanced=- 在 %d °C 能够处理
