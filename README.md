@@ -81,7 +81,13 @@ The success formula is:
 target - range <= current + sum(step amounts) <= target + range
 ```
 
-and the last three steps must match all recipe rules.
+and the last three steps must match all recipe rules. In-game, `range` is calculated from the balance config:
+
+```text
+range = Forge Target Range + (5 - tier) * Forge Target Range Tier Modifier
+```
+
+The default config values are both `0`, so the default formula must land exactly on the red target marker.
 
 Step amounts:
 
@@ -93,7 +99,19 @@ PUNCH +2, BEND +7, UPSET +13, SHRINK +16
 Example:
 
 ```bash
+python scripts/anvil_formula.py --current 0 --target 72 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
+```
+
+If a pack changes the target range config, either pass the final range directly:
+
+```bash
 python scripts/anvil_formula.py --current 0 --target 72 --range 5 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
+```
+
+or pass the config values and tier:
+
+```bash
+python scripts/anvil_formula.py --current 0 --target 72 --tier 3 --base-range 1 --tier-range-mod 2 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
 ```
 
 Rules can also be passed as a comma-separated list:
@@ -101,5 +119,7 @@ Rules can also be passed as a comma-separated list:
 ```bash
 python scripts/anvil_formula.py --target 72 --rules PUNCH_LAST,HIT_SECOND_LAST,UPSET_THIRD_LAST
 ```
+
+When continuing from an already-worked item, pass the current green marker value with `--current`. If you also copy the recent step icons from the GUI, use `--gui-steps` in the same left-to-right order shown on screen. The GUI shows newest on the left and oldest on the right; `--last-steps` is still available when you already know the chronological oldest-to-newest order.
 
 ![Splash Image](https://github.com/alcatrazEscapee/tinkers-forging/blob/1.12/src/main/resources/assets/splash.png?raw=true)

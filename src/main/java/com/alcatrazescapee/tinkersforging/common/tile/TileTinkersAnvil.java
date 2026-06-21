@@ -133,7 +133,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
         IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
-        if ((mainHeat != null && !mainHeat.isWorkable()) || (secondHeat != null && !secondHeat.isWorkable()))
+        if ((mainHeat != null && !mainHeat.isWeldable()) || (secondHeat != null && !secondHeat.isWeldable()))
             return false;
 
         return CoreHelpers.canMergeStacksUseNBT(main.copy(), secondary.copy()) && main.getCount() < main.getMaxStackSize();
@@ -149,7 +149,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         {
             ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
             IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
-            if (cap != null)
+            if (cap != null && (world == null || !world.isRemote))
             {
                 cap.setRecipe(cachedAnvilRecipe);
             }
@@ -403,7 +403,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
         IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
-        if ((mainHeat != null && !mainHeat.isWorkable()) || (secondHeat != null && !secondHeat.isWorkable()))
+        if ((mainHeat != null && !mainHeat.isWeldable()) || (secondHeat != null && !secondHeat.isWeldable()))
         {
             sendProblem(player, "too_cold");
             return false;

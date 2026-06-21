@@ -7,7 +7,7 @@ Success condition:
   and the last three forge steps match all recipe rules.
 
 Example:
-  python scripts/anvil_formula.py --current 0 --target 72 --range 5 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
+  python scripts/anvil_formula.py --current 0 --target 72 --rules PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST
 """
 
 from __future__ import print_function
@@ -108,6 +108,14 @@ def in_target_range(work, target, acceptable_range):
     return target - acceptable_range <= work <= target + acceptable_range
 
 
+def get_acceptable_range(args):
+    if args.acceptable_range is not None:
+        return args.acceptable_range
+    if args.tier is None:
+        return args.base_range
+    return args.base_range + (5 - args.tier) * args.tier_range_mod
+
+
 def solve(current, target, acceptable_range, rules, last_steps, worked, max_steps):
     start_steps = tuple(last_steps[-3:])
     start = (current, start_steps, worked or bool(start_steps))
@@ -149,9 +157,13 @@ def main():
     parser = argparse.ArgumentParser(description="Find a valid Tinker's Forging anvil step formula.")
     parser.add_argument("--current", type=int, default=0, help="Current work value. Default: 0")
     parser.add_argument("--target", type=int, required=True, help="Recipe target value shown by the red marker.")
-    parser.add_argument("--range", dest="acceptable_range", type=int, default=5, help="Accepted target range. Default: 5")
+    parser.add_argument("--range", dest="acceptable_range", type=int, default=None, help="Accepted target range. Overrides config range calculation.")
+    parser.add_argument("--tier", type=int, default=None, help="Recipe/material tier used to calculate the accepted target range from config.")
+    parser.add_argument("--base-range", type=int, default=0, help="Config 'Forge Target Range'. Default: 0")
+    parser.add_argument("--tier-range-mod", type=int, default=0, help="Config 'Forge Target Range Tier Modifier'. Default: 0")
     parser.add_argument("--rules", nargs="+", required=True, help="Recipe rules, for example: PUNCH_LAST HIT_SECOND_LAST UPSET_THIRD_LAST")
     parser.add_argument("--last-steps", nargs="*", default=[], help="Existing recent steps before solving, oldest to newest.")
+    parser.add_argument("--gui-steps", nargs="*", default=[], help="Existing recent steps as shown in the GUI, left to right / newest to oldest.")
     parser.add_argument("--worked", action="store_true", help="Allow the first generated step to be negative because the item was already worked.")
     parser.add_argument("--max-steps", type=int, default=80, help="Search limit. Default: 80")
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
@@ -161,12 +173,28 @@ def main():
         raise SystemExit("--current must be between 0 and {}".format(LIMIT))
     if args.target < 0 or args.target > LIMIT:
         raise SystemExit("--target must be between 0 and {}".format(LIMIT))
-    if args.acceptable_range < 0:
-        raise SystemExit("--range must be >= 0")
+    if args.tier is not None and (args.tier < 0 or args.tier > 5):
+        raise SystemExit("--tier must be between 0 and 5")
+    if args.base_range < 0:
+        raise SystemExit("--base-range must be >= 0")
+    if args.tier_range_mod < 0:
+        raise SystemExit("--tier-range-mod must be >= 0")
+
+    acceptable_range = get_acceptable_range(args)
+    if acceptable_range < 0:
+        raise SystemExit("accepted range must be >= 0")
+
+    if args.last_steps and args.gui_steps:
+        raise SystemExit("Use either --last-steps or --gui-steps, not both.")
 
     rules = [parse_rule(rule) for rule in expand_values(args.rules)]
-    last_steps = [parse_step(step) for step in expand_values(args.last_steps)]
-    result = solve(args.current, args.target, args.acceptable_range, rules, last_steps, args.worked, args.max_steps)
+    last_step_names = expand_values(args.gui_steps)
+    if last_step_names:
+        last_step_names = list(reversed(last_step_names))
+    else:
+        last_step_names = expand_values(args.last_steps)
+    last_steps = [parse_step(step) for step in last_step_names]
+    result = solve(args.current, args.target, acceptable_range, rules, last_steps, args.worked, args.max_steps)
 
     if result is None:
         raise SystemExit("No formula found within {} steps.".format(args.max_steps))
@@ -176,9 +204,9 @@ def main():
     payload = OrderedDict([
         ("current", args.current),
         ("target", args.target),
-        ("range", args.acceptable_range),
-        ("accepted_min", args.target - args.acceptable_range),
-        ("accepted_max", args.target + args.acceptable_range),
+        ("range", acceptable_range),
+        ("accepted_min", args.target - acceptable_range),
+        ("accepted_max", args.target + acceptable_range),
         ("delta", total),
         ("final_work", final_work),
         ("steps", path),

@@ -63,6 +63,11 @@ public interface IForgeItem extends INBTSerializable<NBTTagCompound>
 
     float getWorkableTemperature();
 
+    default float getWeldableTemperature()
+    {
+        return getMeltingTemperature() * 0.8f;
+    }
+
     default boolean isMolten()
     {
         return getMeltingTemperature() < getTemperature();
@@ -71,6 +76,11 @@ public interface IForgeItem extends INBTSerializable<NBTTagCompound>
     default boolean isWorkable()
     {
         return getTemperature() >= getWorkableTemperature() && !isMolten();
+    }
+
+    default boolean isWeldable()
+    {
+        return getTemperature() >= getWeldableTemperature() && !isMolten();
     }
 
     @SideOnly(Side.CLIENT)
