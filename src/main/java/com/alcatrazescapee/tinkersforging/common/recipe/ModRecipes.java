@@ -138,7 +138,8 @@ public final class ModRecipes
             if (material.isEnabled())
             {
                 IRecipeIngredient input = IRecipeIngredient.of(material.getOreName());
-                WELDING.add(new WeldingRecipe(input, input, material.getTier()));
+                ItemStack output = getDefaultWeldingOutput(material);
+                WELDING.add(output.isEmpty() ? new WeldingRecipe(input, input, material.getTier()) : new WeldingRecipe(input, input, output, material.getTier()));
             }
         }
     }
@@ -282,6 +283,32 @@ public final class ModRecipes
             }
         }
         return null;
+    }
+
+    @Nonnull
+    private static ItemStack getDefaultWeldingOutput(MaterialType material)
+    {
+        String doubleIngot = getDoubleIngotOreName(material.getOreName());
+        if (doubleIngot == null)
+        {
+            return ItemStack.EMPTY;
+        }
+
+        NonNullList<ItemStack> outputs = OreDictionary.getOres(doubleIngot, false);
+        if (outputs.isEmpty())
+        {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack output = outputs.get(0).copy();
+        output.setCount(1);
+        return output;
+    }
+
+    @Nullable
+    private static String getDoubleIngotOreName(String oreName)
+    {
+        return oreName.startsWith("ingot") && oreName.length() > "ingot".length() ? "doubleIngot" + oreName.substring("ingot".length()) : null;
     }
 
     @Nonnull

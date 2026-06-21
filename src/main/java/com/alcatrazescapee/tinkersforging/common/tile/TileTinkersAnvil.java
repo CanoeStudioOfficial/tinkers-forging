@@ -134,11 +134,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
         IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
-        if ((mainHeat != null && !mainHeat.isWeldable()) || (secondHeat != null && !secondHeat.isWeldable()))
+        if (mainHeat == null || secondHeat == null || !mainHeat.isWeldable() || !secondHeat.isWeldable())
             return false;
 
         WeldingRecipe recipe = ModRecipes.WELDING.get(main, secondary, getTier());
-        return recipe != null && recipe.getOutput(main, secondary).getCount() > main.getCount();
+        return recipe != null && !recipe.getOutput(main, secondary).isEmpty();
     }
 
     public void setRecipe(@Nullable AnvilRecipe recipe)
@@ -405,7 +405,12 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         IForgeItem mainHeat = main.getCapability(CapabilityForgeItem.CAPABILITY, null);
         IForgeItem secondHeat = secondary.getCapability(CapabilityForgeItem.CAPABILITY, null);
-        if ((mainHeat != null && !mainHeat.isWeldable()) || (secondHeat != null && !secondHeat.isWeldable()))
+        if (mainHeat == null || secondHeat == null)
+        {
+            sendProblem(player, "weld_mismatch");
+            return false;
+        }
+        if (!mainHeat.isWeldable() || !secondHeat.isWeldable())
         {
             sendProblem(player, "too_cold");
             return false;
@@ -418,9 +423,9 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         }
 
         ItemStack result = recipe.getOutput(main, secondary);
-        if (result.isEmpty() || result.getCount() <= main.getCount())
+        if (result.isEmpty())
         {
-            sendProblem(player, "weld_full");
+            sendProblem(player, "weld_mismatch");
             return false;
         }
 

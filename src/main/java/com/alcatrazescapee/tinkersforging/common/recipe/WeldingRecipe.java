@@ -18,13 +18,27 @@ public class WeldingRecipe
 {
     private final IRecipeIngredient firstInput;
     private final IRecipeIngredient secondInput;
+    private final ItemStack outputStack;
     private final int minTier;
+    private final boolean mergeInputs;
 
     public WeldingRecipe(IRecipeIngredient firstInput, IRecipeIngredient secondInput, int minTier)
     {
+        this(firstInput, secondInput, ItemStack.EMPTY, minTier, true);
+    }
+
+    public WeldingRecipe(IRecipeIngredient firstInput, IRecipeIngredient secondInput, ItemStack outputStack, int minTier)
+    {
+        this(firstInput, secondInput, outputStack, minTier, false);
+    }
+
+    private WeldingRecipe(IRecipeIngredient firstInput, IRecipeIngredient secondInput, ItemStack outputStack, int minTier, boolean mergeInputs)
+    {
         this.firstInput = firstInput;
         this.secondInput = secondInput;
+        this.outputStack = outputStack.copy();
         this.minTier = minTier;
+        this.mergeInputs = mergeInputs;
     }
 
     public boolean test(ItemStack first, ItemStack second, int tier)
@@ -35,8 +49,42 @@ public class WeldingRecipe
     @Nonnull
     public ItemStack getOutput(ItemStack main, ItemStack secondary)
     {
+        if (!outputStack.isEmpty())
+        {
+            return outputStack.copy();
+        }
+        if (!mergeInputs)
+        {
+            return ItemStack.EMPTY;
+        }
         ItemStack output = main.copy();
         output.setCount(Math.min(main.getMaxStackSize(), main.getCount() + secondary.getCount()));
         return output;
+    }
+
+    public IRecipeIngredient getFirstInput()
+    {
+        return firstInput;
+    }
+
+    public IRecipeIngredient getSecondInput()
+    {
+        return secondInput;
+    }
+
+    @Nonnull
+    public ItemStack getOutput()
+    {
+        return outputStack.copy();
+    }
+
+    public int getTier()
+    {
+        return minTier;
+    }
+
+    public boolean usesInputMergeFallback()
+    {
+        return mergeInputs;
     }
 }
