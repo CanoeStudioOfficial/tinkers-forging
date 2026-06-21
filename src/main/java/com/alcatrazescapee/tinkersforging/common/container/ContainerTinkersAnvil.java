@@ -6,26 +6,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
 import com.alcatrazescapee.alcatrazcore.inventory.container.ContainerTileInventory;
 import com.alcatrazescapee.alcatrazcore.inventory.slot.SlotTileCore;
-import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
-import com.alcatrazescapee.tinkersforging.common.capability.CapabilityForgeItem;
-import com.alcatrazescapee.tinkersforging.common.capability.IForgeItem;
-import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
-import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
 import com.alcatrazescapee.tinkersforging.common.slot.SlotForgeInput;
 import com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.util.forge.ForgeStep;
 
-import static com.alcatrazescapee.tinkersforging.TinkersForging.MOD_ID;
 import static com.alcatrazescapee.tinkersforging.common.tile.TileTinkersAnvil.*;
 
 @ParametersAreNonnullByDefault
@@ -65,8 +55,8 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         if (actionId >= 0 && actionId < ForgeStep.values().length)
         {
             ForgeStep step = ForgeStep.valueOf(actionId);
-            if (step != null && attemptWork(step))
-                tile.addStep(step);
+            if (step != null)
+                tile.work(player, step);
         }
     }
 
@@ -146,106 +136,4 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
     }
 
-    private boolean attemptWork(ForgeStep step)
-    {
-        Slot slotInput = inventorySlots.get(SLOT_INPUT_MAIN);
-        if (slotInput == null)
-            return false;
-
-        ItemStack stack = slotInput.getStack();
-        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
-        if (cap == null)
-            return false;
-
-        AnvilRecipe recipe = ModRecipes.ANVIL.getByName(cap.getRecipeName());
-        if (recipe == null)
-        {
-            return false;
-        }
-        if (cap.getSteps().isEmpty() && cap.getWork() == IForgeItem.MIN_WORK && step.getStepAmount() < 0)
-        {
-            return false;
-        }
-        if (tile.getTier() < recipe.getTier())
-        {
-            sendProblem("tier_too_low");
-            return false;
-        }
-        if (!cap.isWorkable())
-        {
-            sendProblem("too_cold");
-            return false;
-        }
-
-        HammerStack hammer = getHammer();
-        if (hammer.stack.isEmpty())
-        {
-            sendProblem("no_hammer");
-            return false;
-        }
-
-        hammer.stack.damageItem(1, player);
-        if (hammer.slot != null)
-        {
-            if (hammer.stack.getCount() <= 0)
-            {
-                hammer.slot.putStack(ItemStack.EMPTY);
-            }
-            else
-            {
-                hammer.slot.putStack(hammer.stack);
-            }
-        }
-        else if (hammer.hand != null && hammer.stack.getCount() <= 0)
-        {
-            player.setHeldItem(hammer.hand, ItemStack.EMPTY);
-        }
-        return true;
-    }
-
-    private HammerStack getHammer()
-    {
-        Slot slot = inventorySlots.get(SLOT_HAMMER);
-        if (slot != null)
-        {
-            ItemStack stack = slot.getStack();
-            if (!stack.isEmpty() && CoreHelpers.doesStackMatchOre(stack, "hammer"))
-            {
-                return new HammerStack(stack, slot, null);
-            }
-        }
-
-        ItemStack mainHand = player.getHeldItemMainhand();
-        if (!mainHand.isEmpty() && CoreHelpers.doesStackMatchOre(mainHand, "hammer"))
-        {
-            return new HammerStack(mainHand, null, EnumHand.MAIN_HAND);
-        }
-
-        ItemStack offHand = player.getHeldItemOffhand();
-        if (!offHand.isEmpty() && CoreHelpers.doesStackMatchOre(offHand, "hammer"))
-        {
-            return new HammerStack(offHand, null, EnumHand.OFF_HAND);
-        }
-
-        return new HammerStack(ItemStack.EMPTY, null, null);
-    }
-
-    private void sendProblem(String translationKey)
-    {
-        player.sendMessage(new TextComponentString("" + TextFormatting.RED).appendSibling(new TextComponentTranslation(MOD_ID + ".tooltip." + translationKey)));
-    }
-
-    private static final class HammerStack
-    {
-        private final ItemStack stack;
-        private final Slot slot;
-        private final EnumHand hand;
-
-        private HammerStack(ItemStack stack, Slot slot, EnumHand hand)
-        {
-            this.stack = stack;
-            this.slot = slot;
-            this.hand = hand;
-        }
-    }
 }

@@ -278,6 +278,50 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         }
     }
 
+    public void work(EntityPlayer player, ForgeStep step)
+    {
+        if (world == null || world.isRemote)
+            return;
+
+        ItemStack input = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        IForgeItem cap = input.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        if (cap == null)
+            return;
+
+        AnvilRecipe recipe = ModRecipes.ANVIL.getByName(cap.getRecipeName());
+        if (recipe == null)
+        {
+            recipe = cachedAnvilRecipe;
+        }
+        if (recipe == null)
+            return;
+
+        if (cap.getSteps().isEmpty() && cap.getWork() == IForgeItem.MIN_WORK && step.getStepAmount() < 0)
+        {
+            return;
+        }
+        if (getTier() < recipe.getTier())
+        {
+            sendProblem(player, "tier_too_low");
+            return;
+        }
+        if (!cap.isWorkable())
+        {
+            sendProblem(player, "too_cold");
+            return;
+        }
+
+        HammerStack hammer = getHammer(player);
+        if (hammer.stack.isEmpty())
+        {
+            sendProblem(player, "no_hammer");
+            return;
+        }
+
+        damageHammer(hammer, player);
+        addStep(step);
+    }
+
     public void addStep(@Nullable ForgeStep step)
     {
         // This is only called on server
@@ -289,10 +333,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             // Add step to stack + tile
             cap.addStep(step);
             steps = cap.getSteps().copy();
-            if (step != null)
-            {
-                workingProgress += step.getStepAmount();
-            }
+            workingProgress = cap.getWork();
 
             // Handle possible recipe completion
             if (cachedAnvilRecipe != null)
