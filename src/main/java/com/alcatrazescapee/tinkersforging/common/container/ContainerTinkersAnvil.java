@@ -64,8 +64,9 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
         if (actionId >= 0 && actionId < ForgeStep.values().length)
         {
-            if (attemptWork(actionId % 4))
-                tile.addStep(ForgeStep.valueOf(actionId));
+            ForgeStep step = ForgeStep.valueOf(actionId);
+            if (step != null && attemptWork(step))
+                tile.addStep(step);
         }
     }
 
@@ -145,7 +146,7 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
         }
     }
 
-    private boolean attemptWork(int amount)
+    private boolean attemptWork(ForgeStep step)
     {
         Slot slotInput = inventorySlots.get(SLOT_INPUT_MAIN);
         if (slotInput == null)
@@ -158,11 +159,6 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
 
         AnvilRecipe recipe = ModRecipes.ANVIL.getByName(cap.getRecipeName());
         if (recipe == null)
-        {
-            return false;
-        }
-        ForgeStep step = ForgeStep.valueOf(amount);
-        if (step == null)
         {
             return false;
         }
@@ -188,7 +184,7 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
             return false;
         }
 
-        hammer.stack.damageItem(amount, player);
+        hammer.stack.damageItem(1, player);
         if (hammer.slot != null)
         {
             if (hammer.stack.getCount() <= 0)

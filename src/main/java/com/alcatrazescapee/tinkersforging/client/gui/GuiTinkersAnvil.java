@@ -205,6 +205,7 @@ public class GuiTinkersAnvil extends GuiContainerTileCore<TileTinkersAnvil>
         if (button instanceof GuiButtonAnvilStep || button instanceof GuiButtonAnvilPlan || button instanceof GuiButtonAnvilWeld)
         {
             TinkersForging.getNetwork().sendToServer(new PacketAnvilButton(button.id));
+            return;
         }
         super.actionPerformed(button);
     }

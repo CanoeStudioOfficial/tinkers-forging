@@ -365,7 +365,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     public void openPlanGui(EntityPlayer player)
     {
-        if (world != null && !world.isRemote)
+        if (world != null && !world.isRemote && hasSelectablePlan())
         {
             player.openGui(TinkersForging.getInstance(), com.alcatrazescapee.tinkersforging.common.gui.ModGuiHandler.TINKERS_ANVIL_PLAN, world, pos.getX(), pos.getY(), pos.getZ());
         }
@@ -381,6 +381,20 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         if (index >= 0 && index < recipes.size())
         {
             updateRecipe(recipes.get(index));
+            setAndUpdateSlots(SLOT_INPUT_MAIN);
+        }
+    }
+
+    public void selectPlan(String recipeName)
+    {
+        if (world == null || world.isRemote)
+            return;
+
+        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        AnvilRecipe recipe = ModRecipes.ANVIL.getByName(recipeName);
+        if (recipe != null && recipe.getTier() <= getTier() && recipe.test(stack))
+        {
+            updateRecipe(recipe);
             setAndUpdateSlots(SLOT_INPUT_MAIN);
         }
     }

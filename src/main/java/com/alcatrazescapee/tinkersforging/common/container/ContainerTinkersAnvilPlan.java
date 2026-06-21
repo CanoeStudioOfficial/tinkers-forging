@@ -33,8 +33,19 @@ public class ContainerTinkersAnvilPlan extends ContainerTileInventory<TileTinker
         if (actionId >= ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE && actionId <= ContainerTinkersAnvil.ACTION_PLAN_SELECT_MAX)
         {
             tile.selectPlan(actionId - ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE);
-            player.openGui(TinkersForging.getInstance(), ModGuiHandler.TINKERS_ANVIL, tile.getWorld(), tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
+            openAnvilGui();
         }
+    }
+
+    public void onSelectRecipe(String recipeName)
+    {
+        tile.selectPlan(recipeName);
+        openAnvilGui();
+    }
+
+    private void openAnvilGui()
+    {
+        player.openGui(TinkersForging.getInstance(), ModGuiHandler.TINKERS_ANVIL, tile.getWorld(), tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ());
     }
 
     @Override

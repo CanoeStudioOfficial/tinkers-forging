@@ -109,7 +109,7 @@ public class GuiTinkersAnvilPlan extends GuiContainerTileCore<TileTinkersAnvil>
         }
         if (button instanceof GuiButtonAnvilPlanSelect)
         {
-            TinkersForging.getNetwork().sendToServer(new PacketAnvilButton(ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE + ((GuiButtonAnvilPlanSelect) button).getRecipeIndex()));
+            TinkersForging.getNetwork().sendToServer(new PacketAnvilButton(((GuiButtonAnvilPlanSelect) button).getRecipe().getName()));
             return;
         }
         super.actionPerformed(button);
