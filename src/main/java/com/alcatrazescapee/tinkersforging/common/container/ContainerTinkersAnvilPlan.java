@@ -30,11 +30,7 @@ public class ContainerTinkersAnvilPlan extends ContainerTileInventory<TileTinker
 
     public void onReceiveAction(int actionId)
     {
-        if (actionId >= ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE && actionId <= ContainerTinkersAnvil.ACTION_PLAN_SELECT_MAX)
-        {
-            tile.selectPlan(actionId - ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE);
-            openAnvilGui();
-        }
+        // Recipe selection is sent by recipe name, mirroring the newer anvil's recipe-id path.
     }
 
     public void onSelectRecipe(String recipeName)

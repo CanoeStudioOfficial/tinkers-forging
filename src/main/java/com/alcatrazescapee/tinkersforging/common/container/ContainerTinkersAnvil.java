@@ -23,8 +23,6 @@ public class ContainerTinkersAnvil extends ContainerTileInventory<TileTinkersAnv
 {
     public static final int ACTION_PLAN = 8;
     public static final int ACTION_WELD = 9;
-    public static final int ACTION_PLAN_SELECT_BASE = 100;
-    public static final int ACTION_PLAN_SELECT_MAX = ACTION_PLAN_SELECT_BASE + 4095;
 
     private final EntityPlayer player;
 

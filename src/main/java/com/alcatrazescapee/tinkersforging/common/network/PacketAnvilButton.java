@@ -36,7 +36,7 @@ public class PacketAnvilButton implements IMessage
 
     public PacketAnvilButton(String recipeName)
     {
-        this.buttonId = ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE;
+        this.buttonId = 0;
         this.recipeName = recipeName;
     }
 

@@ -20,7 +20,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import com.alcatrazescapee.alcatrazcore.client.gui.GuiContainerTileCore;
 import com.alcatrazescapee.tinkersforging.TinkersForging;
-import com.alcatrazescapee.tinkersforging.common.container.ContainerTinkersAnvil;
 import com.alcatrazescapee.tinkersforging.common.network.PacketAnvilButton;
 import com.alcatrazescapee.tinkersforging.common.recipe.AnvilRecipe;
 import com.alcatrazescapee.tinkersforging.common.recipe.ModRecipes;
@@ -65,7 +64,7 @@ public class GuiTinkersAnvilPlan extends GuiContainerTileCore<TileTinkersAnvil>
             int index = i % RECIPES_PER_PAGE;
             int x = guiLeft + 7 + (index % 9) * 18;
             int y = guiTop + 17 + (index / 9) * 18;
-            GuiButtonAnvilPlanSelect button = new GuiButtonAnvilPlanSelect(ContainerTinkersAnvil.ACTION_PLAN_SELECT_BASE + i, x, y, i, buttonPage, recipes.get(i));
+            GuiButtonAnvilPlanSelect button = new GuiButtonAnvilPlanSelect(i, x, y, i, buttonPage, recipes.get(i));
             recipeButtons.add(button);
             buttonList.add(button);
         }

@@ -319,22 +319,6 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         }
     }
 
-    public void selectPlan(int index)
-    {
-        if (world == null || world.isRemote)
-            return;
-
-        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
-        List<AnvilRecipe> recipes = ModRecipes.ANVIL.getAllMatching(stack, getTier());
-        if (index >= 0 && index < recipes.size())
-        {
-            AnvilRecipe recipe = recipes.get(index);
-            lastRecipeName = recipe.getName();
-            updateRecipe(recipe);
-            setAndUpdateSlots(SLOT_INPUT_MAIN);
-        }
-    }
-
     public void selectPlan(String recipeName)
     {
         if (world == null || world.isRemote)
