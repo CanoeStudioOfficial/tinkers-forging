@@ -119,7 +119,13 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     public boolean hasSelectablePlan()
     {
-        return !ModRecipes.ANVIL.getAllMatching(inventory.getStackInSlot(SLOT_INPUT_MAIN), getTier()).isEmpty();
+        ItemStack stack = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        for (AnvilRecipe recipe : ModRecipes.ANVIL.getAllMatching(stack, getTier()))
+        {
+            if (stack.getCount() == recipe.getInputAmount())
+                return true;
+        }
+        return false;
     }
 
     @Nullable
@@ -135,7 +141,12 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             return recipe;
 
         List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatching(stack, getTier());
-        return matches.isEmpty() ? null : matches.get(0);
+        for (AnvilRecipe match : matches)
+        {
+            if (stack.getCount() == match.getInputAmount())
+                return match;
+        }
+        return null;
     }
 
     public int getDirectProgress()
@@ -668,16 +679,24 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         if (allowDefault)
         {
-            List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatching(stack, getTier());
-            if (matches.size() == 1)
-                return matches.get(0);
+            AnvilRecipe matched = null;
+            for (AnvilRecipe match : ModRecipes.ANVIL.getAllMatching(stack, getTier()))
+            {
+                if (stack.getCount() == match.getInputAmount())
+                {
+                    if (matched != null)
+                        return null;
+                    matched = match;
+                }
+            }
+            return matched;
         }
         return null;
     }
 
     private boolean isRecipeValid(@Nullable AnvilRecipe recipe, ItemStack stack)
     {
-        return recipe != null && recipe.test(stack);
+        return recipe != null && recipe.test(stack) && stack.getCount() == recipe.getInputAmount();
     }
 
     private void applyRecipeState(ItemStack stack, IForgeItem cap, AnvilRecipe recipe)
@@ -991,17 +1010,19 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private boolean canMergeForgeInput(int slot, ItemStack inSlot, ItemStack held)
     {
-        if (ItemHandlerHelper.canItemStacksStack(inSlot, held))
-            return true;
         if (slot != SLOT_INPUT_MAIN)
+        {
+            return ItemHandlerHelper.canItemStacksStack(inSlot, held);
+        }
+        if (!ItemHandlerHelper.canItemStacksStack(inSlot, held) && !CoreHelpers.doStacksMatch(inSlot, held))
+        {
             return false;
-        if (!CoreHelpers.doStacksMatch(inSlot, held))
-            return false;
+        }
 
         List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatchingIgnoreCount(inSlot, getTier());
         for (AnvilRecipe recipe : matches)
         {
-            if (recipe.matchesInputIgnoreCount(held))
+            if (recipe.matchesInputIgnoreCount(held) && inSlot.getCount() < recipe.getInputAmount())
                 return true;
         }
         return false;
@@ -1044,8 +1065,21 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         if (shouldContinueMainInput(main, held))
             return SLOT_INPUT_MAIN;
+        if (isSameAnvilInput(main, held))
+            return -1;
 
         return SLOT_INPUT_SECOND;
+    }
+
+    private boolean isSameAnvilInput(ItemStack main, ItemStack held)
+    {
+        List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatchingIgnoreCount(main, getTier());
+        for (AnvilRecipe recipe : matches)
+        {
+            if (recipe.matchesInputIgnoreCount(held))
+                return true;
+        }
+        return false;
     }
 
     private boolean shouldContinueMainInput(ItemStack main, ItemStack held)
