@@ -133,13 +133,11 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     {
         private final List<List<ItemStack>> inputLists;
         private final ItemStack output;
-        private final int hammerHits;
 
         public Wrapper(AnvilRecipe recipe)
         {
             inputLists = java.util.Collections.singletonList(recipe.getInput().getStacks());
             output = recipe.getOutput();
-            hammerHits = recipe.getHammerHits();
         }
 
         @Override
@@ -160,7 +158,6 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
             {
                 arrowAnimated.draw(minecraft, ARROW_X, ARROW_Y);
             }
-            minecraft.fontRenderer.drawString("x" + hammerHits, 18, 0, 0xFFFFFFFF, true);
         }
     }
 

@@ -34,28 +34,52 @@ public final class CraftTweakerIntegration
     @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier)
     {
-        addRecipeInternal(input, output, tier, AnvilRecipe.defaultHammerHits(tier));
+        addRecipeInternal(input, output, tier, AnvilRecipe.defaultHammerHits(tier), true);
     }
 
     @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final int hammerHits)
     {
-        addRecipeInternal(input, output, tier, hammerHits);
+        addRecipeInternal(input, output, tier, hammerHits, true);
+    }
+
+    @ZenMethod
+    public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final boolean requiresHeat)
+    {
+        addRecipeInternal(input, output, tier, AnvilRecipe.defaultHammerHits(tier), requiresHeat);
+    }
+
+    @ZenMethod
+    public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final int hammerHits, final boolean requiresHeat)
+    {
+        addRecipeInternal(input, output, tier, hammerHits, requiresHeat);
     }
 
     @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final String... ruleNames)
     {
-        addRecipeInternal(input, output, tier, defaultHammerHits(tier, ruleNames), ruleNames);
+        addRecipeInternal(input, output, tier, defaultHammerHits(tier, ruleNames), true, ruleNames);
     }
 
     @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final int hammerHits, final String... ruleNames)
     {
-        addRecipeInternal(input, output, tier, hammerHits, ruleNames);
+        addRecipeInternal(input, output, tier, hammerHits, true, ruleNames);
     }
 
-    private static void addRecipeInternal(final IIngredient input, final IItemStack output, final int tier, final int hammerHits, final String... ruleNames)
+    @ZenMethod
+    public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final boolean requiresHeat, final String... ruleNames)
+    {
+        addRecipeInternal(input, output, tier, defaultHammerHits(tier, ruleNames), requiresHeat, ruleNames);
+    }
+
+    @ZenMethod
+    public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final int hammerHits, final boolean requiresHeat, final String... ruleNames)
+    {
+        addRecipeInternal(input, output, tier, hammerHits, requiresHeat, ruleNames);
+    }
+
+    private static void addRecipeInternal(final IIngredient input, final IItemStack output, final int tier, final int hammerHits, final boolean requiresHeat, final String... ruleNames)
     {
         final AnvilRecipe recipe;
         final ItemStack outputStack = toStack(output);
@@ -83,7 +107,9 @@ public final class CraftTweakerIntegration
         if (input instanceof IOreDictEntry)
         {
             final IOreDictEntry ore = (IOreDictEntry) input;
-            recipe = new AnvilRecipe(outputStack, ore.getName(), ore.getAmount(), tier, hammerHits, rules.toArray(new ForgeRule[0]));
+            final IRecipeIngredient inputIngredient = IRecipeIngredient.of(ore.getName());
+            CapabilityForgeItem.registerFallbackStackCapability(inputIngredient, CapabilityForgeItem.DEFAULT_WORK_TEMPERATURE, CapabilityForgeItem.DEFAULT_MELT_TEMPERATURE);
+            recipe = new AnvilRecipe(outputStack, ore.getName(), ore.getAmount(), tier, hammerHits, requiresHeat, rules.toArray(new ForgeRule[0]));
         }
         else
         {
@@ -93,7 +119,8 @@ public final class CraftTweakerIntegration
                 TinkersForging.getLog().warn("Invalid CraftTweaker anvil recipe. Input must be an item stack or ore dictionary entry.");
                 return;
             }
-            recipe = new AnvilRecipe(outputStack, inputStack, tier, hammerHits, rules.toArray(new ForgeRule[0]));
+            CapabilityForgeItem.registerFallbackStackCapability(IRecipeIngredient.of(inputStack), CapabilityForgeItem.DEFAULT_WORK_TEMPERATURE, CapabilityForgeItem.DEFAULT_MELT_TEMPERATURE);
+            recipe = new AnvilRecipe(outputStack, inputStack, tier, hammerHits, requiresHeat, rules.toArray(new ForgeRule[0]));
         }
         CraftTweakerAPI.apply(new IAction()
         {

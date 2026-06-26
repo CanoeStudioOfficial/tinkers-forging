@@ -77,7 +77,7 @@ When Tinkers Construct is installed, `Tinker's Construct Compat Mode` controls w
 
 ### CraftTweaker Anvil Examples
 
-Tinker's Anvil has no default anvil recipes. Add direct forging recipes with CraftTweaker. The input count controls how many items must be sneak-right-clicked into the anvil before hammering. An optional fourth integer controls the required hammer hits, similar to Pyrotech's anvil `hits` parameter.
+Tinker's Anvil has no default anvil recipes. Add direct forging recipes with CraftTweaker. The input count controls how many items must be sneak-right-clicked into the anvil before hammering. An optional fourth integer controls the required hammer hits, similar to Pyrotech's anvil `hits` parameter. Recipes require workable heat by default; add a boolean `false` argument when a recipe should be hammerable without heating the input.
 
 ```zenscript
 // Three iron ingots directly forge into an iron pickaxe on tier 2+ anvils.
@@ -92,11 +92,20 @@ mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 3, <tinkersforging:pic
 // Add a recipe that requires exactly 6 hammer hits.
 mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 5, <tinkersforging:hammer_head/diamond>, 3, 6);
 
+// Add a recipe that does not require heating before hammering.
+mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 3, <tinkersforging:pickaxe_head/diamond>, 3, false);
+
+// Combine explicit hammer hits with no-heat forging.
+mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 5, <tinkersforging:hammer_head/diamond>, 3, 6, false);
+
 // Old rule arguments are still accepted for compatibility, but direct forging does not require them.
 mods.TinkersForging.Anvil.addRecipe(<ore:ingotGold> * 2, <tinkersforging:sword_blade/gold>, 1, "HIT_LAST");
 
 // Rules can still be combined with an explicit hammer hit count.
 mods.TinkersForging.Anvil.addRecipe(<ore:ingotCopper> * 2, <tinkersforging:sheet/copper>, 1, 4, "HIT_LAST");
+
+// Rule recipes can also disable heat checks.
+mods.TinkersForging.Anvil.addRecipe(<ore:gemDiamond> * 3, <tinkersforging:pickaxe_head/diamond>, 3, 6, false, "HIT_LAST");
 
 mods.TinkersForging.Anvil.removeRecipe(<minecraft:iron_pickaxe>);
 ```

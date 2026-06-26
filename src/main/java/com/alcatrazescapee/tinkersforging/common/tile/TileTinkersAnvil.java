@@ -295,7 +295,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             {
                 return world.isRemote ? canInsertHeldStack(player, hand, SLOT_CATALYST) : insertHeldStack(player, hand, SLOT_CATALYST);
             }
-            if (held.hasCapability(CapabilityForgeItem.CAPABILITY, null))
+            if (isForgeInput(held))
             {
                 if (inventory.getStackInSlot(SLOT_INPUT_MAIN).isEmpty())
                 {
@@ -314,7 +314,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         {
             case SLOT_INPUT:
             case SLOT_INPUT_SECOND:
-                return stack.hasCapability(CapabilityForgeItem.CAPABILITY, null);
+                return isForgeInput(stack);
             case SLOT_HAMMER:
                 return isHammer(stack);
             case SLOT_CATALYST:
@@ -406,7 +406,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         {
             return WorkFailure.TIER_TOO_LOW;
         }
-        if (!cap.isWorkable())
+        if (recipe.requiresHeat() && !cap.isWorkable())
         {
             return WorkFailure.TOO_COLD;
         }
@@ -512,7 +512,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         {
             return WorkFailure.TIER_TOO_LOW;
         }
-        if (!cap.isWorkable())
+        if (recipe.requiresHeat() && !cap.isWorkable())
         {
             return WorkFailure.TOO_COLD;
         }
@@ -926,6 +926,18 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         int limit = Math.min(inSlot.getMaxStackSize(), inventory.getSlotLimit(slot));
         return inSlot.getCount() < limit;
+    }
+
+    private boolean isForgeInput(ItemStack stack)
+    {
+        if (stack.isEmpty())
+            return false;
+        if (stack.hasCapability(CapabilityForgeItem.CAPABILITY, null))
+            return true;
+        if (!ModRecipes.ANVIL.getAllMatching(stack).isEmpty())
+            return true;
+        ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        return !main.isEmpty() && ModRecipes.WELDING.getForInputs(main, stack) != null;
     }
 
     private void extractDirect(EntityPlayer player, boolean secondaryFirst)

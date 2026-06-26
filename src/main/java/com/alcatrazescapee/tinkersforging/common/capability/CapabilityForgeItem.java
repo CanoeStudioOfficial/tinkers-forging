@@ -90,6 +90,14 @@ public final class CapabilityForgeItem
      */
     public static void registerStackCapability(IRecipeIngredient ingredient, float workingTemperature, float meltingTemperature)
     {
+        HEAT_REGISTRY.add(0, new IngredientHeatRegistry(ingredient, workingTemperature, meltingTemperature));
+    }
+
+    /**
+     * Register a fallback heat application that should not override material/json/CraftTweaker heat entries.
+     */
+    public static void registerFallbackStackCapability(IRecipeIngredient ingredient, float workingTemperature, float meltingTemperature)
+    {
         HEAT_REGISTRY.add(new IngredientHeatRegistry(ingredient, workingTemperature, meltingTemperature));
     }
 
