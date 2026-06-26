@@ -98,6 +98,13 @@ mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 3, <tinkersforging:pic
 // Combine explicit hammer hits with no-heat forging.
 mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 5, <tinkersforging:hammer_head/diamond>, 3, 6, false);
 
+// Add a recipe with a secondary anvil input. Right-click inserts the main input one at a time;
+// sneak-right-click inserts the secondary input one at a time. Empty-hand extraction follows the same slots.
+mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 3, <minecraft:stick> * 1, <tinkersforging:pickaxe_head/diamond>, 3);
+
+// Secondary-input recipes also support explicit hammer hits and no-heat forging.
+mods.TinkersForging.Anvil.addRecipe(<minecraft:diamond> * 5, <ore:gemQuartz> * 2, <tinkersforging:hammer_head/diamond>, 3, 6, false);
+
 // Old rule arguments are still accepted for compatibility, but direct forging does not require them.
 mods.TinkersForging.Anvil.addRecipe(<ore:ingotGold> * 2, <tinkersforging:sword_blade/gold>, 1, "HIT_LAST");
 

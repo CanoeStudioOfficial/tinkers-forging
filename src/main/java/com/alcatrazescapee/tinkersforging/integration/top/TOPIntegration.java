@@ -94,9 +94,12 @@ public final class TOPIntegration
             ItemStack output = recipe.getOutput();
             int maxProgress = tile.getDirectMaxProgress();
             int progress = Math.min(tile.getDirectProgress(), maxProgress);
-            probeInfo.horizontal()
-                .item(input)
-                .progress(progress, maxProgress, new ProgressStyle().height(18).width(64).showText(false))
+            IProbeInfo row = probeInfo.horizontal().item(input);
+            if (recipe.hasSecondaryInput())
+            {
+                row.item(secondary);
+            }
+            row.progress(progress, maxProgress, new ProgressStyle().height(18).width(64).showText(false))
                 .item(output);
             probeInfo.element(new ElementTextLocalized(MOD_ID + ".top.anvil_recipe", output));
             probeInfo.element(new ElementTextLocalized(MOD_ID + ".top.anvil_hits", progress, maxProgress));

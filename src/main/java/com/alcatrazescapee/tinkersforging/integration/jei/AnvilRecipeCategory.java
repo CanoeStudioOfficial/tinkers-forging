@@ -44,6 +44,8 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
     private static final int HEIGHT = 26;
     private static final int INPUT_X = 6;
     private static final int INPUT_Y = 5;
+    private static final int SECONDARY_INPUT_X = 26;
+    private static final int SECONDARY_INPUT_Y = 5;
     private static final int OUTPUT_X = 76;
     private static final int OUTPUT_Y = 5;
     private static final int ARROW_X = 36;
@@ -124,6 +126,13 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
         itemStacks.setBackground(0, slotBackground);
         itemStacks.set(0, ingredients.getInputs(ItemStack.class).get(0));
 
+        if (ingredients.getInputs(ItemStack.class).size() > 1)
+        {
+            itemStacks.init(2, true, SECONDARY_INPUT_X, SECONDARY_INPUT_Y);
+            itemStacks.setBackground(2, slotBackground);
+            itemStacks.set(2, ingredients.getInputs(ItemStack.class).get(1));
+        }
+
         itemStacks.init(1, false, OUTPUT_X, OUTPUT_Y);
         itemStacks.setBackground(1, slotBackground);
         itemStacks.set(1, ingredients.getOutputs(ItemStack.class).get(0));
@@ -136,7 +145,12 @@ public class AnvilRecipeCategory implements IRecipeCategory<AnvilRecipeCategory.
 
         public Wrapper(AnvilRecipe recipe)
         {
-            inputLists = java.util.Collections.singletonList(recipe.getInput().getStacks());
+            inputLists = new java.util.ArrayList<>();
+            inputLists.add(recipe.getInput().getStacks());
+            if (recipe.hasSecondaryInput())
+            {
+                inputLists.add(recipe.getSecondaryInputStacks());
+            }
             output = recipe.getOutput();
         }
 

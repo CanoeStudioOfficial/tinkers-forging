@@ -7,13 +7,17 @@
 package com.alcatrazescapee.tinkersforging.common.recipe;
 
 import java.util.Random;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StringUtils;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
+import com.alcatrazescapee.alcatrazcore.inventory.ingredient.IRecipeIngredient;
 import com.alcatrazescapee.alcatrazcore.inventory.recipe.RecipeCore;
 import com.alcatrazescapee.alcatrazcore.util.CoreHelpers;
 import com.alcatrazescapee.tinkersforging.ModConfig;
@@ -57,6 +61,7 @@ public class AnvilRecipe extends RecipeCore
         int seed = buffer.readInt();
         int hammerHits = buffer.readInt();
         boolean requiresHeat = buffer.readBoolean();
+        int secondaryInputAmount = buffer.readBoolean() ? buffer.readInt() : 0;
 
         ItemStack output = ByteBufUtils.readItemStack(buffer);
 
@@ -67,7 +72,7 @@ public class AnvilRecipe extends RecipeCore
             rules[i] = ForgeRule.valueOf(buffer.readInt());
         }
 
-        return new AnvilRecipe(output, minTier, hammerHits, requiresHeat, rules).withSeed(seed);
+        return new AnvilRecipe(output, minTier, hammerHits, requiresHeat, secondaryInputAmount, rules).withSeed(seed);
     }
 
     private static final Random RANDOM = new Random();
@@ -76,9 +81,11 @@ public class AnvilRecipe extends RecipeCore
     private static final int DIRECT_HITS_PER_RULE = 2;
 
     private final ForgeRule[] rules;
+    @Nullable private final IRecipeIngredient secondaryIngredient;
     private final int minTier;
     private final int hammerHits;
     private final boolean requiresHeat;
+    private final int secondaryInputAmount;
     private final String recipeName;
 
     private int workingSeed = 0;
@@ -95,12 +102,19 @@ public class AnvilRecipe extends RecipeCore
 
     public AnvilRecipe(ItemStack outputStack, String inputOre, int inputAmount, int minTier, int hammerHits, boolean requiresHeat, ForgeRule... rules)
     {
+        this(outputStack, inputOre, inputAmount, null, 0, minTier, hammerHits, requiresHeat, rules);
+    }
+
+    public AnvilRecipe(ItemStack outputStack, String inputOre, int inputAmount, @Nullable IRecipeIngredient secondaryIngredient, int secondaryInputAmount, int minTier, int hammerHits, boolean requiresHeat, ForgeRule... rules)
+    {
         super(outputStack, inputOre, inputAmount);
 
         this.rules = rules;
+        this.secondaryIngredient = secondaryIngredient;
         this.minTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
         this.hammerHits = sanitizeHammerHits(hammerHits);
         this.requiresHeat = requiresHeat;
+        this.secondaryInputAmount = sanitizeSecondaryInputAmount(secondaryIngredient, secondaryInputAmount);
         this.recipeName = outputStack.serializeNBT().toString();
     }
 
@@ -116,24 +130,33 @@ public class AnvilRecipe extends RecipeCore
 
     public AnvilRecipe(ItemStack outputStack, ItemStack inputStack, int minTier, int hammerHits, boolean requiresHeat, ForgeRule... rules)
     {
+        this(outputStack, inputStack, null, 0, minTier, hammerHits, requiresHeat, rules);
+    }
+
+    public AnvilRecipe(ItemStack outputStack, ItemStack inputStack, @Nullable IRecipeIngredient secondaryIngredient, int secondaryInputAmount, int minTier, int hammerHits, boolean requiresHeat, ForgeRule... rules)
+    {
         super(outputStack, inputStack);
 
         this.rules = rules;
+        this.secondaryIngredient = secondaryIngredient;
         this.minTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
         this.hammerHits = sanitizeHammerHits(hammerHits);
         this.requiresHeat = requiresHeat;
+        this.secondaryInputAmount = sanitizeSecondaryInputAmount(secondaryIngredient, secondaryInputAmount);
         this.recipeName = outputStack.serializeNBT().toString();
     }
 
-    private AnvilRecipe(ItemStack outputStack, int minTier, int hammerHits, boolean requiresHeat, ForgeRule... rules)
+    private AnvilRecipe(ItemStack outputStack, int minTier, int hammerHits, boolean requiresHeat, int secondaryInputAmount, ForgeRule... rules)
     {
         // Only created on client
         super(outputStack, ItemStack.EMPTY);
 
         this.minTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
         this.rules = rules;
+        this.secondaryIngredient = null;
         this.hammerHits = sanitizeHammerHits(hammerHits);
         this.requiresHeat = requiresHeat;
+        this.secondaryInputAmount = secondaryInputAmount;
         this.recipeName = "client:" + outputStack.serializeNBT().toString();
     }
 
@@ -147,6 +170,11 @@ public class AnvilRecipe extends RecipeCore
     private static int sanitizeHammerHits(int hammerHits)
     {
         return Math.max(1, hammerHits);
+    }
+
+    private static int sanitizeSecondaryInputAmount(@Nullable IRecipeIngredient secondaryIngredient, int secondaryInputAmount)
+    {
+        return secondaryIngredient == null ? 0 : Math.max(1, secondaryInputAmount);
     }
 
     @Override
@@ -177,6 +205,22 @@ public class AnvilRecipe extends RecipeCore
         return inputAmount;
     }
 
+    public boolean hasSecondaryInput()
+    {
+        return secondaryInputAmount > 0;
+    }
+
+    public int getSecondaryInputAmount()
+    {
+        return secondaryInputAmount;
+    }
+
+    @Nonnull
+    public List<ItemStack> getSecondaryInputStacks()
+    {
+        return secondaryIngredient == null ? Collections.emptyList() : secondaryIngredient.getStacks();
+    }
+
     public boolean requiresHeat()
     {
         return requiresHeat;
@@ -203,6 +247,32 @@ public class AnvilRecipe extends RecipeCore
         return ingredient.testIgnoreCount(input);
     }
 
+    public boolean matchesSecondaryInputIgnoreCount(Object input)
+    {
+        return secondaryIngredient != null && secondaryIngredient.testIgnoreCount(input);
+    }
+
+    public boolean matchesInputs(ItemStack input, ItemStack secondaryInput)
+    {
+        if (!test(input))
+            return false;
+        if (!hasSecondaryInput())
+            return secondaryInput.isEmpty();
+        return secondaryIngredient != null && secondaryIngredient.test(secondaryInput);
+    }
+
+    public boolean matchesInputsExact(ItemStack input, ItemStack secondaryInput)
+    {
+        if (!matchesInputs(input, secondaryInput) || input.getCount() != getInputAmount())
+            return false;
+        return hasSecondaryInput() ? secondaryInput.getCount() == getSecondaryInputAmount() : secondaryInput.isEmpty();
+    }
+
+    public ItemStack consumeSecondaryInput(ItemStack secondaryInput)
+    {
+        return hasSecondaryInput() ? CoreHelpers.consumeItem(secondaryInput, secondaryInputAmount) : secondaryInput;
+    }
+
     public void serialize(ByteBuf buffer)
     {
         // Numbers
@@ -210,6 +280,11 @@ public class AnvilRecipe extends RecipeCore
         buffer.writeInt(workingSeed);
         buffer.writeInt(hammerHits);
         buffer.writeBoolean(requiresHeat);
+        buffer.writeBoolean(hasSecondaryInput());
+        if (hasSecondaryInput())
+        {
+            buffer.writeInt(secondaryInputAmount);
+        }
 
         // Output
         ByteBufUtils.writeItemStack(buffer, outputStack);
