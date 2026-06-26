@@ -73,6 +73,8 @@ JSON material configs are still the supported way to extend Tinker's Forging mat
 
 `sourceItem` does not remove the JSON material system. It makes the generated material content render from an existing item model/texture, for example `minecraft:diamond`, so resource packs and modded item textures can drive the look of the generated parts, hammer, and anvil. CraftTweaker material registration was removed; use JSON files under `config/tinkersforging/materials` for this material/texture-backed extension path.
 
+When Tinkers Construct is installed and `Use Tinker's Construct Material Render Info` is enabled, generated Tinkers Forging parts for TConstruct-registered materials use Tinkers Construct's own `MaterialRenderInfoLoader`. This lets resource packs provide `assets/tconstruct/materials/<material_id>.json` and matching textures such as `assets/tconstruct/textures/items/materials/<texture>.png`. If Tinkers Construct is missing, the option is disabled, or the material is only registered by Tinkers Forging JSON, Tinkers Forging falls back to its own `assets/tinkersforging/materials/<material_id>.json`, generated texture files, and then `sourceItem`.
+
 When Tinkers Construct is installed, `Tinker's Construct Compat Mode` controls which generated part items/content exist. `BOTH` registers Tinkers Forging's own normal parts and TConstruct-compatible part content together. `TINKERS_ONLY` skips Tinkers Forging's own normal `pickaxe_head/<id>`, `axe_head/<id>`, `shovel_head/<id>`, `hoe_head/<id>`, and `sword_blade/<id>` items, while hammer heads and hammers are still registered. Anvil recipes for either mode still need CraftTweaker.
 
 ### CraftTweaker Anvil Examples

@@ -23,7 +23,6 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -34,6 +33,7 @@ import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedHammer;
 import com.alcatrazescapee.tinkersforging.common.items.ItemExtendedToolHead;
 import com.alcatrazescapee.tinkersforging.common.items.ItemMetalForm;
 import com.alcatrazescapee.tinkersforging.common.items.ItemToolHead;
+import com.alcatrazescapee.tinkersforging.integration.ModLoaderCompat;
 import com.alcatrazescapee.tinkersforging.integration.TinkersClientIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
@@ -127,7 +127,7 @@ public enum ForgingMaterialTextureManager
     public void createMaterialTextures(TextureStitchEvent.Pre event)
     {
         IResourceManager resourceManager = Minecraft.getMinecraft().getResourceManager();
-        if (Loader.isModLoaded("tconstruct"))
+        if (ModLoaderCompat.shouldUseTinkersConstructMaterialRenderInfo())
         {
             TinkersClientIntegration.reloadMaterialRenderInfo(resourceManager);
         }
@@ -203,7 +203,7 @@ public enum ForgingMaterialTextureManager
 
     private static ForgingMaterialRenderInfo getRenderInfo(MaterialType material)
     {
-        if (Loader.isModLoaded("tconstruct"))
+        if (ModLoaderCompat.shouldUseTinkersConstructMaterialRenderInfo())
         {
             ForgingMaterialRenderInfo tinkersRenderInfo = TinkersClientIntegration.getRenderInfo(material);
             if (tinkersRenderInfo != null)

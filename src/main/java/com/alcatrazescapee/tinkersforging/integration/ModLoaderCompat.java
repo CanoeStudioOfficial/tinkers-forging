@@ -28,5 +28,10 @@ public final class ModLoaderCompat
         return isTinkersConstructLoaded();
     }
 
+    public static boolean shouldUseTinkersConstructMaterialRenderInfo()
+    {
+        return isTinkersConstructLoaded() && ModConfig.GENERAL.useTinkersConstructMaterialRenderInfo;
+    }
+
     private ModLoaderCompat() {}
 }

@@ -74,6 +74,12 @@ public final class ModConfig
                 "If Tinker's Construct is not installed, Tinker's Forging always uses its own tool parts."})
         public TinkersConstructCompatMode tinkersConstructCompatMode = TinkersConstructCompatMode.BOTH;
 
+        @Config.Name("Use Tinker's Construct Material Render Info")
+        @Config.Comment({"If true and Tinker's Construct is installed, Tinker's Forging will use Tinker's Construct's MaterialRenderInfoLoader for generated part textures.",
+                "This allows resource-pack files such as assets/tconstruct/materials/diamond.json to render Tinker's Forging parts.",
+                "If false, Tinker's Forging only uses its own material render jsons and JSON sourceItem texture fallback."})
+        public boolean useTinkersConstructMaterialRenderInfo = true;
+
         @Config.Name("Construct's Armory Compat")
         @Config.RequiresMcRestart
         @Config.Comment("Should this mod enable Construct's Armory material content, if it is enabled? Actual anvil recipes are pack-defined through CraftTweaker.")
