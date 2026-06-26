@@ -172,6 +172,11 @@ public class AnvilRecipe extends RecipeCore
         return hammerHits;
     }
 
+    public int getInputAmount()
+    {
+        return inputAmount;
+    }
+
     public boolean requiresHeat()
     {
         return requiresHeat;
@@ -191,6 +196,11 @@ public class AnvilRecipe extends RecipeCore
                 return false;
         }
         return true;
+    }
+
+    public boolean matchesInputIgnoreCount(Object input)
+    {
+        return ingredient.testIgnoreCount(input);
     }
 
     public void serialize(ByteBuf buffer)

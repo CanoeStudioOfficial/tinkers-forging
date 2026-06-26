@@ -289,20 +289,14 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
             return true;
         }
 
-        if (player.isSneaking())
+        if (player.isSneaking() && isFlux(held))
         {
-            if (isFlux(held))
-            {
-                return world.isRemote ? canInsertHeldStack(player, hand, SLOT_CATALYST) : insertHeldStack(player, hand, SLOT_CATALYST);
-            }
-            if (isForgeInput(held))
-            {
-                if (inventory.getStackInSlot(SLOT_INPUT_MAIN).isEmpty())
-                {
-                    return world.isRemote ? canInsertHeldStack(player, hand, SLOT_INPUT_MAIN) : insertHeldStack(player, hand, SLOT_INPUT_MAIN);
-                }
-                return world.isRemote ? canInsertHeldStack(player, hand, SLOT_INPUT_SECOND) : insertHeldStack(player, hand, SLOT_INPUT_SECOND);
-            }
+            return world.isRemote ? canInsertHeldStack(player, hand, SLOT_CATALYST) : insertHeldStack(player, hand, SLOT_CATALYST);
+        }
+
+        if (isForgeInput(held))
+        {
+            return world.isRemote ? canInsertForgeInput(player, hand) : insertForgeInput(player, hand);
         }
         return false;
     }
@@ -911,6 +905,18 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return true;
     }
 
+    private boolean insertForgeInput(EntityPlayer player, EnumHand hand)
+    {
+        int slot = getPreferredInputSlot(player.getHeldItem(hand));
+        if (slot < 0)
+            return false;
+        if (insertHeldStack(player, hand, slot))
+            return true;
+
+        int fallbackSlot = slot == SLOT_INPUT_MAIN ? SLOT_INPUT_SECOND : SLOT_INPUT_MAIN;
+        return canInsertHeldStack(player, hand, fallbackSlot) && insertHeldStack(player, hand, fallbackSlot);
+    }
+
     private boolean canInsertHeldStack(EntityPlayer player, EnumHand hand, int slot)
     {
         ItemStack held = player.getHeldItem(hand);
@@ -928,13 +934,54 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         return inSlot.getCount() < limit;
     }
 
+    private boolean canInsertForgeInput(EntityPlayer player, EnumHand hand)
+    {
+        int slot = getPreferredInputSlot(player.getHeldItem(hand));
+        if (slot < 0)
+            return false;
+        if (canInsertHeldStack(player, hand, slot))
+            return true;
+
+        int fallbackSlot = slot == SLOT_INPUT_MAIN ? SLOT_INPUT_SECOND : SLOT_INPUT_MAIN;
+        return canInsertHeldStack(player, hand, fallbackSlot);
+    }
+
+    private int getPreferredInputSlot(ItemStack held)
+    {
+        if (held.isEmpty())
+            return -1;
+
+        ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
+        if (main.isEmpty())
+            return SLOT_INPUT_MAIN;
+
+        if (shouldContinueMainInput(main, held))
+            return SLOT_INPUT_MAIN;
+
+        return SLOT_INPUT_SECOND;
+    }
+
+    private boolean shouldContinueMainInput(ItemStack main, ItemStack held)
+    {
+        if (!ItemHandlerHelper.canItemStacksStack(main, held))
+            return false;
+
+        List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatchingIgnoreCount(main, getTier());
+        for (AnvilRecipe recipe : matches)
+        {
+            if (recipe.matchesInputIgnoreCount(held) && main.getCount() < recipe.getInputAmount())
+                return true;
+        }
+        return ModRecipes.WELDING.getForInputs(main, held) == null;
+    }
+
     private boolean isForgeInput(ItemStack stack)
     {
         if (stack.isEmpty())
             return false;
         if (stack.hasCapability(CapabilityForgeItem.CAPABILITY, null))
             return true;
-        if (!ModRecipes.ANVIL.getAllMatching(stack).isEmpty())
+        if (!ModRecipes.ANVIL.getAllMatchingIgnoreCount(stack).isEmpty())
             return true;
         ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
         return !main.isEmpty() && ModRecipes.WELDING.getForInputs(main, stack) != null;
