@@ -920,11 +920,20 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
         if (inSlot.isEmpty())
         {
-            return insertHeldStack(player, hand, slot);
+            ItemStack inserted = held.copy();
+            inserted.setCount(1);
+            preserveForgeTemperature(inserted, getForgeTemperature(held));
+            held.shrink(1);
+
+            inventory.setStackInSlot(slot, inserted);
+            player.setHeldItem(hand, held.isEmpty() ? ItemStack.EMPTY : held);
+            setAndUpdateSlots(slot);
+            markDirectDirty();
+            return true;
         }
 
         int limit = Math.min(inSlot.getMaxStackSize(), inventory.getSlotLimit(slot));
-        int move = Math.min(held.getCount(), limit - inSlot.getCount());
+        int move = Math.min(1, Math.min(held.getCount(), limit - inSlot.getCount()));
         if (move <= 0)
             return false;
 
