@@ -77,7 +77,7 @@ public final class ModConfig
         @Config.Name("Use Tinker's Construct Material Render Info")
         @Config.Comment({"If true and Tinker's Construct is installed, Tinker's Forging will use Tinker's Construct's MaterialRenderInfoLoader for generated part textures.",
                 "This allows resource-pack files such as assets/tconstruct/materials/diamond.json to render Tinker's Forging parts.",
-                "If false, Tinker's Forging only uses its own material render jsons and JSON sourceItem texture fallback."})
+                "If false or Tinker's Construct is missing, generated material content uses normal fallback coloring/basic models."})
         public boolean useTinkersConstructMaterialRenderInfo = true;
 
         @Config.Name("Construct's Armory Compat")

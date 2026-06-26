@@ -210,7 +210,7 @@ public final class MaterialConfigLoader
         comments.put("tinkersConstruct", "If true and Tinkers Construct is installed/enabled in config, this material can register generated Tinkers Construct-compatible material content. Anvil recipes still require CraftTweaker.");
         comments.put("adventurersToolbox", "If true and Adventurer's Toolbox is installed, this material can register generated Adventurer's Toolbox material content. Anvil recipes still require CraftTweaker.");
         comments.put("requiredMod", "Optional mod id gate. If set, this material entry only loads when that mod is installed, for example tconstruct or toolbox.");
-        comments.put("sourceItem", "Optional item registry name used as the render texture source for this JSON material's generated parts, hammer, and anvil. Example: minecraft:diamond reads that item's model/texture so resource packs and modded item textures can drive the generated material look.");
+        comments.put("sourceItem", "Optional item registry name kept for pack-defined material metadata and compatibility. Generated Tinkers Forging part textures are driven by Tinkers Construct's MaterialRenderInfoLoader when that integration is enabled.");
         comments.put("sourceMeta", "Metadata/damage value for sourceItem. Usually 0; use another value for 1.12 metadata items with different sub-item textures.");
         return comments;
     }

@@ -38,7 +38,6 @@ import com.alcatrazescapee.tinkersforging.integration.TinkersClientIntegration;
 import com.alcatrazescapee.tinkersforging.util.ItemType;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.ExtendedMaterialRegistry.Definition;
-import com.alcatrazescapee.tinkersforging.util.material.MaterialConfigLoader;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialRegistry;
 import com.alcatrazescapee.tinkersforging.util.material.MaterialType;
 
@@ -131,7 +130,6 @@ public enum ForgingMaterialTextureManager
         {
             TinkersClientIntegration.reloadMaterialRenderInfo(resourceManager);
         }
-        ForgingMaterialRenderInfoLoader.load(resourceManager);
 
         SPRITES.clear();
         for (ResourceLocation baseTexture : BASE_TEXTURES)
@@ -161,14 +159,6 @@ public enum ForgingMaterialTextureManager
     {
         ResourceLocation customTexture = new ResourceLocation(baseTexture.getNamespace(), baseTexture.getPath() + "_" + material.getName());
         ForgingMaterialRenderInfo renderInfo = getRenderInfo(material);
-        if (renderInfo == null)
-        {
-            ItemStack sourceStack = MaterialConfigLoader.getSourceStack(material);
-            if (!sourceStack.isEmpty())
-            {
-                renderInfo = ItemStackMaterialRenderInfo.of(resourceManager, sourceStack);
-            }
-        }
         if (renderInfo == null)
         {
             return exists(customTexture) ? textureMap.registerSprite(customTexture) : null;
@@ -211,7 +201,7 @@ public enum ForgingMaterialTextureManager
                 return tinkersRenderInfo;
             }
         }
-        return ForgingMaterialRenderInfoLoader.get(material);
+        return null;
     }
 
     private static boolean exists(ResourceLocation sprite)
