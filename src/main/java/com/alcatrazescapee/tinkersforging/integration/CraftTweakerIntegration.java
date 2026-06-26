@@ -34,16 +34,28 @@ public final class CraftTweakerIntegration
     @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier)
     {
-        addRecipeInternal(input, output, tier);
+        addRecipeInternal(input, output, tier, AnvilRecipe.defaultHammerHits(tier));
+    }
+
+    @ZenMethod
+    public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final int hammerHits)
+    {
+        addRecipeInternal(input, output, tier, hammerHits);
     }
 
     @ZenMethod
     public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final String... ruleNames)
     {
-        addRecipeInternal(input, output, tier, ruleNames);
+        addRecipeInternal(input, output, tier, defaultHammerHits(tier, ruleNames), ruleNames);
     }
 
-    private static void addRecipeInternal(final IIngredient input, final IItemStack output, final int tier, final String... ruleNames)
+    @ZenMethod
+    public static void addRecipe(final IIngredient input, final IItemStack output, final int tier, final int hammerHits, final String... ruleNames)
+    {
+        addRecipeInternal(input, output, tier, hammerHits, ruleNames);
+    }
+
+    private static void addRecipeInternal(final IIngredient input, final IItemStack output, final int tier, final int hammerHits, final String... ruleNames)
     {
         final AnvilRecipe recipe;
         final ItemStack outputStack = toStack(output);
@@ -53,33 +65,25 @@ public final class CraftTweakerIntegration
             return;
         }
 
-        final int ruleCount = ruleNames == null ? 0 : ruleNames.length;
-        final List<ForgeRule> rules = new ArrayList<>(ruleCount);
-        if (ruleNames != null)
+        final List<ForgeRule> rules = parseRules(ruleNames);
+        if (rules == null)
         {
-            for (String ruleName : ruleNames)
-            {
-                try
-                {
-                    final ForgeRule rule = ForgeRule.valueOf(ruleName.toUpperCase());
-                    rules.add(rule);
-                }
-                catch (IllegalArgumentException e)
-                {
-                    TinkersForging.getLog().warn("Illegal rule name {} specified in craft tweaker recipe!", ruleName);
-                    return;
-                }
-            }
+            return;
         }
         if (rules.size() > 3)
         {
             TinkersForging.getLog().warn("Illegal number of rules {} specified in craft tweaker recipe!", rules.size());
             return;
         }
+        if (hammerHits < 1)
+        {
+            TinkersForging.getLog().warn("Invalid CraftTweaker anvil recipe. Hammer hits must be at least 1.");
+            return;
+        }
         if (input instanceof IOreDictEntry)
         {
             final IOreDictEntry ore = (IOreDictEntry) input;
-            recipe = new AnvilRecipe(outputStack, ore.getName(), ore.getAmount(), tier, rules.toArray(new ForgeRule[0]));
+            recipe = new AnvilRecipe(outputStack, ore.getName(), ore.getAmount(), tier, hammerHits, rules.toArray(new ForgeRule[0]));
         }
         else
         {
@@ -89,7 +93,7 @@ public final class CraftTweakerIntegration
                 TinkersForging.getLog().warn("Invalid CraftTweaker anvil recipe. Input must be an item stack or ore dictionary entry.");
                 return;
             }
-            recipe = new AnvilRecipe(outputStack, inputStack, tier, rules.toArray(new ForgeRule[0]));
+            recipe = new AnvilRecipe(outputStack, inputStack, tier, hammerHits, rules.toArray(new ForgeRule[0]));
         }
         CraftTweakerAPI.apply(new IAction()
         {
@@ -154,6 +158,35 @@ public final class CraftTweakerIntegration
                 return "Adding heat registry for " + ingredient.getName() + "\n";
             }
         });
+    }
+
+    private static List<ForgeRule> parseRules(final String... ruleNames)
+    {
+        final int ruleCount = ruleNames == null ? 0 : ruleNames.length;
+        final List<ForgeRule> rules = new ArrayList<>(ruleCount);
+        if (ruleNames != null)
+        {
+            for (String ruleName : ruleNames)
+            {
+                try
+                {
+                    final ForgeRule rule = ForgeRule.valueOf(ruleName.toUpperCase());
+                    rules.add(rule);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    TinkersForging.getLog().warn("Illegal rule name {} specified in craft tweaker recipe!", ruleName);
+                    return null;
+                }
+            }
+        }
+        return rules;
+    }
+
+    private static int defaultHammerHits(final int tier, final String... ruleNames)
+    {
+        ForgeRule[] rules = new ForgeRule[ruleNames == null ? 0 : ruleNames.length];
+        return AnvilRecipe.defaultHammerHits(tier, rules);
     }
 
     @Nonnull

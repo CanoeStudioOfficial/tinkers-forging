@@ -68,10 +68,6 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     @Deprecated
     public static final int SLOT_INPUT = SLOT_INPUT_MAIN;
 
-    private static final int DIRECT_BASE_HITS = 8;
-    private static final int DIRECT_HITS_PER_TIER = 4;
-    private static final int DIRECT_HITS_PER_RULE = 2;
-
     private AnvilRecipe cachedAnvilRecipe = null;
     private String lastRecipeName = null;
     private EntityPlayer currentPlayer = null;
@@ -954,7 +950,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
 
     private int getRequiredDirectHits(AnvilRecipe recipe)
     {
-        return Math.max(1, DIRECT_BASE_HITS + DIRECT_HITS_PER_TIER * Math.max(0, recipe.getTier()) + DIRECT_HITS_PER_RULE * recipe.getRules().length);
+        return recipe.getHammerHits();
     }
 
     private void markDirectDirty()

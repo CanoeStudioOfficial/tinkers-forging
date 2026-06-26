@@ -3,6 +3,8 @@
 itemGroup.tinkersforging.stuff=Tinker's Forging
 
 # Gui Tooltips
+tinkersforging.top.anvil_recipe=配方：%s
+tinkersforging.top.anvil_hits=锤击次数：%d / %d
 
 tinkersforging.tooltip.has_been_worked=这个物品正在被处理。
 tinkersforging.tooltip.too_cold=这个物品不够热，无法处理！

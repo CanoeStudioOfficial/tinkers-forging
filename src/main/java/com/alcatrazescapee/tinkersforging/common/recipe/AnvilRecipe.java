@@ -55,6 +55,7 @@ public class AnvilRecipe extends RecipeCore
     {
         int minTier = buffer.readInt();
         int seed = buffer.readInt();
+        int hammerHits = buffer.readInt();
 
         ItemStack output = ByteBufUtils.readItemStack(buffer);
 
@@ -65,43 +66,72 @@ public class AnvilRecipe extends RecipeCore
             rules[i] = ForgeRule.valueOf(buffer.readInt());
         }
 
-        return new AnvilRecipe(output, minTier, rules).withSeed(seed);
+        return new AnvilRecipe(output, minTier, hammerHits, rules).withSeed(seed);
     }
 
     private static final Random RANDOM = new Random();
+    private static final int DIRECT_BASE_HITS = 8;
+    private static final int DIRECT_HITS_PER_TIER = 4;
+    private static final int DIRECT_HITS_PER_RULE = 2;
 
     private final ForgeRule[] rules;
     private final int minTier;
+    private final int hammerHits;
     private final String recipeName;
 
     private int workingSeed = 0;
 
     public AnvilRecipe(ItemStack outputStack, String inputOre, int inputAmount, int minTier, ForgeRule... rules)
     {
+        this(outputStack, inputOre, inputAmount, minTier, defaultHammerHits(minTier, rules), rules);
+    }
+
+    public AnvilRecipe(ItemStack outputStack, String inputOre, int inputAmount, int minTier, int hammerHits, ForgeRule... rules)
+    {
         super(outputStack, inputOre, inputAmount);
 
         this.rules = rules;
         this.minTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
+        this.hammerHits = sanitizeHammerHits(hammerHits);
         this.recipeName = outputStack.serializeNBT().toString();
     }
 
     public AnvilRecipe(ItemStack outputStack, ItemStack inputStack, int minTier, ForgeRule... rules)
     {
+        this(outputStack, inputStack, minTier, defaultHammerHits(minTier, rules), rules);
+    }
+
+    public AnvilRecipe(ItemStack outputStack, ItemStack inputStack, int minTier, int hammerHits, ForgeRule... rules)
+    {
         super(outputStack, inputStack);
 
         this.rules = rules;
         this.minTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
+        this.hammerHits = sanitizeHammerHits(hammerHits);
         this.recipeName = outputStack.serializeNBT().toString();
     }
 
-    private AnvilRecipe(ItemStack outputStack, int minTier, ForgeRule... rules)
+    private AnvilRecipe(ItemStack outputStack, int minTier, int hammerHits, ForgeRule... rules)
     {
         // Only created on client
         super(outputStack, ItemStack.EMPTY);
 
         this.minTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
         this.rules = rules;
+        this.hammerHits = sanitizeHammerHits(hammerHits);
         this.recipeName = "client:" + outputStack.serializeNBT().toString();
+    }
+
+    public static int defaultHammerHits(int minTier, ForgeRule... rules)
+    {
+        int ruleCount = rules == null ? 0 : rules.length;
+        int effectiveTier = ModConfig.GENERAL.respectTiers ? minTier : Integer.MIN_VALUE;
+        return Math.max(1, DIRECT_BASE_HITS + DIRECT_HITS_PER_TIER * Math.max(0, effectiveTier) + DIRECT_HITS_PER_RULE * ruleCount);
+    }
+
+    private static int sanitizeHammerHits(int hammerHits)
+    {
+        return Math.max(1, hammerHits);
     }
 
     @Override
@@ -120,6 +150,11 @@ public class AnvilRecipe extends RecipeCore
     public int getTier()
     {
         return minTier;
+    }
+
+    public int getHammerHits()
+    {
+        return hammerHits;
     }
 
     public int getWorkingTarget(long seed)
@@ -143,6 +178,7 @@ public class AnvilRecipe extends RecipeCore
         // Numbers
         buffer.writeInt(minTier);
         buffer.writeInt(workingSeed);
+        buffer.writeInt(hammerHits);
 
         // Output
         ByteBufUtils.writeItemStack(buffer, outputStack);

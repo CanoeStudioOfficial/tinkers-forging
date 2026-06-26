@@ -19,6 +19,8 @@ tinkersforging.tooltip.anvil_plan_title=Anvil Plan
 tinkersforging.tooltip.flux=Flux
 tinkersforging.tooltip.anvil_tier=Tier: %d
 tinkersforging.tooltip.material=Material: %s
+tinkersforging.top.anvil_recipe=Recipe: %s
+tinkersforging.top.anvil_hits=Hammer Hits: %d / %d
 
 tinkersforging.tooltip.temperature_advanced=%d °C
 tinkersforging.tooltip.temperature_works_at_advanced= - Works at %d °C
