@@ -69,7 +69,7 @@ dependencies {
     implementation rfg.deobf("curse.maven:tinkers-antique-1242239:8089154")
 
     // compile against Patchouli but do not include it at runtime
-    implementation "vazkii.patchouli:Patchouli:1.0-7.9"
+    implementation "vazkii.patchouli:Patchouli:1.0-23.6"
 
     // compile against The One Probe when present, but keep it optional at runtime
     implementation 'curse.maven:the-one-probe-245211:2667280'
