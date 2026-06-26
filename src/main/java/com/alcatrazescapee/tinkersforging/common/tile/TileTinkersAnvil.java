@@ -908,13 +908,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     private boolean insertForgeInput(EntityPlayer player, EnumHand hand)
     {
         int slot = getPreferredInputSlot(player.getHeldItem(hand));
-        if (slot < 0)
-            return false;
-        if (insertForgeInputStack(player, hand, slot))
-            return true;
-
-        int fallbackSlot = slot == SLOT_INPUT_MAIN ? SLOT_INPUT_SECOND : SLOT_INPUT_MAIN;
-        return canInsertForgeInputStack(player, hand, fallbackSlot) && insertForgeInputStack(player, hand, fallbackSlot);
+        return slot >= 0 && insertForgeInputStack(player, hand, slot);
     }
 
     private boolean insertForgeInputStack(EntityPlayer player, EnumHand hand, int slot)
@@ -964,13 +958,7 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     private boolean canInsertForgeInput(EntityPlayer player, EnumHand hand)
     {
         int slot = getPreferredInputSlot(player.getHeldItem(hand));
-        if (slot < 0)
-            return false;
-        if (canInsertForgeInputStack(player, hand, slot))
-            return true;
-
-        int fallbackSlot = slot == SLOT_INPUT_MAIN ? SLOT_INPUT_SECOND : SLOT_INPUT_MAIN;
-        return canInsertForgeInputStack(player, hand, fallbackSlot);
+        return slot >= 0 && canInsertForgeInputStack(player, hand, slot);
     }
 
     private boolean canInsertForgeInputStack(EntityPlayer player, EnumHand hand, int slot)
@@ -978,6 +966,8 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
         ItemStack held = player.getHeldItem(hand);
         ItemStack inSlot = inventory.getStackInSlot(slot);
         if (!isItemValid(slot, held))
+            return false;
+        if (slot == SLOT_INPUT_MAIN && !isUsableMainInputForInsert(held))
             return false;
 
         if (inSlot.isEmpty())
@@ -1006,6 +996,32 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
                 return true;
         }
         return false;
+    }
+
+    private boolean hasUsableAnvilRecipeForInsert(ItemStack stack)
+    {
+        List<AnvilRecipe> matches = ModRecipes.ANVIL.getAllMatchingIgnoreCount(stack, getTier());
+        if (matches.isEmpty())
+            return false;
+
+        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        for (AnvilRecipe recipe : matches)
+        {
+            if (!recipe.requiresHeat())
+                return true;
+            if (cap != null && cap.isWorkable())
+                return true;
+        }
+        return false;
+    }
+
+    private boolean isUsableMainInputForInsert(ItemStack stack)
+    {
+        if (hasUsableAnvilRecipeForInsert(stack))
+            return true;
+
+        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        return cap != null && cap.isWeldable() && ModRecipes.WELDING.hasInput(stack);
     }
 
     private int getPreferredInputSlot(ItemStack held)
@@ -1041,12 +1057,11 @@ public class TileTinkersAnvil extends TileInventory implements ITileFields
     {
         if (stack.isEmpty())
             return false;
-        if (stack.hasCapability(CapabilityForgeItem.CAPABILITY, null))
-            return true;
-        if (!ModRecipes.ANVIL.getAllMatchingIgnoreCount(stack).isEmpty())
+        if (isUsableMainInputForInsert(stack))
             return true;
         ItemStack main = inventory.getStackInSlot(SLOT_INPUT_MAIN);
-        return !main.isEmpty() && ModRecipes.WELDING.getForInputs(main, stack) != null;
+        IForgeItem cap = stack.getCapability(CapabilityForgeItem.CAPABILITY, null);
+        return cap != null && cap.isWeldable() && !main.isEmpty() && ModRecipes.WELDING.getForInputs(main, stack) != null;
     }
 
     private void extractDirect(EntityPlayer player, boolean secondaryFirst)

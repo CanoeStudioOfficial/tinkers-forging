@@ -52,4 +52,9 @@ public class WeldingRecipeManager
     {
         return recipes.stream().filter(recipe -> recipe.matchesInputs(first, second)).findFirst().orElse(null);
     }
+
+    public boolean hasInput(ItemStack stack)
+    {
+        return recipes.stream().anyMatch(recipe -> recipe.matchesInputIgnoreCount(stack));
+    }
 }

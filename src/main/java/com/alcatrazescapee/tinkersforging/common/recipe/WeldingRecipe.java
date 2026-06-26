@@ -52,6 +52,11 @@ public class WeldingRecipe
         return (firstInput.test(first) && secondInput.test(second)) || (firstInput.test(second) && secondInput.test(first));
     }
 
+    public boolean matchesInputIgnoreCount(ItemStack stack)
+    {
+        return firstInput.testIgnoreCount(stack) || secondInput.testIgnoreCount(stack);
+    }
+
     @Nonnull
     public ItemStack getOutput(ItemStack main, ItemStack secondary)
     {
