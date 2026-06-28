@@ -1,5 +1,12 @@
 ![Tinker's Forging Banner Image](https://github.com/alcatrazEscapee/tinkers-forging/blob/1.12/src/main/resources/assets/banner.png?raw=true)
 
+<h1 style="color: red; font-size: 42px;">THIS MOD IS NO LONGER MAINTAINED</h1>
+
+<p style="color: red; font-size: 24px; font-weight: bold;">
+Latest related features from this mod are being migrated to
+<a href="https://github.com/CanoeStudioOfficial/Pyrotech-Complement">CanoeStudioOfficial/Pyrotech-Complement</a>.
+</p>
+
 A mod that adds TFC-style forging to Minecraft 1.12.2.
 
 This repository is the CanoeStudio-maintained 1.12.2 branch. The original upstream project was discontinued, but this branch continues development for modpack use and compatibility fixes.
